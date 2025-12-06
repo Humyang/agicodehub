@@ -1,0 +1,324 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Icon Sprite Export Preview</title>
+    <link rel="stylesheet" href="custom_sprite.css">
+    <style>
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f0f2f5; padding: 20px; color: #333; }
+        h1 { margin-bottom: 20px; font-size: 24px; color: #1a1a1a; display: flex; align-items: center; gap: 10px; }
+        .grid { display: flex; flex-wrap: wrap; gap: 15px; } 
+        .item { 
+            background: white; border-radius: 8px; padding: 15px; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: 0.2s; cursor: pointer; border: 1px solid transparent;
+            min-width: 80px;
+        }
+        .item:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-color: #007acc; }
+        .label { font-size: 12px; color: #666; font-family: 'Consolas', monospace; text-align: center; word-break: break-all; }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #333; color: white; padding: 8px 16px; border-radius: 4px; font-size: 14px; opacity: 0; transition: 0.3s; pointer-events: none; }
+        .toast.show { opacity: 1; top: 30px; }
+    </style>
+</head>
+<body>
+    <h1>📦 导出图标预览 (282)</h1>
+    <div class="grid">
+        <div class="item" onclick="copy('el-icon-platform-eleme')"><i class="el-icon el-icon-platform-eleme"></i><span class="label">.el-icon-platform-eleme</span></div>
+<div class="item" onclick="copy('el-icon-eleme')"><i class="el-icon el-icon-eleme"></i><span class="label">.el-icon-eleme</span></div>
+<div class="item" onclick="copy('el-icon-delete-solid')"><i class="el-icon el-icon-delete-solid"></i><span class="label">.el-icon-delete-solid</span></div>
+<div class="item" onclick="copy('el-icon-delete')"><i class="el-icon el-icon-delete"></i><span class="label">.el-icon-delete</span></div>
+<div class="item" onclick="copy('el-icon-s-tools')"><i class="el-icon el-icon-s-tools"></i><span class="label">.el-icon-s-tools</span></div>
+<div class="item" onclick="copy('el-icon-setting')"><i class="el-icon el-icon-setting"></i><span class="label">.el-icon-setting</span></div>
+<div class="item" onclick="copy('el-icon-user-solid')"><i class="el-icon el-icon-user-solid"></i><span class="label">.el-icon-user-solid</span></div>
+<div class="item" onclick="copy('el-icon-user')"><i class="el-icon el-icon-user"></i><span class="label">.el-icon-user</span></div>
+<div class="item" onclick="copy('el-icon-phone')"><i class="el-icon el-icon-phone"></i><span class="label">.el-icon-phone</span></div>
+<div class="item" onclick="copy('el-icon-phone-outline')"><i class="el-icon el-icon-phone-outline"></i><span class="label">.el-icon-phone-outline</span></div>
+<div class="item" onclick="copy('el-icon-more')"><i class="el-icon el-icon-more"></i><span class="label">.el-icon-more</span></div>
+<div class="item" onclick="copy('el-icon-more-outline')"><i class="el-icon el-icon-more-outline"></i><span class="label">.el-icon-more-outline</span></div>
+<div class="item" onclick="copy('el-icon-star-on')"><i class="el-icon el-icon-star-on"></i><span class="label">.el-icon-star-on</span></div>
+<div class="item" onclick="copy('el-icon-star-off')"><i class="el-icon el-icon-star-off"></i><span class="label">.el-icon-star-off</span></div>
+<div class="item" onclick="copy('el-icon-s-goods')"><i class="el-icon el-icon-s-goods"></i><span class="label">.el-icon-s-goods</span></div>
+<div class="item" onclick="copy('el-icon-goods')"><i class="el-icon el-icon-goods"></i><span class="label">.el-icon-goods</span></div>
+<div class="item" onclick="copy('el-icon-warning')"><i class="el-icon el-icon-warning"></i><span class="label">.el-icon-warning</span></div>
+<div class="item" onclick="copy('el-icon-warning-outline')"><i class="el-icon el-icon-warning-outline"></i><span class="label">.el-icon-warning-outline</span></div>
+<div class="item" onclick="copy('el-icon-question')"><i class="el-icon el-icon-question"></i><span class="label">.el-icon-question</span></div>
+<div class="item" onclick="copy('el-icon-info')"><i class="el-icon el-icon-info"></i><span class="label">.el-icon-info</span></div>
+<div class="item" onclick="copy('el-icon-remove')"><i class="el-icon el-icon-remove"></i><span class="label">.el-icon-remove</span></div>
+<div class="item" onclick="copy('el-icon-circle-plus')"><i class="el-icon el-icon-circle-plus"></i><span class="label">.el-icon-circle-plus</span></div>
+<div class="item" onclick="copy('el-icon-success')"><i class="el-icon el-icon-success"></i><span class="label">.el-icon-success</span></div>
+<div class="item" onclick="copy('el-icon-error')"><i class="el-icon el-icon-error"></i><span class="label">.el-icon-error</span></div>
+<div class="item" onclick="copy('el-icon-zoom-in')"><i class="el-icon el-icon-zoom-in"></i><span class="label">.el-icon-zoom-in</span></div>
+<div class="item" onclick="copy('el-icon-zoom-out')"><i class="el-icon el-icon-zoom-out"></i><span class="label">.el-icon-zoom-out</span></div>
+<div class="item" onclick="copy('el-icon-remove-outline')"><i class="el-icon el-icon-remove-outline"></i><span class="label">.el-icon-remove-outline</span></div>
+<div class="item" onclick="copy('el-icon-circle-plus-outline')"><i class="el-icon el-icon-circle-plus-outline"></i><span class="label">.el-icon-circle-plus-outline</span></div>
+<div class="item" onclick="copy('el-icon-circle-check')"><i class="el-icon el-icon-circle-check"></i><span class="label">.el-icon-circle-check</span></div>
+<div class="item" onclick="copy('el-icon-circle-close')"><i class="el-icon el-icon-circle-close"></i><span class="label">.el-icon-circle-close</span></div>
+<div class="item" onclick="copy('el-icon-s-help')"><i class="el-icon el-icon-s-help"></i><span class="label">.el-icon-s-help</span></div>
+<div class="item" onclick="copy('el-icon-help')"><i class="el-icon el-icon-help"></i><span class="label">.el-icon-help</span></div>
+<div class="item" onclick="copy('el-icon-minus')"><i class="el-icon el-icon-minus"></i><span class="label">.el-icon-minus</span></div>
+<div class="item" onclick="copy('el-icon-plus')"><i class="el-icon el-icon-plus"></i><span class="label">.el-icon-plus</span></div>
+<div class="item" onclick="copy('el-icon-check')"><i class="el-icon el-icon-check"></i><span class="label">.el-icon-check</span></div>
+<div class="item" onclick="copy('el-icon-close')"><i class="el-icon el-icon-close"></i><span class="label">.el-icon-close</span></div>
+<div class="item" onclick="copy('el-icon-picture')"><i class="el-icon el-icon-picture"></i><span class="label">.el-icon-picture</span></div>
+<div class="item" onclick="copy('el-icon-picture-outline')"><i class="el-icon el-icon-picture-outline"></i><span class="label">.el-icon-picture-outline</span></div>
+<div class="item" onclick="copy('el-icon-picture-outline-round')"><i class="el-icon el-icon-picture-outline-round"></i><span class="label">.el-icon-picture-outline-round</span></div>
+<div class="item" onclick="copy('el-icon-upload')"><i class="el-icon el-icon-upload"></i><span class="label">.el-icon-upload</span></div>
+<div class="item" onclick="copy('el-icon-upload2')"><i class="el-icon el-icon-upload2"></i><span class="label">.el-icon-upload2</span></div>
+<div class="item" onclick="copy('el-icon-download')"><i class="el-icon el-icon-download"></i><span class="label">.el-icon-download</span></div>
+<div class="item" onclick="copy('el-icon-camera-solid')"><i class="el-icon el-icon-camera-solid"></i><span class="label">.el-icon-camera-solid</span></div>
+<div class="item" onclick="copy('el-icon-camera')"><i class="el-icon el-icon-camera"></i><span class="label">.el-icon-camera</span></div>
+<div class="item" onclick="copy('el-icon-video-camera-solid')"><i class="el-icon el-icon-video-camera-solid"></i><span class="label">.el-icon-video-camera-solid</span></div>
+<div class="item" onclick="copy('el-icon-video-camera')"><i class="el-icon el-icon-video-camera"></i><span class="label">.el-icon-video-camera</span></div>
+<div class="item" onclick="copy('el-icon-message-solid')"><i class="el-icon el-icon-message-solid"></i><span class="label">.el-icon-message-solid</span></div>
+<div class="item" onclick="copy('el-icon-bell')"><i class="el-icon el-icon-bell"></i><span class="label">.el-icon-bell</span></div>
+<div class="item" onclick="copy('el-icon-s-cooperation')"><i class="el-icon el-icon-s-cooperation"></i><span class="label">.el-icon-s-cooperation</span></div>
+<div class="item" onclick="copy('el-icon-s-order')"><i class="el-icon el-icon-s-order"></i><span class="label">.el-icon-s-order</span></div>
+<div class="item" onclick="copy('el-icon-s-platform')"><i class="el-icon el-icon-s-platform"></i><span class="label">.el-icon-s-platform</span></div>
+<div class="item" onclick="copy('el-icon-s-fold')"><i class="el-icon el-icon-s-fold"></i><span class="label">.el-icon-s-fold</span></div>
+<div class="item" onclick="copy('el-icon-s-unfold')"><i class="el-icon el-icon-s-unfold"></i><span class="label">.el-icon-s-unfold</span></div>
+<div class="item" onclick="copy('el-icon-s-operation')"><i class="el-icon el-icon-s-operation"></i><span class="label">.el-icon-s-operation</span></div>
+<div class="item" onclick="copy('el-icon-s-promotion')"><i class="el-icon el-icon-s-promotion"></i><span class="label">.el-icon-s-promotion</span></div>
+<div class="item" onclick="copy('el-icon-s-home')"><i class="el-icon el-icon-s-home"></i><span class="label">.el-icon-s-home</span></div>
+<div class="item" onclick="copy('el-icon-s-release')"><i class="el-icon el-icon-s-release"></i><span class="label">.el-icon-s-release</span></div>
+<div class="item" onclick="copy('el-icon-s-ticket')"><i class="el-icon el-icon-s-ticket"></i><span class="label">.el-icon-s-ticket</span></div>
+<div class="item" onclick="copy('el-icon-s-management')"><i class="el-icon el-icon-s-management"></i><span class="label">.el-icon-s-management</span></div>
+<div class="item" onclick="copy('el-icon-s-open')"><i class="el-icon el-icon-s-open"></i><span class="label">.el-icon-s-open</span></div>
+<div class="item" onclick="copy('el-icon-s-shop')"><i class="el-icon el-icon-s-shop"></i><span class="label">.el-icon-s-shop</span></div>
+<div class="item" onclick="copy('el-icon-s-marketing')"><i class="el-icon el-icon-s-marketing"></i><span class="label">.el-icon-s-marketing</span></div>
+<div class="item" onclick="copy('el-icon-s-flag')"><i class="el-icon el-icon-s-flag"></i><span class="label">.el-icon-s-flag</span></div>
+<div class="item" onclick="copy('el-icon-s-comment')"><i class="el-icon el-icon-s-comment"></i><span class="label">.el-icon-s-comment</span></div>
+<div class="item" onclick="copy('el-icon-s-finance')"><i class="el-icon el-icon-s-finance"></i><span class="label">.el-icon-s-finance</span></div>
+<div class="item" onclick="copy('el-icon-s-claim')"><i class="el-icon el-icon-s-claim"></i><span class="label">.el-icon-s-claim</span></div>
+<div class="item" onclick="copy('el-icon-s-custom')"><i class="el-icon el-icon-s-custom"></i><span class="label">.el-icon-s-custom</span></div>
+<div class="item" onclick="copy('el-icon-s-opportunity')"><i class="el-icon el-icon-s-opportunity"></i><span class="label">.el-icon-s-opportunity</span></div>
+<div class="item" onclick="copy('el-icon-s-data')"><i class="el-icon el-icon-s-data"></i><span class="label">.el-icon-s-data</span></div>
+<div class="item" onclick="copy('el-icon-s-check')"><i class="el-icon el-icon-s-check"></i><span class="label">.el-icon-s-check</span></div>
+<div class="item" onclick="copy('el-icon-s-grid')"><i class="el-icon el-icon-s-grid"></i><span class="label">.el-icon-s-grid</span></div>
+<div class="item" onclick="copy('el-icon-menu')"><i class="el-icon el-icon-menu"></i><span class="label">.el-icon-menu</span></div>
+<div class="item" onclick="copy('el-icon-share')"><i class="el-icon el-icon-share"></i><span class="label">.el-icon-share</span></div>
+<div class="item" onclick="copy('el-icon-d-caret')"><i class="el-icon el-icon-d-caret"></i><span class="label">.el-icon-d-caret</span></div>
+<div class="item" onclick="copy('el-icon-caret-left')"><i class="el-icon el-icon-caret-left"></i><span class="label">.el-icon-caret-left</span></div>
+<div class="item" onclick="copy('el-icon-caret-right')"><i class="el-icon el-icon-caret-right"></i><span class="label">.el-icon-caret-right</span></div>
+<div class="item" onclick="copy('el-icon-caret-bottom')"><i class="el-icon el-icon-caret-bottom"></i><span class="label">.el-icon-caret-bottom</span></div>
+<div class="item" onclick="copy('el-icon-caret-top')"><i class="el-icon el-icon-caret-top"></i><span class="label">.el-icon-caret-top</span></div>
+<div class="item" onclick="copy('el-icon-bottom-left')"><i class="el-icon el-icon-bottom-left"></i><span class="label">.el-icon-bottom-left</span></div>
+<div class="item" onclick="copy('el-icon-bottom-right')"><i class="el-icon el-icon-bottom-right"></i><span class="label">.el-icon-bottom-right</span></div>
+<div class="item" onclick="copy('el-icon-back')"><i class="el-icon el-icon-back"></i><span class="label">.el-icon-back</span></div>
+<div class="item" onclick="copy('el-icon-right')"><i class="el-icon el-icon-right"></i><span class="label">.el-icon-right</span></div>
+<div class="item" onclick="copy('el-icon-bottom')"><i class="el-icon el-icon-bottom"></i><span class="label">.el-icon-bottom</span></div>
+<div class="item" onclick="copy('el-icon-top')"><i class="el-icon el-icon-top"></i><span class="label">.el-icon-top</span></div>
+<div class="item" onclick="copy('el-icon-top-left')"><i class="el-icon el-icon-top-left"></i><span class="label">.el-icon-top-left</span></div>
+<div class="item" onclick="copy('el-icon-top-right')"><i class="el-icon el-icon-top-right"></i><span class="label">.el-icon-top-right</span></div>
+<div class="item" onclick="copy('el-icon-arrow-left')"><i class="el-icon el-icon-arrow-left"></i><span class="label">.el-icon-arrow-left</span></div>
+<div class="item" onclick="copy('el-icon-arrow-right')"><i class="el-icon el-icon-arrow-right"></i><span class="label">.el-icon-arrow-right</span></div>
+<div class="item" onclick="copy('el-icon-arrow-down')"><i class="el-icon el-icon-arrow-down"></i><span class="label">.el-icon-arrow-down</span></div>
+<div class="item" onclick="copy('el-icon-arrow-up')"><i class="el-icon el-icon-arrow-up"></i><span class="label">.el-icon-arrow-up</span></div>
+<div class="item" onclick="copy('el-icon-d-arrow-left')"><i class="el-icon el-icon-d-arrow-left"></i><span class="label">.el-icon-d-arrow-left</span></div>
+<div class="item" onclick="copy('el-icon-d-arrow-right')"><i class="el-icon el-icon-d-arrow-right"></i><span class="label">.el-icon-d-arrow-right</span></div>
+<div class="item" onclick="copy('el-icon-video-pause')"><i class="el-icon el-icon-video-pause"></i><span class="label">.el-icon-video-pause</span></div>
+<div class="item" onclick="copy('el-icon-video-play')"><i class="el-icon el-icon-video-play"></i><span class="label">.el-icon-video-play</span></div>
+<div class="item" onclick="copy('el-icon-refresh')"><i class="el-icon el-icon-refresh"></i><span class="label">.el-icon-refresh</span></div>
+<div class="item" onclick="copy('el-icon-refresh-right')"><i class="el-icon el-icon-refresh-right"></i><span class="label">.el-icon-refresh-right</span></div>
+<div class="item" onclick="copy('el-icon-refresh-left')"><i class="el-icon el-icon-refresh-left"></i><span class="label">.el-icon-refresh-left</span></div>
+<div class="item" onclick="copy('el-icon-finished')"><i class="el-icon el-icon-finished"></i><span class="label">.el-icon-finished</span></div>
+<div class="item" onclick="copy('el-icon-sort')"><i class="el-icon el-icon-sort"></i><span class="label">.el-icon-sort</span></div>
+<div class="item" onclick="copy('el-icon-sort-up')"><i class="el-icon el-icon-sort-up"></i><span class="label">.el-icon-sort-up</span></div>
+<div class="item" onclick="copy('el-icon-sort-down')"><i class="el-icon el-icon-sort-down"></i><span class="label">.el-icon-sort-down</span></div>
+<div class="item" onclick="copy('el-icon-rank')"><i class="el-icon el-icon-rank"></i><span class="label">.el-icon-rank</span></div>
+<div class="item" onclick="copy('el-icon-loading')"><i class="el-icon el-icon-loading"></i><span class="label">.el-icon-loading</span></div>
+<div class="item" onclick="copy('el-icon-view')"><i class="el-icon el-icon-view"></i><span class="label">.el-icon-view</span></div>
+<div class="item" onclick="copy('el-icon-c-scale-to-original')"><i class="el-icon el-icon-c-scale-to-original"></i><span class="label">.el-icon-c-scale-to-original</span></div>
+<div class="item" onclick="copy('el-icon-date')"><i class="el-icon el-icon-date"></i><span class="label">.el-icon-date</span></div>
+<div class="item" onclick="copy('el-icon-edit')"><i class="el-icon el-icon-edit"></i><span class="label">.el-icon-edit</span></div>
+<div class="item" onclick="copy('el-icon-edit-outline')"><i class="el-icon el-icon-edit-outline"></i><span class="label">.el-icon-edit-outline</span></div>
+<div class="item" onclick="copy('el-icon-folder')"><i class="el-icon el-icon-folder"></i><span class="label">.el-icon-folder</span></div>
+<div class="item" onclick="copy('el-icon-folder-opened')"><i class="el-icon el-icon-folder-opened"></i><span class="label">.el-icon-folder-opened</span></div>
+<div class="item" onclick="copy('el-icon-folder-add')"><i class="el-icon el-icon-folder-add"></i><span class="label">.el-icon-folder-add</span></div>
+<div class="item" onclick="copy('el-icon-folder-remove')"><i class="el-icon el-icon-folder-remove"></i><span class="label">.el-icon-folder-remove</span></div>
+<div class="item" onclick="copy('el-icon-folder-delete')"><i class="el-icon el-icon-folder-delete"></i><span class="label">.el-icon-folder-delete</span></div>
+<div class="item" onclick="copy('el-icon-folder-checked')"><i class="el-icon el-icon-folder-checked"></i><span class="label">.el-icon-folder-checked</span></div>
+<div class="item" onclick="copy('el-icon-tickets')"><i class="el-icon el-icon-tickets"></i><span class="label">.el-icon-tickets</span></div>
+<div class="item" onclick="copy('el-icon-document-remove')"><i class="el-icon el-icon-document-remove"></i><span class="label">.el-icon-document-remove</span></div>
+<div class="item" onclick="copy('el-icon-document-delete')"><i class="el-icon el-icon-document-delete"></i><span class="label">.el-icon-document-delete</span></div>
+<div class="item" onclick="copy('el-icon-document-copy')"><i class="el-icon el-icon-document-copy"></i><span class="label">.el-icon-document-copy</span></div>
+<div class="item" onclick="copy('el-icon-document-checked')"><i class="el-icon el-icon-document-checked"></i><span class="label">.el-icon-document-checked</span></div>
+<div class="item" onclick="copy('el-icon-document')"><i class="el-icon el-icon-document"></i><span class="label">.el-icon-document</span></div>
+<div class="item" onclick="copy('el-icon-document-add')"><i class="el-icon el-icon-document-add"></i><span class="label">.el-icon-document-add</span></div>
+<div class="item" onclick="copy('el-icon-printer')"><i class="el-icon el-icon-printer"></i><span class="label">.el-icon-printer</span></div>
+<div class="item" onclick="copy('el-icon-paperclip')"><i class="el-icon el-icon-paperclip"></i><span class="label">.el-icon-paperclip</span></div>
+<div class="item" onclick="copy('el-icon-takeaway-box')"><i class="el-icon el-icon-takeaway-box"></i><span class="label">.el-icon-takeaway-box</span></div>
+<div class="item" onclick="copy('el-icon-search')"><i class="el-icon el-icon-search"></i><span class="label">.el-icon-search</span></div>
+<div class="item" onclick="copy('el-icon-monitor')"><i class="el-icon el-icon-monitor"></i><span class="label">.el-icon-monitor</span></div>
+<div class="item" onclick="copy('el-icon-attract')"><i class="el-icon el-icon-attract"></i><span class="label">.el-icon-attract</span></div>
+<div class="item" onclick="copy('el-icon-mobile')"><i class="el-icon el-icon-mobile"></i><span class="label">.el-icon-mobile</span></div>
+<div class="item" onclick="copy('el-icon-scissors')"><i class="el-icon el-icon-scissors"></i><span class="label">.el-icon-scissors</span></div>
+<div class="item" onclick="copy('el-icon-umbrella')"><i class="el-icon el-icon-umbrella"></i><span class="label">.el-icon-umbrella</span></div>
+<div class="item" onclick="copy('el-icon-headset')"><i class="el-icon el-icon-headset"></i><span class="label">.el-icon-headset</span></div>
+<div class="item" onclick="copy('el-icon-brush')"><i class="el-icon el-icon-brush"></i><span class="label">.el-icon-brush</span></div>
+<div class="item" onclick="copy('el-icon-mouse')"><i class="el-icon el-icon-mouse"></i><span class="label">.el-icon-mouse</span></div>
+<div class="item" onclick="copy('el-icon-coordinate')"><i class="el-icon el-icon-coordinate"></i><span class="label">.el-icon-coordinate</span></div>
+<div class="item" onclick="copy('el-icon-magic-stick')"><i class="el-icon el-icon-magic-stick"></i><span class="label">.el-icon-magic-stick</span></div>
+<div class="item" onclick="copy('el-icon-reading')"><i class="el-icon el-icon-reading"></i><span class="label">.el-icon-reading</span></div>
+<div class="item" onclick="copy('el-icon-data-line')"><i class="el-icon el-icon-data-line"></i><span class="label">.el-icon-data-line</span></div>
+<div class="item" onclick="copy('el-icon-data-board')"><i class="el-icon el-icon-data-board"></i><span class="label">.el-icon-data-board</span></div>
+<div class="item" onclick="copy('el-icon-pie-chart')"><i class="el-icon el-icon-pie-chart"></i><span class="label">.el-icon-pie-chart</span></div>
+<div class="item" onclick="copy('el-icon-data-analysis')"><i class="el-icon el-icon-data-analysis"></i><span class="label">.el-icon-data-analysis</span></div>
+<div class="item" onclick="copy('el-icon-collection-tag')"><i class="el-icon el-icon-collection-tag"></i><span class="label">.el-icon-collection-tag</span></div>
+<div class="item" onclick="copy('el-icon-film')"><i class="el-icon el-icon-film"></i><span class="label">.el-icon-film</span></div>
+<div class="item" onclick="copy('el-icon-suitcase')"><i class="el-icon el-icon-suitcase"></i><span class="label">.el-icon-suitcase</span></div>
+<div class="item" onclick="copy('el-icon-suitcase-1')"><i class="el-icon el-icon-suitcase-1"></i><span class="label">.el-icon-suitcase-1</span></div>
+<div class="item" onclick="copy('el-icon-receiving')"><i class="el-icon el-icon-receiving"></i><span class="label">.el-icon-receiving</span></div>
+<div class="item" onclick="copy('el-icon-collection')"><i class="el-icon el-icon-collection"></i><span class="label">.el-icon-collection</span></div>
+<div class="item" onclick="copy('el-icon-files')"><i class="el-icon el-icon-files"></i><span class="label">.el-icon-files</span></div>
+<div class="item" onclick="copy('el-icon-notebook-1')"><i class="el-icon el-icon-notebook-1"></i><span class="label">.el-icon-notebook-1</span></div>
+<div class="item" onclick="copy('el-icon-notebook-2')"><i class="el-icon el-icon-notebook-2"></i><span class="label">.el-icon-notebook-2</span></div>
+<div class="item" onclick="copy('el-icon-toilet-paper')"><i class="el-icon el-icon-toilet-paper"></i><span class="label">.el-icon-toilet-paper</span></div>
+<div class="item" onclick="copy('el-icon-office-building')"><i class="el-icon el-icon-office-building"></i><span class="label">.el-icon-office-building</span></div>
+<div class="item" onclick="copy('el-icon-school')"><i class="el-icon el-icon-school"></i><span class="label">.el-icon-school</span></div>
+<div class="item" onclick="copy('el-icon-table-lamp')"><i class="el-icon el-icon-table-lamp"></i><span class="label">.el-icon-table-lamp</span></div>
+<div class="item" onclick="copy('el-icon-house')"><i class="el-icon el-icon-house"></i><span class="label">.el-icon-house</span></div>
+<div class="item" onclick="copy('el-icon-no-smoking')"><i class="el-icon el-icon-no-smoking"></i><span class="label">.el-icon-no-smoking</span></div>
+<div class="item" onclick="copy('el-icon-smoking')"><i class="el-icon el-icon-smoking"></i><span class="label">.el-icon-smoking</span></div>
+<div class="item" onclick="copy('el-icon-shopping-cart-full')"><i class="el-icon el-icon-shopping-cart-full"></i><span class="label">.el-icon-shopping-cart-full</span></div>
+<div class="item" onclick="copy('el-icon-shopping-cart-1')"><i class="el-icon el-icon-shopping-cart-1"></i><span class="label">.el-icon-shopping-cart-1</span></div>
+<div class="item" onclick="copy('el-icon-shopping-cart-2')"><i class="el-icon el-icon-shopping-cart-2"></i><span class="label">.el-icon-shopping-cart-2</span></div>
+<div class="item" onclick="copy('el-icon-shopping-bag-1')"><i class="el-icon el-icon-shopping-bag-1"></i><span class="label">.el-icon-shopping-bag-1</span></div>
+<div class="item" onclick="copy('el-icon-shopping-bag-2')"><i class="el-icon el-icon-shopping-bag-2"></i><span class="label">.el-icon-shopping-bag-2</span></div>
+<div class="item" onclick="copy('el-icon-sold-out')"><i class="el-icon el-icon-sold-out"></i><span class="label">.el-icon-sold-out</span></div>
+<div class="item" onclick="copy('el-icon-sell')"><i class="el-icon el-icon-sell"></i><span class="label">.el-icon-sell</span></div>
+<div class="item" onclick="copy('el-icon-present')"><i class="el-icon el-icon-present"></i><span class="label">.el-icon-present</span></div>
+<div class="item" onclick="copy('el-icon-box')"><i class="el-icon el-icon-box"></i><span class="label">.el-icon-box</span></div>
+<div class="item" onclick="copy('el-icon-bank-card')"><i class="el-icon el-icon-bank-card"></i><span class="label">.el-icon-bank-card</span></div>
+<div class="item" onclick="copy('el-icon-money')"><i class="el-icon el-icon-money"></i><span class="label">.el-icon-money</span></div>
+<div class="item" onclick="copy('el-icon-coin')"><i class="el-icon el-icon-coin"></i><span class="label">.el-icon-coin</span></div>
+<div class="item" onclick="copy('el-icon-wallet')"><i class="el-icon el-icon-wallet"></i><span class="label">.el-icon-wallet</span></div>
+<div class="item" onclick="copy('el-icon-discount')"><i class="el-icon el-icon-discount"></i><span class="label">.el-icon-discount</span></div>
+<div class="item" onclick="copy('el-icon-price-tag')"><i class="el-icon el-icon-price-tag"></i><span class="label">.el-icon-price-tag</span></div>
+<div class="item" onclick="copy('el-icon-news')"><i class="el-icon el-icon-news"></i><span class="label">.el-icon-news</span></div>
+<div class="item" onclick="copy('el-icon-guide')"><i class="el-icon el-icon-guide"></i><span class="label">.el-icon-guide</span></div>
+<div class="item" onclick="copy('el-icon-male')"><i class="el-icon el-icon-male"></i><span class="label">.el-icon-male</span></div>
+<div class="item" onclick="copy('el-icon-female')"><i class="el-icon el-icon-female"></i><span class="label">.el-icon-female</span></div>
+<div class="item" onclick="copy('el-icon-thumb')"><i class="el-icon el-icon-thumb"></i><span class="label">.el-icon-thumb</span></div>
+<div class="item" onclick="copy('el-icon-cpu')"><i class="el-icon el-icon-cpu"></i><span class="label">.el-icon-cpu</span></div>
+<div class="item" onclick="copy('el-icon-link')"><i class="el-icon el-icon-link"></i><span class="label">.el-icon-link</span></div>
+<div class="item" onclick="copy('el-icon-connection')"><i class="el-icon el-icon-connection"></i><span class="label">.el-icon-connection</span></div>
+<div class="item" onclick="copy('el-icon-open')"><i class="el-icon el-icon-open"></i><span class="label">.el-icon-open</span></div>
+<div class="item" onclick="copy('el-icon-turn-off')"><i class="el-icon el-icon-turn-off"></i><span class="label">.el-icon-turn-off</span></div>
+<div class="item" onclick="copy('el-icon-set-up')"><i class="el-icon el-icon-set-up"></i><span class="label">.el-icon-set-up</span></div>
+<div class="item" onclick="copy('el-icon-chat-round')"><i class="el-icon el-icon-chat-round"></i><span class="label">.el-icon-chat-round</span></div>
+<div class="item" onclick="copy('el-icon-chat-line-round')"><i class="el-icon el-icon-chat-line-round"></i><span class="label">.el-icon-chat-line-round</span></div>
+<div class="item" onclick="copy('el-icon-chat-square')"><i class="el-icon el-icon-chat-square"></i><span class="label">.el-icon-chat-square</span></div>
+<div class="item" onclick="copy('el-icon-chat-dot-round')"><i class="el-icon el-icon-chat-dot-round"></i><span class="label">.el-icon-chat-dot-round</span></div>
+<div class="item" onclick="copy('el-icon-chat-dot-square')"><i class="el-icon el-icon-chat-dot-square"></i><span class="label">.el-icon-chat-dot-square</span></div>
+<div class="item" onclick="copy('el-icon-chat-line-square')"><i class="el-icon el-icon-chat-line-square"></i><span class="label">.el-icon-chat-line-square</span></div>
+<div class="item" onclick="copy('el-icon-message')"><i class="el-icon el-icon-message"></i><span class="label">.el-icon-message</span></div>
+<div class="item" onclick="copy('el-icon-postcard')"><i class="el-icon el-icon-postcard"></i><span class="label">.el-icon-postcard</span></div>
+<div class="item" onclick="copy('el-icon-position')"><i class="el-icon el-icon-position"></i><span class="label">.el-icon-position</span></div>
+<div class="item" onclick="copy('el-icon-turn-off-microphone')"><i class="el-icon el-icon-turn-off-microphone"></i><span class="label">.el-icon-turn-off-microphone</span></div>
+<div class="item" onclick="copy('el-icon-microphone')"><i class="el-icon el-icon-microphone"></i><span class="label">.el-icon-microphone</span></div>
+<div class="item" onclick="copy('el-icon-close-notification')"><i class="el-icon el-icon-close-notification"></i><span class="label">.el-icon-close-notification</span></div>
+<div class="item" onclick="copy('el-icon-bangzhu')"><i class="el-icon el-icon-bangzhu"></i><span class="label">.el-icon-bangzhu</span></div>
+<div class="item" onclick="copy('el-icon-time')"><i class="el-icon el-icon-time"></i><span class="label">.el-icon-time</span></div>
+<div class="item" onclick="copy('el-icon-odometer')"><i class="el-icon el-icon-odometer"></i><span class="label">.el-icon-odometer</span></div>
+<div class="item" onclick="copy('el-icon-crop')"><i class="el-icon el-icon-crop"></i><span class="label">.el-icon-crop</span></div>
+<div class="item" onclick="copy('el-icon-aim')"><i class="el-icon el-icon-aim"></i><span class="label">.el-icon-aim</span></div>
+<div class="item" onclick="copy('el-icon-switch-button')"><i class="el-icon el-icon-switch-button"></i><span class="label">.el-icon-switch-button</span></div>
+<div class="item" onclick="copy('el-icon-full-screen')"><i class="el-icon el-icon-full-screen"></i><span class="label">.el-icon-full-screen</span></div>
+<div class="item" onclick="copy('el-icon-copy-document')"><i class="el-icon el-icon-copy-document"></i><span class="label">.el-icon-copy-document</span></div>
+<div class="item" onclick="copy('el-icon-mic')"><i class="el-icon el-icon-mic"></i><span class="label">.el-icon-mic</span></div>
+<div class="item" onclick="copy('el-icon-stopwatch')"><i class="el-icon el-icon-stopwatch"></i><span class="label">.el-icon-stopwatch</span></div>
+<div class="item" onclick="copy('el-icon-medal-1')"><i class="el-icon el-icon-medal-1"></i><span class="label">.el-icon-medal-1</span></div>
+<div class="item" onclick="copy('el-icon-medal')"><i class="el-icon el-icon-medal"></i><span class="label">.el-icon-medal</span></div>
+<div class="item" onclick="copy('el-icon-trophy')"><i class="el-icon el-icon-trophy"></i><span class="label">.el-icon-trophy</span></div>
+<div class="item" onclick="copy('el-icon-trophy-1')"><i class="el-icon el-icon-trophy-1"></i><span class="label">.el-icon-trophy-1</span></div>
+<div class="item" onclick="copy('el-icon-first-aid-kit')"><i class="el-icon el-icon-first-aid-kit"></i><span class="label">.el-icon-first-aid-kit</span></div>
+<div class="item" onclick="copy('el-icon-discover')"><i class="el-icon el-icon-discover"></i><span class="label">.el-icon-discover</span></div>
+<div class="item" onclick="copy('el-icon-place')"><i class="el-icon el-icon-place"></i><span class="label">.el-icon-place</span></div>
+<div class="item" onclick="copy('el-icon-location')"><i class="el-icon el-icon-location"></i><span class="label">.el-icon-location</span></div>
+<div class="item" onclick="copy('el-icon-location-outline')"><i class="el-icon el-icon-location-outline"></i><span class="label">.el-icon-location-outline</span></div>
+<div class="item" onclick="copy('el-icon-location-information')"><i class="el-icon el-icon-location-information"></i><span class="label">.el-icon-location-information</span></div>
+<div class="item" onclick="copy('el-icon-add-location')"><i class="el-icon el-icon-add-location"></i><span class="label">.el-icon-add-location</span></div>
+<div class="item" onclick="copy('el-icon-delete-location')"><i class="el-icon el-icon-delete-location"></i><span class="label">.el-icon-delete-location</span></div>
+<div class="item" onclick="copy('el-icon-map-location')"><i class="el-icon el-icon-map-location"></i><span class="label">.el-icon-map-location</span></div>
+<div class="item" onclick="copy('el-icon-alarm-clock')"><i class="el-icon el-icon-alarm-clock"></i><span class="label">.el-icon-alarm-clock</span></div>
+<div class="item" onclick="copy('el-icon-timer')"><i class="el-icon el-icon-timer"></i><span class="label">.el-icon-timer</span></div>
+<div class="item" onclick="copy('el-icon-watch-1')"><i class="el-icon el-icon-watch-1"></i><span class="label">.el-icon-watch-1</span></div>
+<div class="item" onclick="copy('el-icon-watch')"><i class="el-icon el-icon-watch"></i><span class="label">.el-icon-watch</span></div>
+<div class="item" onclick="copy('el-icon-lock')"><i class="el-icon el-icon-lock"></i><span class="label">.el-icon-lock</span></div>
+<div class="item" onclick="copy('el-icon-unlock')"><i class="el-icon el-icon-unlock"></i><span class="label">.el-icon-unlock</span></div>
+<div class="item" onclick="copy('el-icon-key')"><i class="el-icon el-icon-key"></i><span class="label">.el-icon-key</span></div>
+<div class="item" onclick="copy('el-icon-service')"><i class="el-icon el-icon-service"></i><span class="label">.el-icon-service</span></div>
+<div class="item" onclick="copy('el-icon-mobile-phone')"><i class="el-icon el-icon-mobile-phone"></i><span class="label">.el-icon-mobile-phone</span></div>
+<div class="item" onclick="copy('el-icon-bicycle')"><i class="el-icon el-icon-bicycle"></i><span class="label">.el-icon-bicycle</span></div>
+<div class="item" onclick="copy('el-icon-truck')"><i class="el-icon el-icon-truck"></i><span class="label">.el-icon-truck</span></div>
+<div class="item" onclick="copy('el-icon-ship')"><i class="el-icon el-icon-ship"></i><span class="label">.el-icon-ship</span></div>
+<div class="item" onclick="copy('el-icon-basketball')"><i class="el-icon el-icon-basketball"></i><span class="label">.el-icon-basketball</span></div>
+<div class="item" onclick="copy('el-icon-football')"><i class="el-icon el-icon-football"></i><span class="label">.el-icon-football</span></div>
+<div class="item" onclick="copy('el-icon-soccer')"><i class="el-icon el-icon-soccer"></i><span class="label">.el-icon-soccer</span></div>
+<div class="item" onclick="copy('el-icon-baseball')"><i class="el-icon el-icon-baseball"></i><span class="label">.el-icon-baseball</span></div>
+<div class="item" onclick="copy('el-icon-wind-power')"><i class="el-icon el-icon-wind-power"></i><span class="label">.el-icon-wind-power</span></div>
+<div class="item" onclick="copy('el-icon-light-rain')"><i class="el-icon el-icon-light-rain"></i><span class="label">.el-icon-light-rain</span></div>
+<div class="item" onclick="copy('el-icon-lightning')"><i class="el-icon el-icon-lightning"></i><span class="label">.el-icon-lightning</span></div>
+<div class="item" onclick="copy('el-icon-heavy-rain')"><i class="el-icon el-icon-heavy-rain"></i><span class="label">.el-icon-heavy-rain</span></div>
+<div class="item" onclick="copy('el-icon-sunrise')"><i class="el-icon el-icon-sunrise"></i><span class="label">.el-icon-sunrise</span></div>
+<div class="item" onclick="copy('el-icon-sunrise-1')"><i class="el-icon el-icon-sunrise-1"></i><span class="label">.el-icon-sunrise-1</span></div>
+<div class="item" onclick="copy('el-icon-sunset')"><i class="el-icon el-icon-sunset"></i><span class="label">.el-icon-sunset</span></div>
+<div class="item" onclick="copy('el-icon-sunny')"><i class="el-icon el-icon-sunny"></i><span class="label">.el-icon-sunny</span></div>
+<div class="item" onclick="copy('el-icon-cloudy')"><i class="el-icon el-icon-cloudy"></i><span class="label">.el-icon-cloudy</span></div>
+<div class="item" onclick="copy('el-icon-partly-cloudy')"><i class="el-icon el-icon-partly-cloudy"></i><span class="label">.el-icon-partly-cloudy</span></div>
+<div class="item" onclick="copy('el-icon-cloudy-and-sunny')"><i class="el-icon el-icon-cloudy-and-sunny"></i><span class="label">.el-icon-cloudy-and-sunny</span></div>
+<div class="item" onclick="copy('el-icon-moon')"><i class="el-icon el-icon-moon"></i><span class="label">.el-icon-moon</span></div>
+<div class="item" onclick="copy('el-icon-moon-night')"><i class="el-icon el-icon-moon-night"></i><span class="label">.el-icon-moon-night</span></div>
+<div class="item" onclick="copy('el-icon-dish')"><i class="el-icon el-icon-dish"></i><span class="label">.el-icon-dish</span></div>
+<div class="item" onclick="copy('el-icon-dish-1')"><i class="el-icon el-icon-dish-1"></i><span class="label">.el-icon-dish-1</span></div>
+<div class="item" onclick="copy('el-icon-food')"><i class="el-icon el-icon-food"></i><span class="label">.el-icon-food</span></div>
+<div class="item" onclick="copy('el-icon-chicken')"><i class="el-icon el-icon-chicken"></i><span class="label">.el-icon-chicken</span></div>
+<div class="item" onclick="copy('el-icon-fork-spoon')"><i class="el-icon el-icon-fork-spoon"></i><span class="label">.el-icon-fork-spoon</span></div>
+<div class="item" onclick="copy('el-icon-knife-fork')"><i class="el-icon el-icon-knife-fork"></i><span class="label">.el-icon-knife-fork</span></div>
+<div class="item" onclick="copy('el-icon-burger')"><i class="el-icon el-icon-burger"></i><span class="label">.el-icon-burger</span></div>
+<div class="item" onclick="copy('el-icon-tableware')"><i class="el-icon el-icon-tableware"></i><span class="label">.el-icon-tableware</span></div>
+<div class="item" onclick="copy('el-icon-sugar')"><i class="el-icon el-icon-sugar"></i><span class="label">.el-icon-sugar</span></div>
+<div class="item" onclick="copy('el-icon-dessert')"><i class="el-icon el-icon-dessert"></i><span class="label">.el-icon-dessert</span></div>
+<div class="item" onclick="copy('el-icon-ice-cream')"><i class="el-icon el-icon-ice-cream"></i><span class="label">.el-icon-ice-cream</span></div>
+<div class="item" onclick="copy('el-icon-hot-water')"><i class="el-icon el-icon-hot-water"></i><span class="label">.el-icon-hot-water</span></div>
+<div class="item" onclick="copy('el-icon-water-cup')"><i class="el-icon el-icon-water-cup"></i><span class="label">.el-icon-water-cup</span></div>
+<div class="item" onclick="copy('el-icon-coffee-cup')"><i class="el-icon el-icon-coffee-cup"></i><span class="label">.el-icon-coffee-cup</span></div>
+<div class="item" onclick="copy('el-icon-cold-drink')"><i class="el-icon el-icon-cold-drink"></i><span class="label">.el-icon-cold-drink</span></div>
+<div class="item" onclick="copy('el-icon-goblet')"><i class="el-icon el-icon-goblet"></i><span class="label">.el-icon-goblet</span></div>
+<div class="item" onclick="copy('el-icon-goblet-full')"><i class="el-icon el-icon-goblet-full"></i><span class="label">.el-icon-goblet-full</span></div>
+<div class="item" onclick="copy('el-icon-goblet-square')"><i class="el-icon el-icon-goblet-square"></i><span class="label">.el-icon-goblet-square</span></div>
+<div class="item" onclick="copy('el-icon-goblet-square-full')"><i class="el-icon el-icon-goblet-square-full"></i><span class="label">.el-icon-goblet-square-full</span></div>
+<div class="item" onclick="copy('el-icon-refrigerator')"><i class="el-icon el-icon-refrigerator"></i><span class="label">.el-icon-refrigerator</span></div>
+<div class="item" onclick="copy('el-icon-grape')"><i class="el-icon el-icon-grape"></i><span class="label">.el-icon-grape</span></div>
+<div class="item" onclick="copy('el-icon-watermelon')"><i class="el-icon el-icon-watermelon"></i><span class="label">.el-icon-watermelon</span></div>
+<div class="item" onclick="copy('el-icon-cherry')"><i class="el-icon el-icon-cherry"></i><span class="label">.el-icon-cherry</span></div>
+<div class="item" onclick="copy('el-icon-apple')"><i class="el-icon el-icon-apple"></i><span class="label">.el-icon-apple</span></div>
+<div class="item" onclick="copy('el-icon-pear')"><i class="el-icon el-icon-pear"></i><span class="label">.el-icon-pear</span></div>
+<div class="item" onclick="copy('el-icon-orange')"><i class="el-icon el-icon-orange"></i><span class="label">.el-icon-orange</span></div>
+<div class="item" onclick="copy('el-icon-coffee')"><i class="el-icon el-icon-coffee"></i><span class="label">.el-icon-coffee</span></div>
+<div class="item" onclick="copy('el-icon-ice-tea')"><i class="el-icon el-icon-ice-tea"></i><span class="label">.el-icon-ice-tea</span></div>
+<div class="item" onclick="copy('el-icon-ice-drink')"><i class="el-icon el-icon-ice-drink"></i><span class="label">.el-icon-ice-drink</span></div>
+<div class="item" onclick="copy('el-icon-milk-tea')"><i class="el-icon el-icon-milk-tea"></i><span class="label">.el-icon-milk-tea</span></div>
+<div class="item" onclick="copy('el-icon-potato-strips')"><i class="el-icon el-icon-potato-strips"></i><span class="label">.el-icon-potato-strips</span></div>
+<div class="item" onclick="copy('el-icon-lollipop')"><i class="el-icon el-icon-lollipop"></i><span class="label">.el-icon-lollipop</span></div>
+<div class="item" onclick="copy('el-icon-ice-cream-square')"><i class="el-icon el-icon-ice-cream-square"></i><span class="label">.el-icon-ice-cream-square</span></div>
+<div class="item" onclick="copy('el-icon-ice-cream-round')"><i class="el-icon el-icon-ice-cream-round"></i><span class="label">.el-icon-ice-cream-round</span></div>
+<div class="item" onclick="copy('icon-281')"><i class="el-icon icon-281"></i><span class="label">.icon-281</span></div>
+<div class="item" onclick="copy('icon-282')"><i class="el-icon icon-282"></i><span class="label">.icon-282</span></div>
+
+    </div>
+    <div id="toast" class="toast">已复制类名!</div>
+    <script>
+        function copy(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                const t = document.getElementById('toast');
+                t.textContent = '已复制: .' + text;
+                t.classList.add('show');
+                setTimeout(() => t.classList.remove('show'), 1500);
+            });
+        }
+    </script>
+</body>
+</html>

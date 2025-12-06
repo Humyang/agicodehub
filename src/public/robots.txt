@@ -1,0 +1,10 @@
+User-agent: Mediapartners-Google
+Disallow:
+
+User-agent: *
+Disallow: /private/
+Disallow: /temp/
+
+Sitemap: https://agicodehub.com/sitemap.xml
+
+# Algolia-Crawler-Verif: 1575AEA78D0C4BF8

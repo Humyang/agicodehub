@@ -1,0 +1,8 @@
+/* googleicon2.css */
+.googleicon2 { 
+    display: inline-block; 
+    background-image: url('googleicon2.webp'); 
+    background-repeat: no-repeat;
+    background-size: 500px 42px;
+}
+.googleicon2-pin-invoke { width: 32px; height: 28px; background-position: -9px -7px; }

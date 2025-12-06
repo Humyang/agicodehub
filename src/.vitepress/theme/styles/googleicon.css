@@ -1,0 +1,9 @@
+/* googleicon.css */
+.googleicon { 
+    display: inline-block; 
+    background-image: url('googleicon.webp'); 
+    background-repeat: no-repeat;
+    background-size: 500px 34px;
+}
+.googleicon-filter-alt { width: 30px; height: 31px; background-position: -10px -2px; }
+.googleicon-explore { width: 26px; height: 31px; background-position: -62px -2px; }
