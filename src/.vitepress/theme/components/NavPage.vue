@@ -1,18 +1,17 @@
 <script setup>
 import { ref, computed } from "vue";
-import { useData } from "vitepress";
+import { useData, withBase } from "vitepress";
+import IconSwitcher from "./IconSwitcher.vue";
 
 const { frontmatter } = useData();
 const searchText = ref("");
+// 新增：用于追踪当前悬停的是哪个卡片
+const hoveredCard = ref(null);
 
-// 搜索过滤逻辑
 const filteredGroups = computed(() => {
   const groups = frontmatter.value.navGroups || [];
   if (!searchText.value) return groups;
-
   const lowerText = searchText.value.toLowerCase();
-
-  // 过滤组内的数据
   return groups
     .map((group) => {
       const filteredItems = group.items.filter((item) => {
@@ -23,40 +22,30 @@ const filteredGroups = computed(() => {
       });
       return { ...group, items: filteredItems };
     })
-    .filter((group) => group.items.length > 0); // 如果该组没有匹配项，则隐藏该组
+    .filter((group) => group.items.length > 0);
 });
 
-// 平滑滚动
 const scrollToSection = (id) => {
   const element = document.getElementById(id);
   if (element) {
-    const offset = 80; // 抵消顶部导航栏高度
+    const offset = 80;
     const bodyRect = document.body.getBoundingClientRect().top;
     const elementRect = element.getBoundingClientRect().top;
     const elementPosition = elementRect - bodyRect;
     const offsetPosition = elementPosition - offset;
-
-    window.scrollTo({
-      top: offsetPosition,
-      behavior: "smooth",
-    });
+    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
   }
 };
-// 基本跳转
+
 const navigateToStaticPage = (item) => {
-  if (item.link) {
-    window.location.href = withBase(item.link);
-  }
+  if (item.link) window.location.href = withBase(item.link);
 };
 
-// 新标签页打开
 const openInNewTab = (item, event) => {
   event.preventDefault();
-  if (item.link) {
-    window.open(withBase(item.link), "_blank");
-  }
+  if (item.link) window.open(withBase(item.link), "_blank");
 };
-// 处理点击事件
+
 const handleClick = (item, event) => {
   if (item.openInNewTab) {
     openInNewTab(item, event);
@@ -64,13 +53,20 @@ const handleClick = (item, event) => {
     navigateToStaticPage(item);
   }
 };
+
+const hasSwitchEffect = (item) => {
+  return (
+    item.switchIcons &&
+    Array.isArray(item.switchIcons) &&
+    item.switchIcons.length > 0
+  );
+};
 </script>
 
 <template>
   <div class="nav-page-container">
-    <!-- 侧边栏 -->
     <aside class="nav-sidebar">
-      <div class="sidebar-title">目录</div>
+      <div class="sidebar-title">Table of Contents</div>
       <ul class="nav-menu">
         <li
           v-for="group in frontmatter.navGroups"
@@ -84,23 +80,20 @@ const handleClick = (item, event) => {
       </ul>
     </aside>
 
-    <!-- 主内容 -->
     <main class="main-content">
-      <!-- 搜索头 -->
       <div class="header-bar">
         <div class="search-box">
           <i class="fa-solid fa-magnifying-glass"></i>
           <input
             type="text"
             v-model="searchText"
-            placeholder="搜索本页资源..."
+            placeholder="Search resources..."
           />
         </div>
       </div>
 
-      <!-- 内容列表 -->
       <div v-if="filteredGroups.length === 0" class="no-result">
-        没有找到相关资源
+        No matching resources found
       </div>
 
       <section
@@ -109,10 +102,21 @@ const handleClick = (item, event) => {
         :id="group.id"
         class="nav-section"
       >
-        <h2 class="section-title">
+        <h2 v-if="group.link" class="section-title">
+          <a :href="group.link" target="_blank"
+            ><i :class="group.icon"></i> {{ group.title }}</a
+          >
+        </h2>
+        <h2 v-else class="section-title">
           <i :class="group.icon"></i> {{ group.title }}
         </h2>
+
         <div class="site-grid">
+          <!-- 
+            修改：
+            1. 生成唯一 key: `${group.id}-${idx}` 
+            2. 添加 @mouseenter 和 @mouseleave 到 a.card 标签上
+          -->
           <a
             v-for="(item, idx) in group.items"
             :key="idx"
@@ -120,12 +124,23 @@ const handleClick = (item, event) => {
             class="card"
             :class="`theme-${item.theme || 'default'}`"
             @click="handleClick(item, $event)"
+            @mouseenter="hoveredCard = `${group.id}-${idx}`"
+            @mouseleave="hoveredCard = null"
             :target="item.openInNewTab ? '_blank' : '_self'"
           >
             <div class="card-header">
-              <div class="icon-box" v-if="item.icon">
-                <i :class="item.icon"></i>
+              <div class="icon-box" v-if="item.icon || hasSwitchEffect(item)">
+                <!-- 修改：传入 active 属性 -->
+                <IconSwitcher
+                  v-if="hasSwitchEffect(item)"
+                  :default-class="item.icon"
+                  :switch-classes="item.switchIcons"
+                  :active="hoveredCard === `${group.id}-${idx}`"
+                />
+
+                <i v-else :class="item.icon"></i>
               </div>
+
               <div v-else>
                 <img
                   v-if="item.logo"
@@ -137,6 +152,7 @@ const handleClick = (item, event) => {
                   {{ item.title[0] }}
                 </div>
               </div>
+
               <div class="card-info">
                 <span class="card-title">{{ item.title }}</span>
                 <p class="card-desc">{{ item.desc }}</p>
@@ -145,7 +161,7 @@ const handleClick = (item, event) => {
             <div class="card-footer">
               <span class="tag" v-if="item.tag">{{ item.tag }}</span>
               <span class="visit-btn"
-                >直达 <i class="fa-solid fa-arrow-right"></i
+                >Visit <i class="fa-solid fa-arrow-right"></i
               ></span>
             </div>
           </a>
@@ -156,10 +172,10 @@ const handleClick = (item, event) => {
 </template>
 
 <style scoped>
+/* 样式部分不需要修改，保持原样 */
 .nav-menu {
   list-style: none;
 }
-
 .nav-item {
   margin-bottom: 5px;
 }
@@ -178,30 +194,25 @@ const handleClick = (item, event) => {
   min-height: 80vh;
   position: relative;
 }
-
-/* 左侧固定侧边栏 */
 .nav-sidebar {
   width: 200px;
   position: sticky;
-  top: 80px; /* 适配 VitePress 顶栏高度 */
+  top: 80px;
   height: fit-content;
   padding-right: 20px;
   border-right: 1px solid var(--vp-c-divider);
-  display: none; /* 默认隐藏，大屏显示 */
+  display: none;
 }
-
 @media (min-width: 960px) {
   .nav-sidebar {
     display: block;
   }
 }
-
 .sidebar-title {
   font-weight: bold;
   margin-bottom: 10px;
   color: var(--vp-c-text-1);
 }
-
 .nav-link {
   display: block;
   padding: 8px 10px;
@@ -220,8 +231,6 @@ const handleClick = (item, event) => {
   text-align: center;
   margin-right: 5px;
 }
-
-/* 主内容区 */
 .main-content {
   flex: 1;
   padding-left: 0;
@@ -231,8 +240,6 @@ const handleClick = (item, event) => {
     padding-left: 30px;
   }
 }
-
-/* 搜索框 */
 .search-box {
   position: relative;
   margin-bottom: 30px;
@@ -253,8 +260,6 @@ const handleClick = (item, event) => {
   transform: translateY(-50%);
   color: var(--vp-c-text-3);
 }
-
-/* 卡片网格 */
 .section-title {
   font-size: 1.3rem;
   margin: 40px 0 20px;
@@ -264,13 +269,11 @@ const handleClick = (item, event) => {
   align-items: center;
   gap: 10px;
 }
-
 .site-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 20px;
 }
-
 .card {
   background: var(--vp-c-bg-soft);
   border-radius: 10px;
@@ -288,7 +291,6 @@ const handleClick = (item, event) => {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
   border-color: var(--vp-c-brand-dimm);
 }
-
 .card-header {
   display: flex;
   align-items: flex-start;
@@ -314,7 +316,6 @@ const handleClick = (item, event) => {
   justify-content: center;
   font-weight: bold;
 }
-
 .card-title {
   font-weight: 600;
   color: var(--vp-c-text-1);
@@ -329,7 +330,6 @@ const handleClick = (item, event) => {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
 .card-footer {
   margin-top: auto;
   padding-top: 10px;
@@ -357,10 +357,10 @@ const handleClick = (item, event) => {
   min-height: 50px;
   min-width: 50px;
   border-radius: 10px;
-  /* margin: 10px; */
   margin-right: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
 }
 </style>

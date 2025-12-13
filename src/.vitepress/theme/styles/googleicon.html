@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f5f5f5; color: #333; }
+  h1 { font-size: 20px; margin-bottom: 20px; }
+  .grid { display: flex; flex-wrap: wrap; gap: 10px; }
+  .item { background: #fff; padding: 15px; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #ddd; transition: all 0.2s; min-width: 100px; }
+  .item:hover { border-color: #007acc; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .item i { margin-bottom: 10px; }
+  .label { font-size: 12px; color: #666; font-family: Consolas, monospace; }
+  /* Toast */
+  .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: #333; color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 14px; opacity: 0; transition: all 0.3s; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+<link rel="stylesheet" href="googleicon.css">
+</head>
+<body>
+  <h1>googleicon.webp Preview</h1>
+  <div class="grid"><div class="item" onclick="copy('googleicon-verified')"><i class="googleicon googleicon-verified"></i><span class="label">.googleicon-verified</span></div>
+<div class="item" onclick="copy('googleicon-dashboard')"><i class="googleicon googleicon-dashboard"></i><span class="label">.googleicon-dashboard</span></div>
+<div class="item" onclick="copy('googleicon-bookmark')"><i class="googleicon googleicon-bookmark"></i><span class="label">.googleicon-bookmark</span></div>
+<div class="item" onclick="copy('googleicon-nightlight-round')"><i class="googleicon googleicon-nightlight-round"></i><span class="label">.googleicon-nightlight-round</span></div>
+<div class="item" onclick="copy('googleicon-thumbs-up-down')"><i class="googleicon googleicon-thumbs-up-down"></i><span class="label">.googleicon-thumbs-up-down</span></div>
+<div class="item" onclick="copy('googleicon-view-agenda')"><i class="googleicon googleicon-view-agenda"></i><span class="label">.googleicon-view-agenda</span></div>
+<div class="item" onclick="copy('googleicon-opacity')"><i class="googleicon googleicon-opacity"></i><span class="label">.googleicon-opacity</span></div>
+<div class="item" onclick="copy('googleicon-commute')"><i class="googleicon googleicon-commute"></i><span class="label">.googleicon-commute</span></div>
+<div class="item" onclick="copy('googleicon-invert-colors')"><i class="googleicon googleicon-invert-colors"></i><span class="label">.googleicon-invert-colors</span></div>
+<div class="item" onclick="copy('googleicon-edit-off')"><i class="googleicon googleicon-edit-off"></i><span class="label">.googleicon-edit-off</span></div>
+<div class="item" onclick="copy('googleicon-remove-shopping-cart')"><i class="googleicon googleicon-remove-shopping-cart"></i><span class="label">.googleicon-remove-shopping-cart</span></div>
+<div class="item" onclick="copy('googleicon-swipe-vertical')"><i class="googleicon googleicon-swipe-vertical"></i><span class="label">.googleicon-swipe-vertical</span></div>
+<div class="item" onclick="copy('googleicon-home-work')"><i class="googleicon googleicon-home-work"></i><span class="label">.googleicon-home-work</span></div>
+<div class="item" onclick="copy('googleicon-sentiment-neutral')"><i class="googleicon googleicon-sentiment-neutral"></i><span class="label">.googleicon-sentiment-neutral</span></div>
+<div class="item" onclick="copy('googleicon-thumb-down-alt')"><i class="googleicon googleicon-thumb-down-alt"></i><span class="label">.googleicon-thumb-down-alt</span></div>
+<div class="item" onclick="copy('googleicon-real-estate-agent')"><i class="googleicon googleicon-real-estate-agent"></i><span class="label">.googleicon-real-estate-agent</span></div>
+<div class="item" onclick="copy('googleicon-waving-hand')"><i class="googleicon googleicon-waving-hand"></i><span class="label">.googleicon-waving-hand</span></div>
+<div class="item" onclick="copy('googleicon-back-hand')"><i class="googleicon googleicon-back-hand"></i><span class="label">.googleicon-back-hand</span></div>
+<div class="item" onclick="copy('googleicon-notifications-off')"><i class="googleicon googleicon-notifications-off"></i><span class="label">.googleicon-notifications-off</span></div>
+<div class="item" onclick="copy('googleicon-sports-basketball')"><i class="googleicon googleicon-sports-basketball"></i><span class="label">.googleicon-sports-basketball</span></div>
+<div class="item" onclick="copy('googleicon-sports-handball')"><i class="googleicon googleicon-sports-handball"></i><span class="label">.googleicon-sports-handball</span></div>
+<div class="item" onclick="copy('googleicon-sports-baseball')"><i class="googleicon googleicon-sports-baseball"></i><span class="label">.googleicon-sports-baseball</span></div>
+<div class="item" onclick="copy('googleicon-sports-volleyball')"><i class="googleicon googleicon-sports-volleyball"></i><span class="label">.googleicon-sports-volleyball</span></div>
+<div class="item" onclick="copy('googleicon-sports-football')"><i class="googleicon googleicon-sports-football"></i><span class="label">.googleicon-sports-football</span></div>
+<div class="item" onclick="copy('googleicon-select-all')"><i class="googleicon googleicon-select-all"></i><span class="label">.googleicon-select-all</span></div>
+</div>
+  <div id="toast" class="toast">Copied!</div>
+  <script>
+    function copy(cls) {
+      navigator.clipboard.writeText(cls).then(() => {
+        const t = document.getElementById('toast');
+        t.innerText = 'Copied: .' + cls;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2000);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="isTransitioning"
+    v-if="isTransitioning && supportsWebM"
     ref="videoContainer"
     class="theme-transition-container"
     :style="{ display: containerReady ? 'flex' : 'none' }"
@@ -20,9 +20,23 @@
 
 
 <script setup>
+// 检测浏览器是否支持webm格式
+const supportsWebM = ref(true);
+
+onMounted(() => {
+  // 检测浏览器是否为Chrome或Firefox
+  const isChrome =
+    /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+  const isFirefox = typeof InstallTrigger !== "undefined";
+
+  // 如果不是Chrome或Firefox，则使用图片
+  if (!isChrome && !isFirefox) {
+    supportsWebM.value = false;
+  }
+});
+
 import { ref, watch, onMounted, nextTick } from "vue";
 import { useData } from "vitepress";
-
 const { isDark } = useData();
 const isTransitioning = ref(false);
 const containerReady = ref(false);

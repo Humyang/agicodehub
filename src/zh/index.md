@@ -3,20 +3,14 @@ layout: home
 lang: zh-CN
 
 hero:
-  name: "<span>Agi</span><span>CodeHub</span>"
-  text: "从AI出发的想象力旅程 \n开箱即用的工具集合\n"
-  tagline: FFmpeg脚本生成器、网页工具集合、AI 增强图标
+  
+  showHeroLogo: true
+  text: "在这里，见证人类智慧与 AGI 的第一次握手。"
+  tagline: 探索可重用的AI生成结果
   image:
     alt: 两个扳手交叉的图标
     light: /optimized-images/img/light-lg.webp
     dark: /optimized-images/img/dark-lg.webp
-  # actions:
-  #   - theme: brand
-  #     text: 快速开始
-  #     link: /guide/installation
-  #   - theme: alt
-  #     text: 查看功能
-  #     link: /features/
 
 features:
   - title: AI 赋能
@@ -57,13 +51,6 @@ categories:
     badge: 60+
     tags: ["图标", "UI设计"]
     theme: orange
-  # - title: AI 资源导航
-  #   desc: 提示词、免费AI站点等。
-  #   icon: fa-solid fa-chart-line
-  #   link: /nav/ops
-  #   badge: 60+
-  #   tags: ["图标", "UI设计"]
-  #   theme: orange
 navigationCategories:
   - title: "FFmpeg工具集合"
     moreLink:
@@ -96,23 +83,6 @@ navigationCategories:
         newWindow: true
         description: "没有网络也能运行HTML，支持导入和导出，适合AI生成的小工具运行演示"
 
-      # - text: "slideshow"
-      #   url: "https://www.agicodehub.com/ffmpegtool/slideshow/"
-      #   forceRefresh: true
-      #   description: "快速生成ffmpeg图片过渡视频代码"
-      # - text: "image crop"
-      #   url: "https://www.agicodehub.com/ffmpegtool/image-crop/"
-      #   forceRefresh: true
-      #   description: "快速生成ffmpeg批量裁剪目录图片代码"
-  # - title: "AI 学习资源"
-  #   moreLink:
-  #     text: "查看更多"
-  #     url: "/ai/"
-  #     description: "探索更多AI工具"
-  #   links:
-  #     - text: "AI语音克隆实战指南"
-  #       url: "/docs/ai/audio/indextts2"
-  #       description: "​​IndexTTS2开源语音模型部署教程​"
   - title: "日志"
     moreLink:
       text: "查看更多"
@@ -121,18 +91,7 @@ navigationCategories:
     links:
       - text: "开发日志"
         url: "/docs/logs/develop-log"
-        # description: "​​IndexTTS2开源语音模型部署教程​"
-      # - text: "发布日志"
-      #   url: "/docs/logs/promotion-log"
-      # description: "​​IndexTTS2开源语音模型部署教程​"
-      # - text: "项目架构"
-      #   url: "/docs/logs/domain-plan"
 ---
 
-<!-- <CustomComponent title="这是一个自定义组件" description="这是组件的描述">
-  这里是插槽内容
-</CustomComponent> -->
- <!-- <OptimizedImage src="images/features/3.png" /> -->
 <HomeNav />
-<!-- <HomeLayout /> -->
 <ThemeTransition />

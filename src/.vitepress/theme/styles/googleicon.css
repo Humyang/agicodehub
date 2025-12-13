@@ -3,7 +3,30 @@
     display: inline-block; 
     background-image: url('googleicon.webp'); 
     background-repeat: no-repeat;
-    background-size: 500px 34px;
+    background-size: 800px 204px;
 }
-.googleicon-filter-alt { width: 30px; height: 31px; background-position: -10px -2px; }
-.googleicon-explore { width: 26px; height: 31px; background-position: -62px -2px; }
+.googleicon-verified { width: 50px; height: 51px; background-position: -15px -9px; }
+.googleicon-dashboard { width: 47px; height: 48px; background-position: -96px -10px; }
+.googleicon-bookmark { width: 42px; height: 48px; background-position: -179px -10px; }
+.googleicon-nightlight-round { width: 44px; height: 49px; background-position: -258px -10px; }
+.googleicon-thumbs-up-down { width: 57px; height: 52px; background-position: -331px -8px; }
+.googleicon-view-agenda { width: 61px; height: 49px; background-position: -410px -9px; }
+.googleicon-opacity { width: 57px; height: 48px; background-position: -491px -10px; }
+.googleicon-commute { width: 69px; height: 48px; background-position: -566px -10px; }
+.googleicon-invert-colors { width: 55px; height: 48px; background-position: -652px -10px; }
+.googleicon-edit-off { width: 42px; height: 44px; background-position: -739px -12px; }
+.googleicon-remove-shopping-cart { width: 49px; height: 49px; background-position: -16px -77px; }
+.googleicon-swipe-vertical { width: 52px; height: 46px; background-position: -94px -79px; }
+.googleicon-home-work { width: 79px; height: 54px; background-position: -160px -75px; }
+.googleicon-sentiment-neutral { width: 48px; height: 43px; background-position: -256px -80px; }
+.googleicon-thumb-down-alt { width: 54px; height: 43px; background-position: -333px -81px; }
+.googleicon-real-estate-agent { width: 47px; height: 44px; background-position: -416px -80px; }
+.googleicon-waving-hand { width: 49px; height: 48px; background-position: -496px -78px; }
+.googleicon-back-hand { width: 53px; height: 47px; background-position: -573px -79px; }
+.googleicon-notifications-off { width: 43px; height: 43px; background-position: -658px -81px; }
+.googleicon-sports-basketball { width: 52px; height: 43px; background-position: -734px -81px; }
+.googleicon-sports-handball { width: 35px; height: 48px; background-position: -22px -146px; }
+.googleicon-sports-baseball { width: 51px; height: 42px; background-position: -95px -149px; }
+.googleicon-sports-volleyball { width: 48px; height: 43px; background-position: -176px -148px; }
+.googleicon-sports-football { width: 49px; height: 41px; background-position: -256px -150px; }
+.googleicon-select-all { width: 67px; height: 65px; background-position: -326px -137px; }

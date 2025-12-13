@@ -32,6 +32,7 @@ const locales = {
     lang: 'zh-CN',
     link: '/zh/',
     themeConfig: {
+      // siteTitle: false, // 隐藏默认文字，只显示你的插槽内容
       nav: [
         { text: '首页', link: '/zh/' },
         // { text: '指南', link: '/zh/guide/' }
@@ -41,7 +42,7 @@ const locales = {
         },
         {
           text: 'Docs',
-          link: '/zh/docs/',
+          link: '/docs/',
           activeMatch: '/docs/',
         },
       ],
@@ -63,45 +64,24 @@ const locales = {
     themeConfig: {
       nav: [
         { text: 'Home', link: '/' },
+        { text: 'Github', link: 'https://github.com/Humyang/agicodehub' },
         // { text: 'Guide', link: '/guide/' }
         {
           text: 'Blog',
           link: 'https://www.agicodehub.com/blog/',
         },
-        // {
-        //   text: 'Docs',
-        //   link: '/docs/',
-        //   activeMatch: '/docs/',
-        // },
+        {
+          text: 'Docs',
+          link: '/docs/',
+          activeMatch: '/docs/',
+        },
       ],
       sidebar: {
-        '/docs/': [
-          // {
-          //   text: 'AI',
-          //   items: [
-          //     {
-          //       text: 'Audio',
-          //       collapsed: true,
-          //       items: [
-          //         { text: 'IndexTTS2 开源语音模型部署教程', link: '/docs/ai/audio/indextts2.md' },
-          //       ],
-          //     },
-          //   ],
-          // },
-          // {
-          //   text: 'Logs',
-          //   items: [
-          //     {
-          //       text: 'Develop Log',
-          //       link: '/docs/logs/develop-log.md',
-          //     },
-          //     {
-          //       text: 'Promotion Log',
-          //       link: '/docs/logs/promotion-log.md',
-          //     },
-          //   ],
-          // },
-        ]
+        'docs/': generateSidebar('docs', '', {
+          exclude: ['temp', 'drafts', /^\./, 'archive'], // 排除 temp、drafts 目录，以点开头的文件，archive 目录
+          includeIndex: false, // 不包含 index.md
+          maxDepth: 5 // 最大递归深度为 5
+        })
       }
     }
   }
@@ -118,6 +98,7 @@ export default defineConfig({
   sitemap: {
     hostname,
   },
+
   head: headConfig,
   markdown: markdownConfig,
   themeConfig,

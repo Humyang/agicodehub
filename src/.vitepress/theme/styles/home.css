@@ -184,14 +184,14 @@
     }
 }
 
-.hero-text-highlight,
+/* .hero-text-highlight,
 .name .clip,
 .VPNavBar.home.top .title {
     background: linear-gradient(43deg, #b1e8fc 0%, #13c2fd 46%, #00ff84 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: var(--vp-home-hero-name-color);
-}
+} */
 
 
 /* 为所有相关元素添加过渡效果 */

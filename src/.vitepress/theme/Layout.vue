@@ -2,12 +2,20 @@
 import { useData } from "vitepress";
 import DefaultTheme from "vitepress/theme";
 import { nextTick, provide, computed, ref, onMounted } from "vue";
+// 1. 引入你的自定义标题组件
+import HeroTitle from "./components/HeroTitle.vue";
 
 const { isDark, frontmatter } = useData();
 
 // 使用computed让showHeroImage响应路由变化
 const showHeroImage = computed(() => {
   return frontmatter.value.showHeroImage || false;
+});
+const showHeroLogo = computed(() => {
+  if (frontmatter.value.hero) {
+    return frontmatter.value.hero.showHeroLogo || false;
+  }
+  return false;
 });
 
 // const { isDark } = useData();
@@ -65,6 +73,15 @@ onMounted(() => {
 
 <template>
   <DefaultTheme.Layout>
+    <!-- 2. 使用插槽将组件注入到 Hero 区域 -->
+    <!-- 'home-hero-info-before' 会显示在原有标题的上方位置 -->
+    <!-- 配合我们在 index.md 中把 name 留空，这个组件就会占据主标题位置 -->
+    <!-- <template #nav-bar-title-after>
+      <HeroTitle />
+    </template> -->
+    <template v-if="showHeroLogo" #home-hero-info-before>
+      <HeroTitle />
+    </template>
     <template v-if="showHeroImage" #home-hero-image>
       <!-- <video
         class="image-src"

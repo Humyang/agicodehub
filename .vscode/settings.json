@@ -10,5 +10,6 @@
   },
   "editor.formatOnSave": true,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "window.title": "${dirty}dve2新首页${separator}${activeEditorShort}${separator}${folderName}${separator}"
+  "window.title": "${dirty}dve2新首页${separator}${activeEditorShort}${separator}${folderName}${separator}",
+  "liveServer.settings.port": 8081
 }

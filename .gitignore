@@ -1,3 +1,8 @@
 src/public/static
 dist
 node_modules
+
+!src/public/static/codetool/
+!src/public/static/codetool/DynamicIcon.html
+seo.md
+.DS_Store

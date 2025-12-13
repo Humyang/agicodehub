@@ -28,7 +28,13 @@ import tagManagerFallBack from './plugin/tagManagerFallBack'
 
 // // Import adsense
 // import Adsense from './components/adsense.vue'
-
+// <script type="text/javascript">
+// var _iub = _iub || [];
+// _iub.csConfiguration = {"siteId":4345460,"cookiePolicyId":26087680,"lang":"en","storage":{"useSiteId":true}};
+// </script>
+// <script type="text/javascript" src="https://cs.iubenda.com/autoblocking/4345460.js"></script>
+// <script type="text/javascript" src="//cdn.iubenda.com/cs/gpp/stub.js"></script>
+// <script type="text/javascript" src="//cdn.iubenda.com/cs/iubenda_cs.js" charset="UTF-8" async></script>
 // export default {
 //   extends: DefaultTheme,
 //   enhanceApp({ app }) {
@@ -36,8 +42,8 @@ import tagManagerFallBack from './plugin/tagManagerFallBack'
 //     enhanceAppWithTabs(app)
 //     app.component('IconDownload', IconDownload)
 //     app.component('IconBugReport', IconBugReport)
-//     tagManager({ id: 'GTM-NM64V2DN' })
-//     tagManagerFallBack({ id: 'GTM-NM64V2DN' })
+// tagManager({ id: 'G-7VB7F5RY4Z' })
+// tagManagerFallBack({ id: 'GTM-NM64V2DN' })
 //     app.component('Adsense', Adsense)
 //     app.component('vImageViewer', vImageViewer)
 //   },
@@ -48,7 +54,7 @@ import tagManagerFallBack from './plugin/tagManagerFallBack'
 //   },
 //   Layout,
 // }
-import { h, watchEffect } from 'vue'
+// import { h, watchEffect } from 'vue'
 import type { Theme } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import './styles/tailwind.css'
@@ -59,7 +65,7 @@ import ThemeTransition from './components/ThemeTransition.vue'
 import './styles/home.css'
 import './styles/custom_sprite.css'; // 引入全局 CSS
 import './styles/googleicon.css'; // 引入全局 CSS
-import './styles/googleicon2.css'; // 引入全局 CSS
+// import './styles/googleicon2.css'; // 引入全局 CSS
 // import { VueQueryPlugin } from '@tanstack/vue-query'
 import Layout from './Layout.vue'
 // import VideoHero from './VideoHero.vue'
@@ -69,6 +75,8 @@ import Layout from './Layout.vue'
 import OptimizedImage from './components/OptimizedImage.vue'
 import HomeNav from './components/HomeNav.vue'
 import NavPage from './components/NavPage.vue'
+// import HeroTitle from './components/HeroTitle.vue' // <--- 引入组件
+
 export default {
 
   extends: DefaultTheme,
@@ -94,8 +102,8 @@ export default {
     //   `
     //   document.head.appendChild(style)
     // }
-    tagManager({ id: 'G-QEKHDPCR27' })
-    tagManagerFallBack({ id: 'G-QEKHDPCR27' })
+    tagManager({ id: 'GTM-NL5P6NDT' })
+    tagManagerFallBack({ id: 'GTM-NL5P6NDT' })
     // app.component('ToolsPage', ToolsPage)
     // app.component('CustomComponent', CustomComponent)
   },

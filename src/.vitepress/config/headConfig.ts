@@ -1,6 +1,46 @@
 import type { HeadConfig } from 'vitepress'
+const isProduction = process.env.NODE_ENV === 'production'
 
-const headConfig: HeadConfig[] = [
+// Google Analytics ID
+const GA_ID = 'G-7VB7F5RY4Z'
+
+
+// 生产环境的统计脚本
+const analyticsScripts = isProduction ? [
+  // Google Analytics gtag.js
+  [
+    'script',
+    {
+      async: true,
+      src: `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`
+    }
+  ],
+  [
+    'script',
+    {},
+    `window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', '${GA_ID}');`
+  ],
+] : []
+const gdpr = isProduction ? [[
+  'script',
+  {},
+  `var _iub = _iub || [];
+    _iub.csConfiguration = {"siteId":4345460,"cookiePolicyId":26087680,"lang":"en","storage":{"useSiteId":true}};`
+],
+['script', { type: 'text/javascript', src: 'https://cs.iubenda.com/autoblocking/4345460.js' }],
+['script', { type: 'text/javascript', src: '//cdn.iubenda.com/cs/gpp/stub.js' }],
+['script', {
+  type: 'text/javascript',
+  src: '//cdn.iubenda.com/cs/iubenda_cs.js',
+  charset: 'UTF-8',
+  async: true
+}]] : []
+const headConfig = [
+  ...analyticsScripts,
+  ...gdpr,
   ['meta', { name: 'darkreader-lock' }],
   ['meta', { name: 'theme-color', content: '#0058A0' }],
   ['meta', { name: 'msapplication-TileColor', content: '#0058A0' }],
@@ -16,9 +56,10 @@ const headConfig: HeadConfig[] = [
   ['meta', { name: 'twitter:site', content: '@Humyang' }],
   ['meta', { name: 'twitter:creator', content: '@Humyang' }],
   ['meta', { property: 'og:site_name', content: 'agicodehub' }],
-  ['meta', { property: 'og:description', content: 'Multi-Profile Key Remap, Clicker, Macro, and More.' }],
+  ['meta', { property: 'og:description', content: 'Here, witness the first handshake between human intelligence and AGI.' }],
   ['meta', { property: 'og:locale', content: 'en_US' }],
   ['meta', { property: 'og:type', content: 'website' }],
+
 ]
 
 export default headConfig

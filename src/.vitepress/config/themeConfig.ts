@@ -44,7 +44,8 @@ const themeConfig: DefaultTheme.Config = {
       <span class="divider"></span> <a href="/policies/privacy-policies/">Privacy policy</a>
       <span class="divider">|</span> <a href="/policies/about-me/">About Me</a>
       <span class="divider">|</span> <a href="/policies/contact/">Contact</a>
-      <br><br>
+      
+      <div>Create From <a href="https://vitepress.dev">Vitepress</a>,theme by <a href="https://github.com/Humyang/agicodehub">AgiCodeHub</a> </div>
     `,
     copyright: `Copyright © ${new Date().getFullYear()} Humyang`,
   },

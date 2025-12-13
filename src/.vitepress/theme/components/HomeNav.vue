@@ -1,10 +1,17 @@
 <script setup>
 import { useData, withBase } from "vitepress";
 import { nextTick, provide, computed, ref, onMounted } from "vue";
-
+import IconSwitcher from "./IconSwitcher.vue";
 // 获取页面 Frontmatter 数据
 const { frontmatter } = useData();
-
+const hoveredCard = ref(null);
+const hasSwitchEffect = (item) => {
+  return (
+    item.switchIcons &&
+    Array.isArray(item.switchIcons) &&
+    item.switchIcons.length > 0
+  );
+};
 // 检测浏览器是否支持webm格式
 const supportsWebM = ref(true);
 
@@ -53,6 +60,8 @@ const handleClick = (item, event) => {
       :class="`theme-${item.theme || 'default'}`"
       @click="handleClick(item, $event)"
       :target="item.openInNewTab ? '_blank' : '_self'"
+      @mouseenter="hoveredCard = `${index}-${index}`"
+      @mouseleave="hoveredCard = null"
     >
       <i class="fa-solid fa-arrow-right arrow-icon"></i>
       <div class="cat-header">
@@ -78,8 +87,31 @@ const handleClick = (item, event) => {
             alt="Hero Image"
           />
         </div>
-        <div class="icon-box" v-else>
-          <i :class="item.icon"></i>
+        <div v-else>
+          <!-- <i :class="item.icon"></i> -->
+          <div class="icon-box" v-if="item.icon || hasSwitchEffect(item)">
+            <!-- 修改：传入 active 属性 -->
+            <IconSwitcher
+              v-if="hasSwitchEffect(item)"
+              :default-class="item.icon"
+              :switch-classes="item.switchIcons"
+              :active="hoveredCard === `${index}-${index}`"
+            />
+
+            <i v-else :class="item.icon"></i>
+          </div>
+
+          <div v-else>
+            <img
+              v-if="item.logo"
+              :src="item.logo"
+              :alt="item.title"
+              class="card-icon"
+            />
+            <div v-else class="card-icon-placeholder">
+              {{ item.title[0] }}
+            </div>
+          </div>
         </div>
         <div class="cat-info">
           <h3>{{ item.title }}</h3>
@@ -132,8 +164,8 @@ const handleClick = (item, event) => {
 }
 
 .icon-box {
-  width: 56px;
-  height: 56px;
+  width: 80px;
+  height: 80px;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -143,6 +175,7 @@ const handleClick = (item, event) => {
   transition: transform 0.3s;
   background: var(--vp-c-default-soft);
   color: var(--vp-c-text-1);
+  overflow: hidden;
 }
 
 .cat-card:hover .icon-box {
@@ -198,26 +231,26 @@ const handleClick = (item, event) => {
 }
 
 /* 主题色适配 - 这里定义简单的颜色映射 */
-.theme-blue .icon-box {
+/* .theme-blue .icon-box {
   color: #3b82f6;
   background: #eff6ff;
-}
+} */
 .theme-blue:hover {
   border-top: 4px solid #3b82f6;
 }
 
-.theme-purple .icon-box {
+.icon-box {
   color: #8b5cf6;
-  background: #f5f3ff;
+  background: #ffffff;
 }
 .theme-purple:hover {
   border-top: 4px solid #8b5cf6;
 }
 
-.theme-orange .icon-box {
+/* .theme-orange .icon-box {
   color: #f59e0b;
   background: #fffbeb;
-}
+} */
 .theme-orange:hover {
   border-top: 4px solid #f59e0b;
 }
