@@ -32,4 +32,6 @@ coverage
 /playwright-report/
 /playwright/.cache/
 # Webkit with playwright creates a salt file
-salt
+salt.pnpm-store/
+node_modules/
+dist/

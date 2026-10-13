@@ -10,7 +10,7 @@ import { config } from '@/config';
 
 const toolStore = useToolStore();
 
-useHead({ title: 'IT Tools - Handy online tools for developers' });
+useHead({ title: 'AGI Code Hub - 免费在线开发者工具箱' });
 const { t } = useI18n();
 
 const favoriteTools = computed(() => toolStore.favoriteTools);

@@ -18,7 +18,7 @@ export const twitter: OGSchemaType = {
     {
       type: 'input',
       label: 'Site account',
-      placeholder: 'The name of the Twitter account of the site (ex: @ittoolsdottech)...',
+      placeholder: 'The name of the Twitter account of the site (ex: @agicodehub)...',
       key: 'twitter:site',
     },
     {

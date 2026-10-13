@@ -64,7 +64,7 @@ export const useCommandPaletteStore = defineStore('command-palette', () => {
     },
     {
       name: 'About',
-      description: 'Learn more about IT-Tools.',
+      description: 'Learn more about AGI Code Hub.',
       to: '/about',
       category: 'Pages',
       keywords: ['about', 'learn', 'more', 'info', 'information'],
