@@ -90,6 +90,19 @@ export default defineConfig({
           },
         ],
       },
+      workbox: {
+        // 站点是三层结构：/docs/ 与 /blog/ 由 VitePress 静态产物提供，
+        // 不能落进 SPA 的导航回退。否则装过 service worker 的浏览器
+        // 访问这两个路径时会被喂回 index.html（工具箱首页）。
+        // /static/ 与 /dve2/ 是静态工具页，同理。
+        navigateFallbackDenylist: [
+          /^\/docs(\/|$)/,
+          /^\/blog(\/|$)/,
+          /^\/static(\/|$)/,
+          /^\/dve2(\/|$)/,
+          /^\/api(\/|$)/,
+        ],
+      },
     }),
     Components({
       dirs: ['src/'],

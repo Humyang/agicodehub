@@ -1,3 +1,27 @@
-# SPA fallback: unmatched paths are handled by the Vue router.
-# Existing static assets (tools under /static, /dve2, /assets, icons) are served as-is.
-/*    /index.html    200
+# ─────────────────────────────────────────────────────────────────────
+# agicodehub.com 路由表
+#
+# 站点是三层结构，共用同一个 Cloudflare Pages 项目：
+#   /            工具箱 SPA（Vue 3 + Vite）
+#   /docs/       文档与产品导航（VitePress，base=/docs/）
+#   /blog/       博客（VitePress，base=/blog/）
+#
+# Pages 的判定顺序是：先找静态资源（含目录 index）→ 再套本文件 → 最后 404。
+# 所以下面第 3 条兜底只对"哪个文件都不存在"的请求生效。
+# 规则自上而下，第一条命中即止，顺序不能调。
+# ─────────────────────────────────────────────────────────────────────
+
+# ── 1. 旧 dve2 站点路径迁移（对齐 site/develop-log.md 的 301 规划）─────────
+/archives                                /blog/                   301
+/zh/                                     /docs/zh/                301
+/tools/nav.html                          /docs/                   301
+/tools/ffmpeg-script-tool/index.html     /ffmpeg-script-tool      301
+
+# ── 2. 子站 404 兜底 ─────────────────────────────────────────────────
+# 必须排在全局兜底之前，否则 /docs/ 下不存在的页面会被第 3 条改写成
+# SPA 首页（200 + 无关内容），对搜索引擎就是软 404。
+/docs/*                                  /docs/404.html           404
+/blog/*                                  /blog/404.html           404
+
+# ── 3. SPA 兜底：只接剩下的一切（工具箱自己的路由）─────────────────────
+/*                                       /index.html             200

@@ -31,12 +31,39 @@ else
 fi
 
 # 2. 构建（除非显式跳过）
+#
+# 三段构建，顺序不能变：
+#   a) vite build 会清空 dist/，必须第一个跑
+#   b) 文档站与博客是 VitePress 的两个独立实例，各自写入 dist/docs、dist/blog
+# 三者互不覆盖，最终由一次 wrangler 部署整体发布。
 if [ "${SKIP_BUILD:-0}" != "1" ]; then
-  echo "==> 构建生产包"
+  echo "==> 1/3 构建工具箱 SPA"
   NODE_OPTIONS=--max_old_space_size=4096 ./node_modules/.bin/vite build
+
+  if [ -d site/node_modules ]; then
+    SITE_RUN=(pnpm --dir site)
+  elif command -v pnpm >/dev/null 2>&1; then
+    echo "site/node_modules 不存在，先安装站点依赖"
+    pnpm --dir site install
+    SITE_RUN=(pnpm --dir site)
+  else
+    echo "未找到 pnpm，文档站与博客无法构建" >&2
+    exit 1
+  fi
+
+  export VITE_HOSTNAME="${VITE_HOSTNAME:-https://agicodehub.com}"
+
+  echo "==> 2/3 构建文档站 /docs/"
+  "${SITE_RUN[@]}" run build:docs
+
+  echo "==> 3/3 构建博客 /blog/"
+  "${SITE_RUN[@]}" run build:blog
 fi
 
-[ -f dist/index.html ] || { echo "dist/index.html 不存在，构建失败" >&2; exit 1; }
+# 三份产物都必须存在，缺一个就说明哪段构建断了
+for f in dist/index.html dist/docs/index.html dist/blog/index.html; do
+  [ -f "$f" ] || { echo "构建产物缺失：$f" >&2; exit 1; }
+done
 
 # 3. 授权：有 API Token 直接走；否则用设备码登录（无需 localhost 回调，代理环境下更可靠）
 if [ -n "${CLOUDFLARE_API_TOKEN:-}" ]; then

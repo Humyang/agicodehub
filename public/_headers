@@ -1,9 +1,31 @@
+# ── 工具箱 SPA ───────────────────────────────────────────────────────
+# Vite 产物带内容 hash，可长缓存
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
 
 /favicon.ico
   Cache-Control: public, max-age=86400
 
+# ── 文档站 / 博客（VitePress）────────────────────────────────────────
+# 同样是带 hash 的资源；html 必须短缓存，否则改完内容看不到
+/docs/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/blog/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/docs/*
+  Cache-Control: public, max-age=600
+
+/blog/*
+  Cache-Control: public, max-age=600
+
+# feed 让阅读器能拿到较新的内容
+/blog/feed.xml
+  Cache-Control: public, max-age=1800
+  Content-Type: application/rss+xml; charset=utf-8
+
+# ── 全局 ────────────────────────────────────────────────────────────
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
