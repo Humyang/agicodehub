@@ -1,0 +1,21 @@
+# 复制成 wrangler.toml 并填入真实 ID 后才会生效（当前不影响你的部署）。
+#   cp wrangler.toml.example wrangler.toml
+#
+# 作用：
+#   1) 给 `wrangler pages dev` 提供本地绑定，方便本地测试表单
+#   2) 让 `wrangler pages deploy` 按此文件声明线上绑定（wrangler 2.x+ 支持）
+
+name = "agicodehub"
+pages_build_output_dir = "dist"
+compatibility_date = "2025-01-01"
+
+# 主存储：D1（结构化、可 SQL 查询、可导出 CSV）
+[[d1_databases]]
+binding = "DB"
+database_name = "agicodehub-leads"
+database_id = "在这里填 wrangler d1 create 返回的 database_id"
+
+# 兜底存储 + 限流计数（只配 D1 也能用，但限流需要 KV）
+[[kv_namespaces]]
+binding = "LEADS"
+id = "在这里填 wrangler kv namespace create LEADS 返回的 id"

@@ -1,0 +1,31 @@
+# Cloudflare Pages 配置
+#
+# D1 绑定已填好真实 database_id，直接部署即可生效：
+#   ./scripts/deploy-cloudflare.sh
+#
+# 查看线上库：
+#   wrangler d1 execute agicodehub-leads --remote --command "SELECT * FROM leads ORDER BY created_at DESC LIMIT 10"
+
+name = "agicodehub"
+pages_build_output_dir = "dist"
+compatibility_date = "2025-01-01"
+
+# 主存储：D1（线索表 leads）
+[[d1_databases]]
+binding = "DB"
+database_name = "agicodehub-leads"
+database_id = "d966be66-154f-4d4b-94cc-55d9d0c98a19"
+
+# KV 是可选的，只在两种情况下需要：
+#   1) 没绑 D1 时作为兜底存储
+#   2) 想让限流计数器走 KV（现在限流默认走 D1，不需要 KV）
+#
+# 如果确实要用，先创建再取消注释（绑定的变量名必须是 LEADS）：
+#   wrangler kv namespace create LEADS
+#
+# [[kv_namespaces]]
+# binding = "LEADS"
+# id = "把上面命令返回的 id 填在这里"
+#
+# 注意：这里留空 id 或填错 id 会导致 `wrangler pages deploy` 直接失败，
+# 所以不用 KV 时请保持整段注释状态。

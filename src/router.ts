@@ -31,6 +31,12 @@ const router = createRouter({
       name: 'about',
       component: () => import('./pages/About.vue'),
     },
+    {
+      path: '/service',
+      name: 'service',
+      component: () => import('./pages/Service.page.vue'),
+      meta: { layout: layouts.landingLayout },
+    },
     ...toolsRoutes,
     ...toolsRedirectRoutes,
     ...(config.app.env === 'development' ? demoRoutes : []),
