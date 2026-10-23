@@ -1,0 +1,840 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>Icon Sprite Paginator</title>
+        <style>
+            :root { 
+                --bg: #1e1e1e; --card: #252526; --border: #333; --text: #cccccc; 
+                --accent: #007acc; --sel: #094771; --code-bg: #101010;
+                --card-min-width: 150px; 
+                --checker-bg: #FFFFFF;
+                --base-w: 272; --base-h: 284;
+                --scale-x: 1; --scale-y: 1;
+            }
+            body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; padding: 0; margin: 0; height: 100vh; overflow: hidden; display: flex; }
+            ::-webkit-scrollbar { width: 8px; height: 8px; }
+            ::-webkit-scrollbar-track { background: var(--bg); }
+            ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+            
+            .sidebar { width: 450px; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100%; z-index: 10; box-shadow: 2px 0 10px rgba(0,0,0,0.3); overflow: hidden; }
+            .sidebar-scroll { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+            .sidebar-footer { flex-shrink: 0; background: var(--card); border-top: 1px solid var(--border); padding: 15px; z-index: 20; }
+
+            .main { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+            .panel { padding: 15px; border-bottom: 1px solid var(--border); }
+            .panel-title { font-size: 12px; font-weight: bold; color: #888; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+            .input-group { margin-bottom: 10px; }
+            .input-group label { display: block; font-size: 12px; margin-bottom: 4px; color: #aaa; }
+            .row { display: flex; gap: 8px; align-items: center; }
+            input[type="text"], input[type="number"], select { background: #3c3c3c; border: 1px solid #3c3c3c; color: white; padding: 6px; border-radius: 2px; width: 100%; box-sizing: border-box; font-family: inherit; font-size: 13px; }
+            input:focus, select:focus { border-color: var(--accent); outline: none; }
+            input[type="color"] { -webkit-appearance: none; border: none; width: 30px; height: 30px; padding: 0; background: none; cursor: pointer; }
+            button { background: #333; color: white; border: 1px solid transparent; padding: 6px 12px; border-radius: 2px; cursor: pointer; font-size: 12px; transition: 0.2s; }
+            button:hover { background: #444; }
+            button.primary { background: var(--accent); }
+            button:disabled { opacity: 0.5; cursor: not-allowed; }
+            textarea { width: 100%; height: 80px; background: var(--code-bg); color: #9cdcfe; border: 1px solid var(--border); padding: 8px; font-family: 'Consolas', monospace; font-size: 11px; resize: none; box-sizing: border-box; }
+            .preview-scroll { flex: 1; overflow-y: auto; padding: 20px; background: #1e1e1e; }
+            .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr)); gap: 15px; }
+            .card { background: #2d2d2d; border-radius: 4px; padding: 8px; text-align: center; cursor: pointer; border: 1px solid transparent; transition: 0.1s; position: relative; }
+            .card:hover { background: #383838; }
+            .card.selected { background: var(--sel); border-color: var(--accent); }
+            .card.hidden { display: none !important; }
+            
+            /* 下载按钮样式 */
+            .btn-dl {
+                position: absolute; top: 4px; right: 4px;
+                width: 20px; height: 20px;
+                background: rgba(0,0,0,0.5); border-radius: 3px;
+                color: #fff; display: none; align-items: center; justify-content: center;
+                font-size: 12px; transition: 0.2s; z-index: 5;
+            }
+            .btn-dl:hover { background: var(--accent); }
+            .card:hover .btn-dl { display: flex; }
+
+            .checker { background-color: var(--checker-bg); border-radius: 2px; display: inline-block; padding: 10px; margin-bottom: 5px; display: inline-flex; align-items: center; justify-content: center; }
+            .label { font-size: 10px; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top:5px; }
+            .icon-preview {
+                display: inline-block;
+                background-repeat: no-repeat;
+                width: calc(var(--real-w) * var(--scale-x) * 1px);
+                height: calc(var(--real-h) * var(--scale-y) * 1px);
+                background-size: calc(var(--sp-w) * var(--scale-x) * 1px) calc(var(--sp-h) * var(--scale-y) * 1px);
+                background-position: calc(var(--pos-x) * -1px * var(--scale-x)) calc(var(--pos-y) * -1px * var(--scale-y));
+            }
+            .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 5px; gap: 2px; }
+            .tab { padding: 5px 8px; font-size: 11px; cursor: pointer; color: #888; border-bottom: 2px solid transparent; }
+            .tab:hover { color: #bbb; }
+            .tab.active { color: white; border-color: var(--accent); }
+            .code-block { display: none; background: var(--code-bg); padding: 10px; border-radius: 4px; font-family: 'Consolas', monospace; font-size: 11px; color: #ce9178; overflow-x: auto; white-space: pre; border: 1px solid var(--border); height: 200px; overflow-y: auto; }
+            .code-block.active { display: block; }
+            .tag { color: #569cd6; } .attr { color: #9cdcfe; } .val { color: #ce9178; } .comment { color: #6a9955; } .str { color: #ce9178; } .kwd { color: #c586c0; } .cls { color: #4ec9b0; }
+            
+            .drop-zone {
+                border: 2px dashed #444;
+                border-radius: 6px;
+                padding: 20px 10px;
+                text-align: center;
+                color: #888;
+                font-size: 12px;
+                cursor: pointer;
+                transition: all 0.2s;
+                position: relative;
+                background: #222;
+            }
+            .drop-zone:hover, .drop-zone.dragover {
+                border-color: var(--accent);
+                background: #2a2a2a;
+                color: #fff;
+            }
+            .drop-zone input[type=file] {
+                position: absolute;
+                top: 0; left: 0; width: 100%; height: 100%;
+                opacity: 0;
+                cursor: pointer;
+            }
+            .drop-icon { font-size: 24px; margin-bottom: 5px; display: block; opacity: 0.5; }
+
+            .toolbar {
+                padding: 10px 20px;
+                background: #252526;
+                border-bottom: 1px solid var(--border);
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+            .toolbar input, .toolbar select { width: auto; min-width: 150px; }
+            .filter-stats { font-size: 11px; color: #666; margin-left: auto; }
+        </style>
+    <script src="/script/legacy-i18n.js" defer></script></head>
+    <body>
+        <div class="sidebar">
+            <div class="sidebar-scroll">
+                <div class="panel">
+                    <div class="panel-title">Import / Restore</div>
+                    <div class="drop-zone" id="dropZone">
+                        <span class="drop-icon">📂</span>
+                        <span>Drag & Drop CSS here<br>or Click to Upload</span>
+                        <input type="file" id="cssUpload" accept=".css" onchange="handleCssUpload(this.files[0])" />
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">Naming Settings</div>
+                    <div class="input-group">
+                        <label>Base Class Name</label>
+                        <input type="text" id="spriteClass" value="sprite-icon" placeholder="e.g.: icon">
+                    </div>
+                    <div class="input-group">
+                        <label>Item Class Prefix</label>
+                        <input type="text" id="classPrefix" value="icon" placeholder="e.g.: ico">
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">Visual Settings</div>
+                    <div class="input-group">
+                        <label>CSS Display Size</label>
+                        <div class="row">
+                            <input type="number" id="inputW" value="80">
+                            <span style="color:#FFFFFF">x</span>
+                            <input type="number" id="inputH" value="284">
+                        </div>
+                        <div style="margin-top:5px; font-size:11px; color:#aaa;">
+                            <input type="checkbox" id="lockRatio" checked> Lock Aspect Ratio
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Preview Background (Exports use this)</label>
+                        <input type="color" id="checkerColor" value="#ffffff" oninput="updateVisuals()">
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">Export Options</div>
+                    <div class="input-group">
+                        <label>Image Format</label>
+                        <select id="exportFormat">
+                            <option value="webp">WebP (Smaller size)</option>
+                            <option value="png">PNG (Better compatibility)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-title">
+                        <span>CSS / Usage Code</span>
+                        <button onclick="copyCSS()" style="padding:2px 6px; font-size:10px;">Copy CSS</button>
+                    </div>
+                    <textarea id="cssOutput" spellcheck="false"></textarea>
+                    
+                    <div class="tabs" style="margin-top:10px">
+                        <div class="tab active" onclick="switchTab('guide')">Guide</div>
+                        <div class="tab" onclick="switchTab('html')">HTML</div>
+                        <div class="tab" onclick="switchTab('vue')">Vue</div>
+                        <div class="tab" onclick="switchTab('react')">React/Next</div>
+                    </div>
+                    
+                    <div id="code-guide" class="code-block active"></div>
+                    <div id="code-html" class="code-block"></div>
+                    <div id="code-vue" class="code-block"></div>
+                    <div id="code-react" class="code-block"></div>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="row" style="gap:5px;">
+                    <button onclick="selectAll(true)" style="font-size:10px; flex:1">Select All</button>
+                    <button onclick="selectAll(false)" style="font-size:10px; flex:1">Clear</button>
+                </div>
+                <button class="primary" id="btnExport" style="width:100%; margin-top:5px;" onclick="exportSelected()" disabled>
+                    Export Selected
+                </button>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="toolbar">
+                <div style="flex:1">
+                    <input type="text" id="filterInput" placeholder="Filter by name..." oninput="applyFilters()">
+                </div>
+                <div>
+                    <select id="filterStatus" onchange="applyFilters()">
+                        <option value="all">Show All Status</option>
+                        <option value="selected">Selected Only</option>
+                        <option value="unselected">Unselected Only</option>
+                    </select>
+                </div>
+                <div class="filter-stats" id="filterStats"></div>
+            </div>
+            
+            <div class="preview-scroll">
+                <div class="grid" id="grid"></div>
+            </div>
+        </div>
+        <canvas id="exportCanvas" style="display:none"></canvas>
+        <script>
+            const rawData = [{"file": "icon_1.png", "x": 0, "y": 0, "width": 240, "height": 255, "index": 1, "customName": "search", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_2.png", "x": 272, "y": 0, "width": 243, "height": 249, "index": 2, "customName": "home", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_3.png", "x": 544, "y": 0, "width": 245, "height": 263, "index": 3, "customName": "account-circle", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_4.png", "x": 816, "y": 0, "width": 228, "height": 257, "index": 4, "customName": "settings", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_5.png", "x": 1088, "y": 0, "width": 231, "height": 198, "index": 5, "customName": "done", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_6.png", "x": 1360, "y": 0, "width": 251, "height": 268, "index": 6, "customName": "info", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_7.png", "x": 1632, "y": 0, "width": 250, "height": 266, "index": 7, "customName": "check-circle", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_8.png", "x": 1904, "y": 0, "width": 198, "height": 259, "index": 8, "customName": "delete", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_9.png", "x": 2176, "y": 0, "width": 272, "height": 204, "index": 9, "customName": "visibility", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_10.png", "x": 2448, "y": 0, "width": 239, "height": 260, "index": 10, "customName": "shopping-cart", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_11.png", "x": 0, "y": 284, "width": 240, "height": 233, "index": 11, "customName": "favorite", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_12.png", "x": 272, "y": 284, "width": 198, "height": 266, "index": 12, "customName": "description", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_13.png", "x": 544, "y": 284, "width": 241, "height": 248, "index": 13, "customName": "logout", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_14.png", "x": 816, "y": 284, "width": 244, "height": 231, "index": 14, "customName": "favorite-border", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_15.png", "x": 1088, "y": 284, "width": 192, "height": 268, "index": 15, "customName": "lock", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_16.png", "x": 1360, "y": 284, "width": 248, "height": 260, "index": 16, "customName": "schedule", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_17.png", "x": 1632, "y": 284, "width": 252, "height": 270, "index": 17, "customName": "language", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_18.png", "x": 1904, "y": 284, "width": 246, "height": 267, "index": 18, "customName": "help-outline", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_19.png", "x": 2176, "y": 284, "width": 251, "height": 263, "index": 19, "customName": "verified", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_20.png", "x": 2448, "y": 284, "width": 247, "height": 268, "index": 20, "customName": "face", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_21.png", "x": 0, "y": 568, "width": 246, "height": 234, "index": 21, "customName": "manage-accounts", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_22.png", "x": 272, "y": 568, "width": 266, "height": 265, "index": 22, "customName": "thumb-up", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_23.png", "x": 544, "y": 568, "width": 215, "height": 239, "index": 23, "customName": "filter-alt", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_24.png", "x": 816, "y": 568, "width": 241, "height": 262, "index": 24, "customName": "dashboard", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_25.png", "x": 1088, "y": 568, "width": 222, "height": 262, "index": 25, "customName": "event", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_26.png", "x": 1360, "y": 568, "width": 221, "height": 252, "index": 26, "customName": "fingerprint", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_27.png", "x": 1632, "y": 568, "width": 239, "height": 188, "index": 27, "customName": "list", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_28.png", "x": 1904, "y": 568, "width": 242, "height": 264, "index": 28, "customName": "check-circle-outline", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_29.png", "x": 2176, "y": 568, "width": 256, "height": 219, "index": 29, "customName": "visibility-off", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_30.png", "x": 2448, "y": 568, "width": 238, "height": 241, "index": 30, "customName": "login", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_31.png", "x": 0, "y": 0, "width": 222, "height": 264, "index": 31, "customName": "calendar-today", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_32.png", "x": 272, "y": 0, "width": 244, "height": 265, "index": 32, "customName": "highlight-off", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_33.png", "x": 544, "y": 0, "width": 248, "height": 265, "index": 33, "customName": "help", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_34.png", "x": 816, "y": 0, "width": 246, "height": 265, "index": 34, "customName": "paid", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_35.png", "x": 1088, "y": 0, "width": 244, "height": 264, "index": 35, "customName": "task-alt", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_36.png", "x": 1360, "y": 0, "width": 254, "height": 250, "index": 36, "customName": "question-answer", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_37.png", "x": 1632, "y": 0, "width": 212, "height": 259, "index": 37, "customName": "article", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_38.png", "x": 1904, "y": 0, "width": 226, "height": 264, "index": 38, "customName": "date-range", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_39.png", "x": 2176, "y": 0, "width": 239, "height": 258, "index": 39, "customName": "open-in-new", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_40.png", "x": 2448, "y": 0, "width": 208, "height": 273, "index": 40, "customName": "shopping-bag", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_41.png", "x": 0, "y": 284, "width": 174, "height": 264, "index": 41, "customName": "lightbulb", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_42.png", "x": 272, "y": 284, "width": 252, "height": 221, "index": 42, "customName": "credit-card", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_43.png", "x": 544, "y": 284, "width": 245, "height": 241, "index": 43, "customName": "history", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_44.png", "x": 816, "y": 284, "width": 209, "height": 240, "index": 44, "customName": "perm-identity", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_45.png", "x": 1088, "y": 284, "width": 250, "height": 179, "index": 45, "customName": "trending-up", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_46.png", "x": 1360, "y": 284, "width": 239, "height": 266, "index": 46, "customName": "account-balance", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_47.png", "x": 1632, "y": 284, "width": 203, "height": 268, "index": 47, "customName": "delete-outline", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_48.png", "x": 1904, "y": 284, "width": 225, "height": 273, "index": 48, "customName": "verified-user", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_49.png", "x": 2176, "y": 284, "width": 251, "height": 244, "index": 49, "customName": "fact-check", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_50.png", "x": 2448, "y": 284, "width": 211, "height": 284, "index": 50, "customName": "assignment", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_51.png", "x": 0, "y": 568, "width": 259, "height": 262, "index": 51, "customName": "report-problem", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_52.png", "x": 272, "y": 568, "width": 241, "height": 248, "index": 52, "customName": "star-rate", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_53.png", "x": 544, "y": 568, "width": 223, "height": 261, "index": 53, "customName": "calendar-month", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_54.png", "x": 816, "y": 568, "width": 208, "height": 152, "index": 54, "customName": "arrow-right-alt", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_55.png", "x": 1088, "y": 568, "width": 246, "height": 243, "index": 55, "customName": "account-balance-wallet", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_56.png", "x": 1360, "y": 568, "width": 190, "height": 253, "index": 56, "customName": "autorenew", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_57.png", "x": 1632, "y": 568, "width": 253, "height": 276, "index": 57, "customName": "build", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_58.png", "x": 1904, "y": 568, "width": 245, "height": 211, "index": 58, "customName": "view-list", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_59.png", "x": 2176, "y": 568, "width": 239, "height": 242, "index": 59, "customName": "store", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_60.png", "x": 2448, "y": 568, "width": 251, "height": 253, "index": 60, "customName": "print", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_61.png", "x": 0, "y": 0, "width": 269, "height": 261, "index": 61, "customName": "work", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_62.png", "x": 272, "y": 0, "width": 234, "height": 247, "index": 62, "customName": "analytics", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_63.png", "x": 544, "y": 0, "width": 203, "height": 263, "index": 63, "customName": "delete-forever", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_64.png", "x": 816, "y": 0, "width": 225, "height": 263, "index": 64, "customName": "today", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_65.png", "x": 1088, "y": 0, "width": 248, "height": 267, "index": 65, "customName": "admin-panel-settings", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_66.png", "x": 1360, "y": 0, "width": 198, "height": 279, "index": 66, "customName": "lock-open", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_67.png", "x": 1632, "y": 0, "width": 243, "height": 261, "index": 67, "customName": "watch-later", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_68.png", "x": 1904, "y": 0, "width": 242, "height": 245, "index": 68, "customName": "grade", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_69.png", "x": 2176, "y": 0, "width": 213, "height": 227, "index": 69, "customName": "update", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_70.png", "x": 2448, "y": 0, "width": 260, "height": 261, "index": 70, "customName": "savings", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_71.png", "x": 0, "y": 284, "width": 97, "height": 166, "index": 71, "customName": "code", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_72.png", "x": 272, "y": 284, "width": 97, "height": 157, "index": 72, "customName": "room", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_73.png", "x": 544, "y": 284, "width": 182, "height": 260, "index": 73, "customName": "add-shopping-cart", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_74.png", "x": 816, "y": 284, "width": 247, "height": 274, "index": 74, "customName": "contact-support", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_75.png", "x": 1088, "y": 284, "width": 232, "height": 278, "index": 75, "customName": "receipt", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_76.png", "x": 1360, "y": 284, "width": 236, "height": 260, "index": 76, "customName": "power-settings-new", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_77.png", "x": 1632, "y": 284, "width": 234, "height": 249, "index": 77, "customName": "done-all", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_78.png", "x": 1904, "y": 284, "width": 220, "height": 187, "index": 78, "customName": "pets", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_79.png", "x": 2176, "y": 284, "width": 249, "height": 263, "index": 79, "customName": "explore", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_80.png", "x": 2448, "y": 284, "width": 242, "height": 264, "index": 80, "customName": "bookmark", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_81.png", "x": 0, "y": 568, "width": 183, "height": 243, "index": 81, "customName": "account-box", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_82.png", "x": 272, "y": 568, "width": 230, "height": 250, "index": 82, "customName": "note-add", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_83.png", "x": 544, "y": 568, "width": 204, "height": 275, "index": 83, "customName": "pending-actions", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_84.png", "x": 816, "y": 568, "width": 222, "height": 278, "index": 84, "customName": "reorder", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_85.png", "x": 1088, "y": 568, "width": 224, "height": 202, "index": 85, "customName": "bookmark-border", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}];
+            const spriteFiles = ["sprite_sheet_0.webp", "sprite_sheet_1.webp", "sprite_sheet_2.webp"]; 
+            const spriteDims = {"sprite_sheet_0.webp": {"w": 2720, "h": 852}, "sprite_sheet_1.webp": {"w": 2720, "h": 852}, "sprite_sheet_2.webp": {"w": 2720, "h": 852}};
+            const origW = 272;
+            const origH = 284;
+            
+            let selectedIndices = new Set();
+            let currentPrefix = 'icon';
+            let currentSpriteClass = 'sprite-icon';
+            let currentScaleX = 1;
+            let currentScaleY = 1;
+            
+            const els = {
+                prefix: document.getElementById('classPrefix'),
+                spriteClass: document.getElementById('spriteClass'),
+                w: document.getElementById('inputW'),
+                h: document.getElementById('inputH'),
+                lock: document.getElementById('lockRatio'),
+                grid: document.getElementById('grid'),
+                cssOut: document.getElementById('cssOutput'),
+                btnExport: document.getElementById('btnExport'),
+                canvas: document.getElementById('exportCanvas'),
+                format: document.getElementById('exportFormat'),
+                checkerCol: document.getElementById('checkerColor'),
+                dropZone: document.getElementById('dropZone'),
+                filterInput: document.getElementById('filterInput'),
+                filterStatus: document.getElementById('filterStatus'),
+                filterStats: document.getElementById('filterStats'),
+                codeBlocks: { 
+                    guide: document.getElementById('code-guide'),
+                    html: document.getElementById('code-html'), 
+                    vue: document.getElementById('code-vue'),
+                    react: document.getElementById('code-react')
+                },
+                root: document.documentElement
+            };
+
+            function debounce(func, wait) {
+                let timeout;
+                return function(...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), wait);
+                };
+            }
+
+            function getSafeBaseName() {
+                return currentSpriteClass.replace(/[^a-z0-9\-_]/gi, '_') || 'sprite';
+            }
+
+            function init() {
+                let html = '';
+                rawData.forEach((item, idx) => {
+                    const isDefaultSelected = idx < 10;
+                    if (isDefaultSelected) selectedIndices.add(idx); 
+                    
+                    const offsetX = Math.floor((origW - item.width) / 2);
+                    const offsetY = Math.floor((origH - item.height) / 2);
+                    const posX = item.x + offsetX;
+                    const posY = item.y + offsetY;
+                    const dim = spriteDims[item.spriteFile] || {w: 100, h: 100};
+                    const coreName = item.customName || `${item.index}`;
+                    const displayName = currentPrefix ? `${currentPrefix}-${coreName}` : coreName;
+                    
+                    // 按钮点击时阻止冒泡，避免触发选中逻辑
+                    html += `
+                        <div class="card ${isDefaultSelected ? 'selected' : ''}" id="card-${idx}" onclick="toggle(${idx})">
+                            <div class="btn-dl" onclick="event.stopPropagation(); downloadSingleIcon(${idx})" title="Download Single Image">⬇</div>
+                            <div class="checker">
+                                <i class="icon-preview" 
+                                   style="background-image: url('${item.spriteFile}'); 
+                                          --sp-w: ${dim.w}; 
+                                          --sp-h: ${dim.h};
+                                          --real-w: ${item.width}; 
+                                          --real-h: ${item.height}; 
+                                          --pos-x: ${posX}; 
+                                          --pos-y: ${posY}"></i>
+                            </div>
+                            <div class="label" id="label-${idx}">.${displayName}</div>
+                        </div>`;
+                });
+                els.grid.innerHTML = html;
+                
+                setupDragDrop();
+                
+                els.prefix.addEventListener('input', (e) => { 
+                    currentPrefix = e.target.value.trim(); 
+                    updateLabelsDebounced(); 
+                    updateCodeDebounced(); 
+                    setTimeout(applyFilters, 350); 
+                });
+
+                els.spriteClass.addEventListener('input', (e) => { currentSpriteClass = e.target.value.trim() || 'sprite-icon'; updateCodeDebounced(); });
+                els.w.addEventListener('input', updateSize);
+                els.h.addEventListener('input', updateSize);
+                updateSelectionUI(); updateCodeDebounced();
+                applyFilters(); 
+                els.w.value = 80;
+                els.w.focus();
+                updateSize();
+            }
+
+            // --- 新增: 单图下载 (带背景，消除黑边) ---
+            window.downloadSingleIcon = async function(idx) {
+                const item = rawData[idx];
+                if(!item) return;
+
+                const coreName = item.customName || `${item.index}`;
+                const fileName = currentPrefix ? `${currentPrefix}-${coreName}.png` : `${coreName}.png`;
+                
+                try {
+                    const img = await loadImage(item.spriteFile);
+                    const canvas = document.createElement('canvas');
+                    canvas.width = item.width;
+                    canvas.height = item.height;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // 1. 获取当前预览设置的背景色 (关键步骤：解决透明图在黑色背景下看有黑边的问题)
+                    // 如果用户没有改动，默认使用白色 #ffffff，确保导出图看起来是干净的
+                    const bgColor = els.checkerCol.value || '#ffffff';
+                    
+                    // 2. 填充背景
+                    ctx.fillStyle = bgColor;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // 3. 计算图标在雪碧图中的偏移位置
+                    const offsetX = Math.floor((origW - item.width) / 2);
+                    const offsetY = Math.floor((origH - item.height) / 2);
+                    const sourceX = item.x + offsetX;
+                    const sourceY = item.y + offsetY;
+                    
+                    // 4. 绘制图标 (Canvas 默认 Source-Over 混合，会自动混合半透明边缘与背景色)
+                    ctx.drawImage(img, sourceX, sourceY, item.width, item.height, 0, 0, item.width, item.height);
+                    
+                    canvas.toBlob(blob => {
+                        downloadBlob(blob, fileName);
+                    }, 'image/png');
+                    
+                } catch(e) {
+                    console.error("Download failed:", e);
+                    alert("Error downloading image.");
+                }
+            }
+
+            window.applyFilters = function() {
+                const searchText = els.filterInput.value.toLowerCase();
+                const statusMode = els.filterStatus.value;
+                let visibleCount = 0;
+
+                rawData.forEach((item, idx) => {
+                    const card = document.getElementById(`card-${idx}`);
+                    if (!card) return;
+
+                    const coreName = item.customName || `${item.index}`;
+                    const finalName = currentPrefix ? `${currentPrefix}-${coreName}` : coreName;
+                    const nameMatch = finalName.toLowerCase().includes(searchText);
+                    const isSelected = selectedIndices.has(idx);
+                    let statusMatch = true;
+                    if (statusMode === 'selected' && !isSelected) statusMatch = false;
+                    if (statusMode === 'unselected' && isSelected) statusMatch = false;
+
+                    if (nameMatch && statusMatch) {
+                        card.classList.remove('hidden');
+                        visibleCount++;
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+
+                els.filterStats.innerText = `Showing ${visibleCount} / ${rawData.length}`;
+            }
+
+            function setupDragDrop() {
+                const dz = els.dropZone;
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    dz.addEventListener(eventName, preventDefaults, false);
+                });
+                function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+                
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    dz.addEventListener(eventName, () => dz.classList.add('dragover'), false);
+                });
+                ['dragleave', 'drop'].forEach(eventName => {
+                    dz.addEventListener(eventName, () => dz.classList.remove('dragover'), false);
+                });
+                
+                dz.addEventListener('drop', (e) => {
+                    const dt = e.dataTransfer;
+                    const file = dt.files[0];
+                    handleCssUpload(file);
+                }, false);
+            }
+
+            window.updateVisuals = function() { const c = els.checkerCol.value; els.root.style.setProperty('--checker-bg', c); }
+            
+            function updateSize() {
+                let tW = parseInt(els.w.value) || 0;
+                let tH = parseInt(els.h.value) || 0;
+                if (els.lock.checked && document.activeElement === els.w) { tH = Math.round(tW * (origH / origW)); els.h.value = tH; } 
+                else if (els.lock.checked && document.activeElement === els.h) { tW = Math.round(tH * (origW / origH)); els.w.value = tW; }
+                if (tW <= 0 || tH <= 0) return;
+                currentScaleX = tW / origW; currentScaleY = tH / origH;
+                els.root.style.setProperty('--scale-x', currentScaleX); els.root.style.setProperty('--scale-y', currentScaleY);
+                updateCodeDebounced(); 
+            }
+            
+            window.handleCssUpload = function(file) {
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const cssContent = e.target.result;
+                    const classRegex = /\.([a-zA-Z0-9\-_]+)/g;
+                    const foundClasses = new Set();
+                    let match;
+                    while ((match = classRegex.exec(cssContent)) !== null) {
+                        foundClasses.add(match[1]);
+                    }
+                    
+                    if (foundClasses.size === 0) {
+                        alert("No classes found in CSS file.");
+                        return;
+                    }
+
+                    const bgRegex = /\.([a-zA-Z0-9\-_]+)\s*\{[\s\S]*?background-image/i;
+                    const bgMatch = cssContent.match(bgRegex);
+                    let detectedBaseClass = null;
+                    if (bgMatch) {
+                        detectedBaseClass = bgMatch[1];
+                        currentSpriteClass = detectedBaseClass;
+                        els.spriteClass.value = detectedBaseClass;
+                    }
+
+                    const prefixVotes = {};
+                    let detectedPrefix = null;
+
+                    rawData.forEach(item => {
+                        const coreName = item.customName || `${item.index}`;
+                        for (let cls of foundClasses) {
+                            if (cls === detectedBaseClass) continue;
+                            
+                            let candidate = null;
+                            if (cls === coreName) {
+                                candidate = '';
+                            } else if (cls.endsWith('-' + coreName)) {
+                                candidate = cls.substring(0, cls.length - coreName.length - 1);
+                            }
+
+                            if (candidate !== null) {
+                                prefixVotes[candidate] = (prefixVotes[candidate] || 0) + 1;
+                            }
+                        }
+                    });
+
+                    const sortedVotes = Object.entries(prefixVotes).sort((a, b) => b[1] - a[1]);
+                    
+                    if (sortedVotes.length > 0) {
+                        detectedPrefix = sortedVotes[0][0]; 
+                        currentPrefix = detectedPrefix;
+                        els.prefix.value = detectedPrefix;
+                    }
+
+                    let addedCount = 0;
+                    rawData.forEach((item, idx) => {
+                        const coreName = item.customName || `${item.index}`;
+                        const expectedName = currentPrefix ? `${currentPrefix}-${coreName}` : coreName;
+                        if (foundClasses.has(expectedName)) {
+                            if (!selectedIndices.has(idx)) {
+                                selectedIndices.add(idx);
+                                addedCount++;
+                            }
+                        }
+                    });
+
+                    updateLabelsDebounced(); 
+                    
+                    rawData.forEach((_, idx) => {
+                        const card = document.getElementById(`card-${idx}`);
+                        if (selectedIndices.has(idx)) {
+                            card.classList.add('selected');
+                        } else {
+                            card.classList.remove('selected');
+                        }
+                    });
+
+                    updateSelectionUI();
+                    updateCodeDebounced();
+                    applyFilters(); 
+                    
+                    let msg = `Parsed complete!
+`;
+                    if(detectedBaseClass) msg += `Base Class: .${detectedBaseClass}
+`;
+                    if(detectedPrefix !== null) msg += `Prefix: "${detectedPrefix}"
+`;
+                    msg += `Added ${addedCount} new icons.`;
+                    
+                    alert(msg);
+                    document.getElementById('cssUpload').value = ''; 
+                };
+                reader.readAsText(file);
+            }
+
+            const updateLabelsDebounced = debounce(() => {
+                rawData.forEach((item, idx) => {
+                    const label = document.getElementById(`label-${idx}`);
+                    const coreName = item.customName || `${item.index}`;
+                    const finalName = currentPrefix ? `${currentPrefix}-${coreName}` : coreName;
+                    if(label) label.innerText = `.${finalName}`;
+                });
+            }, 300);
+
+            const updateCodeDebounced = debounce(() => {
+                const ext = els.format.value; 
+                const baseName = getSafeBaseName();
+                
+                let displayCSS = `/* ${baseName}.css */
+`;
+                displayCSS += `.${currentSpriteClass} { display: inline-block; background-repeat: no-repeat; }
+
+`;
+                
+                const selectedItems = [];
+                rawData.forEach((item, idx) => {
+                    if (selectedIndices.has(idx)) {
+                        selectedItems.push(item);
+                        const coreName = item.customName || `${item.index}`;
+                        const name = currentPrefix ? `${currentPrefix}-${coreName}` : coreName;
+                        const realW = Math.round(item.width * currentScaleX);
+                        const realH = Math.round(item.height * currentScaleY);
+                        
+                        displayCSS += `.${name} { 
+  width: ${realW}px; height: ${realH}px; 
+  background-image: url('${baseName}.${ext}');
+  background-position: ...; 
+}
+`;
+                    }
+                });
+                
+                els.cssOut.value = `/* Click "Export Selected" to generate full CSS. Images keep original size; CSS handles scaling */
+` + displayCSS;
+                updateUsageExamples(selectedItems, baseName, ext);
+            }, 400);
+
+            els.format.addEventListener('change', updateCodeDebounced);
+
+            function updateUsageExamples(selectedItems, baseName, ext) {
+                const getCls = (item) => {
+                    const core = item.customName || item.index;
+                    return currentPrefix ? `${currentPrefix}-${core}` : core;
+                };
+                
+                const demoItems = selectedItems.slice(0, 3);
+                const classList = demoItems.map(getCls);
+                const jsArrayStr = `[${classList.map(c => `'${c}'`).join(', ')}...]`;
+                
+                const _tag = (c) => `<span class="tag">${c}</span>`;
+                const _attr = (c) => `<span class="attr">${c}</span>`;
+                const _val = (c) => `<span class="val">"${c}"</span>`;
+                const _com = (c) => `<span class="comment">${c}</span>`;
+                const _kwd = (c) => `<span class="kwd">${c}</span>`;
+                const _str = (c) => `<span class="str">"${c}"</span>`;
+
+                const cssFile = `${baseName}.css`;
+                const imgFile = `${baseName}.${ext}`;
+                const baseCls = currentSpriteClass;
+                
+                let guideHtml = `<h4>1. File Placement</h4>`;
+                guideHtml += `<p>Place the exported <code>${cssFile}</code> and <code>${imgFile}</code> into your project's static asset directory (e.g., <code>public/</code> or <code>assets/</code>).</p>`;
+                
+                guideHtml += `<h4>2. Import CSS</h4>`;
+                guideHtml += `<p><strong>Native HTML:</strong><br>${_tag('&lt;link')} ${_attr('rel')}=${_val('stylesheet')} ${_attr('href')}=${_val('./' + cssFile)} ${_tag('/&gt;')}</p>`;
+                guideHtml += `<p><strong>Vue / React / Next.js:</strong><br>${_kwd('import')} ${_str('./' + cssFile)}; <span class="comment">// In entry file (main.js / _app.js)</span></p>`;
+                guideHtml += `<p><strong>VitePress:</strong><br>Import CSS in <code>.vitepress/theme/index.js</code>.</p>`;
+                
+                guideHtml += `<h4>3. Usage</h4>`;
+                guideHtml += `<p>Combine <strong>Base Class</strong> + <strong>Icon Class</strong> on the tag.</p>`;
+                guideHtml += `<p>Example: <code>&lt;i class="${baseCls} ${currentPrefix}-xxx"&gt;&lt;/i&gt;</code></p>`;
+                
+                els.codeBlocks.guide.innerHTML = guideHtml;
+
+                els.codeBlocks.vue.innerHTML = `${_com('// Vue 3 Component')}
+${_tag('&lt;script setup&gt;')}
+${_kwd('import')} ${_str('./' + cssFile)}
+${_kwd('const')} icons = ${jsArrayStr};
+${_tag('&lt;/script&gt;')}
+
+${_tag('&lt;template&gt;')}
+  ${_tag('&lt;i')} ${_attr('v-for')}=${_val('icon in icons')} ${_attr(':class')}=${_val(`['${baseCls}', icon]`)} ${_tag('/&gt;')}
+${_tag('&lt;/template&gt;')}`;
+
+                let htmlStr = `${_com('<!-- Import Style -->')}
+${_tag('&lt;link')} ${_attr('rel')}=${_val('stylesheet')} ${_attr('href')}=${_val(cssFile)} ${_tag('/&gt;')}
+
+${_com('<!-- Use Icons -->')}
+`; 
+                classList.forEach(cls => { htmlStr += `${_tag('&lt;i')} ${_attr('class')}=${_val(`${baseCls} ${cls}`)}${_tag('&gt;&lt;/i&gt;')}
+`; });
+                els.codeBlocks.html.innerHTML = htmlStr;
+
+                els.codeBlocks.react.innerHTML = `${_com('// Next.js / React (tsx)')}
+${_com('// 1. Import style in layout.tsx or _app.js: import "./' + cssFile + '";')}
+
+${_kwd('export')} ${_kwd('default')} ${_kwd('function')} ${_tag('IconList')}() {
+  ${_kwd('const')} icons = ${jsArrayStr};
+  ${_kwd('return')} (
+    ${_tag('&lt;div&gt;')}
+      {icons.map(icon => (
+        ${_tag('&lt;i')} ${_attr('key')}={icon} ${_attr('className')}={${_str(`${baseCls} `)} + icon} ${_tag('/&gt;')}
+      ))}
+    ${_tag('&lt;/div&gt;')}
+  );
+}`;
+            }
+
+            window.toggle = function(idx) {
+                const card = document.getElementById(`card-${idx}`);
+                if (selectedIndices.has(idx)) { selectedIndices.delete(idx); card.classList.remove('selected'); } 
+                else { selectedIndices.add(idx); card.classList.add('selected'); }
+                updateSelectionUI(); 
+                updateCodeDebounced();
+                if(els.filterStatus.value !== 'all') applyFilters(); 
+            };
+
+            window.selectAll = function(state) {
+                rawData.forEach((_, idx) => {
+                    const card = document.getElementById(`card-${idx}`);
+                    if (state) { selectedIndices.add(idx); card.classList.add('selected'); }
+                    else { selectedIndices.delete(idx); card.classList.remove('selected'); }
+                });
+                updateSelectionUI(); 
+                updateCodeDebounced();
+                applyFilters(); 
+            };
+
+            function updateSelectionUI() {
+                els.btnExport.disabled = selectedIndices.size === 0;
+                els.btnExport.innerText = `Export ${selectedIndices.size} Selected`;
+            }
+
+            window.switchTab = function(type) {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.code-block').forEach(b => b.classList.remove('active'));
+                
+                const tabs = document.querySelectorAll('.tab');
+                const blocks = ['guide', 'html', 'vue', 'react'];
+                const idx = blocks.indexOf(type);
+                
+                if(idx >= 0) {
+                    tabs[idx].classList.add('active');
+                    if(els.codeBlocks[type]) els.codeBlocks[type].classList.add('active');
+                }
+            }
+
+            window.copyCSS = function() { els.cssOut.select(); document.execCommand('copy'); }
+            
+            function loadImage(src) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = "Anonymous"; 
+                    img.onload = () => resolve(img);
+                    img.onerror = reject;
+                    img.src = src;
+                });
+            }
+
+            window.exportSelected = async function() {
+                if (selectedIndices.size === 0) return;
+                
+                els.btnExport.disabled = true;
+                els.btnExport.innerText = "Processing...";
+
+                const prefix = currentPrefix;
+                const spriteCls = currentSpriteClass;
+                const selectedItems = rawData.filter((_, i) => selectedIndices.has(i));
+                const format = els.format.value;
+                const mimeType = format === 'webp' ? 'image/webp' : 'image/png';
+                
+                const safeBaseName = getSafeBaseName(); 
+                const fileName = `${safeBaseName}.${format}`; 
+                const cssFileName = `${safeBaseName}.css`;    
+                const htmlFileName = `${safeBaseName}.html`;  
+                
+                const targetCellW = origW; 
+                const targetCellH = origH;
+
+                const cols = 10;
+                const rows = Math.ceil(selectedItems.length / cols);
+                const canvasW = cols * targetCellW;
+                const canvasH = rows * targetCellH;
+                
+                if (canvasH > 16000 && format === 'webp') {
+                    alert("Warning: Export content too large. Height exceeds WebP 16383px limit. Please export in batches or use PNG format.");
+                    els.btnExport.disabled = false;
+                    els.btnExport.innerText = `Export ${selectedIndices.size} Selected`;
+                    return;
+                }
+
+                els.canvas.width = canvasW; els.canvas.height = canvasH;
+                const ctx = els.canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvasW, canvasH);
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+
+                try {
+                    const pagesNeeded = new Set(selectedItems.map(i => i.spritePage));
+                    const loadedImages = {}; 
+                    
+                    for (let pIdx of pagesNeeded) {
+                        const filename = spriteFiles[pIdx];
+                        loadedImages[pIdx] = await loadImage(filename);
+                    }
+
+                    let cssBgW = Math.round(canvasW * currentScaleX); 
+                    let cssBgH = Math.round(canvasH * currentScaleY);
+                    
+                    let css = `/* ${cssFileName} */
+.${spriteCls} { 
+    display: inline-block; 
+    background-image: url('${fileName}'); 
+    background-repeat: no-repeat;
+    background-size: ${cssBgW}px ${cssBgH}px;
+}
+`;
+                    let demoHtmlItems = ''; 
+                    
+                    selectedItems.forEach((item, i) => {
+                        const row = Math.floor(i / cols);
+                        const col = i % cols;
+                        const destX = col * targetCellW;
+                        const destY = row * targetCellH;
+                        
+                        const sourceImg = loadedImages[item.spritePage];
+                        
+                        const offsetX = Math.floor((origW - item.width) / 2);
+                        const offsetY = Math.floor((origH - item.height) / 2);
+                        const sourceX = item.x + offsetX;
+                        const sourceY = item.y + offsetY;
+
+                        ctx.drawImage(sourceImg, sourceX, sourceY, item.width, item.height, destX + offsetX, destY + offsetY, item.width, item.height);
+                        
+                        const coreName = item.customName || `${item.index}`;
+                        const cls = prefix ? `${prefix}-${coreName}` : coreName;
+                        
+                        const displayW = Math.round(item.width * currentScaleX);
+                        const displayH = Math.round(item.height * currentScaleY);
+                        
+                        const physicalX = destX + offsetX;
+                        const physicalY = destY + offsetY;
+                        
+                        const cssX = Math.round(physicalX * currentScaleX);
+                        const cssY = Math.round(physicalY * currentScaleY);
+                        
+                        css += `.${cls} { width: ${displayW}px; height: ${displayH}px; background-position: -${cssX}px -${cssY}px; }
+`;
+                        demoHtmlItems += `<div class="item" onclick="copy('${cls}')"><i class="${spriteCls} ${cls}"></i><span class="label">.${cls}</span></div>
+`;
+                    });
+                    
+                    els.canvas.toBlob(blob => {
+                        downloadBlob(blob, fileName);
+                        const cssBlob = new Blob([css], {type: 'text/css'});
+                        downloadBlob(cssBlob, cssFileName);
+                        
+                        const localHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f5f5f5; color: #333; }
+  h1 { font-size: 20px; margin-bottom: 20px; }
+  .grid { display: flex; flex-wrap: wrap; gap: 10px; }
+  .item { background: #fff; padding: 15px; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #ddd; transition: all 0.2s; min-width: 100px; }
+  .item:hover { border-color: #007acc; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .item i { margin-bottom: 10px; }
+  .label { font-size: 12px; color: #666; font-family: Consolas, monospace; }
+  .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: #333; color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 14px; opacity: 0; transition: all 0.3s; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+<link rel="stylesheet" href="${cssFileName}">
+</head>
+<body>
+  <h1>${fileName} Preview</h1>
+  <div class="grid">${demoHtmlItems}</div>
+  <div id="toast" class="toast">Copied!</div>
+  <script>
+    function copy(cls) {
+      navigator.clipboard.writeText(cls).then(() => {
+        const t = document.getElementById('toast');
+        t.innerText = 'Copied: .' + cls;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2000);
+      });
+    }
+  <\/script>
+</body>
+</html>`;
+
+                        const htmlBlob = new Blob([localHtml], {type: 'text/html'});
+                        downloadBlob(htmlBlob, htmlFileName);
+                        
+                        els.btnExport.disabled = false;
+                        els.btnExport.innerText = `Export ${selectedIndices.size} Selected`;
+                    }, mimeType, 1.0); 
+
+                } catch (e) {
+                    console.error(e);
+                    alert("Export failed. Check console for errors.");
+                    els.btnExport.disabled = false;
+                }
+            }
+
+            function downloadBlob(blob, name) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = name;
+                document.body.appendChild(a); a.click();
+                setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+            }
+            
+            init();
+        </script>
+    </body>
+    </html>
+    

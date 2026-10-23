@@ -1,0 +1,32 @@
+<div class="tab-content" id="reverse">
+    <div class="instructions">
+        <h3>反向操作</h3>
+        <p>将组合的大图裁剪成小图片，并重新组合。</p>
+    </div>
+
+    <div class="form-group">
+        <label for="input-combined">输入组合图片:</label>
+        <input type="text" id="input-combined" placeholder="例如: combined.png">
+    </div>
+
+    <div class="form-group">
+        <label for="config-select">选择配置:</label>
+        <select id="config-select">
+            <option value="">-- 选择配置 --</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label for="output-reverse-dir">输出目录:</label>
+        <input type="text" id="output-reverse-dir" placeholder="例如: reversed/">
+    </div>
+
+    <div class="form-group">
+        <label for="output-recombined">重新组合输出:</label>
+        <input type="text" id="output-recombined" placeholder="例如: recombined.png">
+    </div>
+
+    <button class="btn-generate" id="generate-reverse">生成反向操作脚本</button>
+
+    <div class="output" id="reverse-output"></div>
+</div>

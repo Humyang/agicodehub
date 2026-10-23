@@ -73,6 +73,7 @@ import { tool as mimeTypes } from './mime-types';
 import { tool as otpCodeGeneratorAndValidator } from './otp-code-generator-and-validator';
 import { tool as qrCodeGenerator } from './qr-code-generator';
 import { tool as wifiQrCodeGenerator } from './wifi-qr-code-generator';
+import { tool as wechatQrNamecardGenerator } from './wechat-qr-namecard-generator';
 import { tool as randomPortGenerator } from './random-port-generator';
 import { tool as romanNumeralConverter } from './roman-numeral-converter';
 import { tool as sqlPrettify } from './sql-prettify';
@@ -88,7 +89,49 @@ import { tool as macAddressLookup } from './mac-address-lookup';
 import { tool as xmlFormatter } from './xml-formatter';
 import { tool as yamlViewer } from './yaml-viewer';
 
+// Unified FFmpeg command workbench (native Vue) — replaces the 6 stand-alone generator pages
+import { tool as ffmpegWorkbench } from './ffmpeg-workbench';
+
+// Migrated legacy apps that stay as embedded pages (see notes in ./static-tools.ts)
+import {
+  ffmpegTransparentVideo, ffmpegGridImage,
+  ffmpegScriptTool,
+  offlineHtmlDev, spriteSheetMerger, glitchGenerator,
+  iconSpritePaginatorGlass, iconSpritePaginatorCyberpunk, iconSpritePaginatorElement,
+  iphoneDuoGesture,
+} from './static-tools';
+
 export const toolsByCategory: ToolCategory[] = [
+  // 自媒体工具置顶，便于常用工具快速访问
+  {
+    name: '自媒体工具',
+    components: [wechatQrNamecardGenerator],
+  },
+  {
+    name: '3D 演示',
+    components: [iphoneDuoGesture],
+  },
+  // Migrated tools are kept first so they appear at the top of the sidebar and home page
+  {
+    name: 'FFmpeg',
+    components: [
+      ffmpegWorkbench,
+      ffmpegScriptTool,
+      ffmpegGridImage,
+    ],
+  },
+  {
+    name: 'Legacy tools',
+    components: [
+      offlineHtmlDev,
+      spriteSheetMerger,
+      glitchGenerator,
+      ffmpegTransparentVideo,
+      iconSpritePaginatorGlass,
+      iconSpritePaginatorCyberpunk,
+      iconSpritePaginatorElement,
+    ],
+  },
   {
     name: 'Crypto',
     components: [tokenGenerator, hashText, bcrypt, uuidGenerator, ulidGenerator, cypher, bip39, hmacGenerator, rsaKeyPairGenerator, passwordStrengthAnalyser, pdfSignatureChecker],

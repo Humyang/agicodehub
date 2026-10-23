@@ -1,0 +1,42 @@
+<div class="tab-content" id="combine">
+    <div class="instructions">
+        <h3>图片组合</h3>
+        <p>将多个图片组合成一张大图，每20张则新增一行。</p>
+    </div>
+
+    <div class="form-group">
+        <label for="input-combine-dir">输入图片目录:</label>
+        <input type="text" id="input-combine-dir" placeholder="例如: cropped/">
+    </div>
+
+    <div class="form-group">
+        <label for="output-combine">输出图片路径:</label>
+        <input type="text" id="output-combine" placeholder="例如: combined.png">
+    </div>
+
+    <div class="form-group">
+        <label for="tile-size">小图尺寸 (宽x高):</label>
+        <div style="display: flex; gap: 10px;">
+            <input type="number" id="tile-width" placeholder="宽度" value="100">
+            <input type="number" id="tile-height" placeholder="高度" value="100">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="images-per-row">每行图片数量:</label>
+        <input type="number" id="images-per-row" value="5" min="1">
+    </div>
+
+    <div class="config-section">
+        <h4>配置文件</h4>
+        <div class="config-item">
+            <span>配置名称:</span>
+            <input type="text" id="config-name" placeholder="例如: my_config">
+        </div>
+        <button id="save-config">保存配置</button>
+    </div>
+
+    <button class="btn-generate" id="generate-combine">生成组合脚本</button>
+
+    <div class="output" id="combine-output"></div>
+</div>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FFmpeg Grid Image Tool</title>
+    <link rel="stylesheet" href="style.css">
+<script src="/script/legacy-i18n.js" defer></script></head>
+
+<body>
+    <div class="col scroll-y">
+        <h2>🛠️ Canvas & Mode</h2>
+        <div id="cacheMsg" class="badge-cache">⚡ Last layout & position restored</div>
+
+        <!-- Import/Export Section -->
+        <div style="display:flex; gap:10px; margin-bottom:15px;">
+            <button class="btn-primary" onclick="actions.exportCache()" style="flex:1;">💾 Export Config</button>
+            <button onclick="document.getElementById('cacheInput').click()" style="flex:1;">📂 Import Config</button>
+            <input type="file" id="cacheInput" accept=".json" style="display:none" onchange="actions.importCache(this)">
+        </div>
+
+        <label>Output Type</label>
+        <div class="mode-switch">
+            <div class="mode-opt active" id="mode-img" onclick="actions.setMode('image')">🖼️ Static Image</div>
+            <div class="mode-opt" id="mode-vid" onclick="actions.setMode('video')">🎬 Motion Video</div>
+        </div>
+        <div id="animSettings">
+            <div class="row">
+                <div class="input-group">
+                    <label>Entrance Animation</label>
+                    <select id="animType" onchange="render.generateCode()">
+                        <option value="fade">Fade In</option>
+                        <option value="slide_up">↑ Slide Up</option>
+                        <option value="slide_down">↓ Slide Down</option>
+                        <option value="slide_left">← Slide Left</option>
+                        <option value="slide_right">→ Slide Right</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Video Duration (sec)</label>
+                    <input type="number" id="vidDuration" value="5" min="2" oninput="render.generateCode()">
+                </div>
+            </div>
+            <div class="hint" style="color:#a5b4fc; font-size:11px; margin-top:5px;">ℹ️ Smaller numbers appear first
+                (custom order supported)</div>
+        </div>
+        <hr style="border:0; border-top:1px solid var(--border); margin:15px 0;">
+        <div class="row">
+            <div class="input-group">
+                <label>Resolution / Platform Preset</label>
+                <select id="resSelect" onchange="actions.updateResolution(this.value)">
+                    <optgroup label="General">
+                        <option value="1080x1080">1:1 Square (WeChat/INS)</option>
+                        <option value="1920x1080">16:9 Landscape (Video Cover)</option>
+                        <option value="custom">Custom Size...</option>
+                    </optgroup>
+                    <optgroup label="Social Media">
+                        <option value="1242x1660">3:4 Xiaohongshu/INS Vertical (1242x1660)</option>
+                        <option value="1080x1920">9:16 Douyin/TikTok (1080x1920)</option>
+                        <option value="900x383">2.35:1 Official Account Header (900x383)</option>
+                        <option value="1080x608">16:9 Official Account Article (1080x608)</option>
+                    </optgroup>
+                </select>
+            </div>
+        </div>
+        <div class="row" id="customRes" style="display:none">
+            <div class="input-group">
+                <label>Width (px)</label>
+                <input type="number" id="canvasW" value="1080" oninput="actions.customResolution()">
+            </div>
+            <div class="input-group">
+                <label>Height (px)</label>
+                <input type="number" id="canvasH" value="1080" oninput="actions.customResolution()">
+            </div>
+        </div>
+        <h3>Layout Templates</h3>
+        <select id="presetSelect" onchange="actions.loadPreset(this.value)">
+            <option value="" disabled selected>-- Select Layout --</option>
+            <optgroup label="Basic Grid">
+                <option value="1">1 Grid (Single/Cover)</option>
+                <option value="2">2 Grid</option>
+                <option value="3">3 Grid</option>
+                <option value="4">4 Grid (2x2)</option>
+                <option value="6">6 Grid (2x3)</option>
+                <option value="9">9 Grid (3x3)</option>
+            </optgroup>
+            <optgroup label="Creative Layouts (New)">
+                <option value="hero_left">Left Hero (1 large, 2 small)</option>
+                <option value="hero_top">Top Hero (1 large, 3 small)</option>
+                <option value="center_focus">Center Focus (1 large, 2 narrow)</option>
+            </optgroup>
+            <optgroup label="Row Layouts">
+                <option value="rows_2">Two Rows</option>
+                <option value="rows_3">Three Rows</option>
+                <option value="mix_1_2">Top 1, Bottom 2</option>
+                <option value="mix_2_1">Top 2, Bottom 1</option>
+            </optgroup>
+            <optgroup label="Mixed Grid">
+                <option value="5">5 Grid (Top 2, Bottom 3)</option>
+                <option value="7">7 Grid (Top 3, Bottom 4)</option>
+                <option value="8">8 Grid (Top 4, Bottom 4)</option>
+            </optgroup>
+        </select>
+
+        <div style="margin-top:10px; padding:10px; background:rgba(0,0,0,0.2); border-radius:8px;">
+            <div class="row" style="margin-bottom:8px;">
+                <label style="margin:0; width:70px;">Global Gap:</label>
+                <input type="number" id="globalGap" value="10" min="0" oninput="actions.setGlobalGap(this.value)"
+                    style="width:60px;">
+            </div>
+
+            <div id="slotSettings"
+                style="display:none; border-top:1px solid var(--border); padding-top:8px; margin-top:8px;">
+                <label style="color:var(--primary); font-weight:bold; margin-bottom:6px;">Selected Slot Settings</label>
+                <div class="row" style="margin-bottom:5px;">
+                    <div class="input-group">
+                        <label>X</label> <input type="number" id="slotX"
+                            onchange="actions.updateSlotRect('x', this.value)">
+                    </div>
+                    <div class="input-group">
+                        <label>Y</label> <input type="number" id="slotY"
+                            onchange="actions.updateSlotRect('y', this.value)">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="input-group">
+                        <label>W</label> <input type="number" id="slotW"
+                            onchange="actions.updateSlotRect('w', this.value)">
+                    </div>
+                    <div class="input-group">
+                        <label>H</label> <input type="number" id="slotH"
+                            onchange="actions.updateSlotRect('h', this.value)">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div style="text-align:center; font-size:11px; color:#64748b; margin:5px 0;">or</div>
+        <button onclick="document.getElementById('jsonInput').click()"
+            style="border:1px dashed var(--border); width:100%;">📂 Load Custom JSON</button>
+        <input type="file" id="jsonInput" accept=".json" style="display:none" onchange="actions.loadTemplateFile(this)">
+        <div id="bgStatus" style="display:none; margin-top:10px;">
+            <a id="bgLink" href="#" download="template_bg.png" style="text-decoration:none;">
+                <button class="btn-dl" style="width:100%">⬇ Download Required Background</button>
+            </a>
+        </div>
+        <h3>Asset Management</h3>
+        <div class="upload-area" onclick="document.getElementById('imgInput').click()">
+            <div>+ Add Slot Images (Multiple)</div>
+        </div>
+        <div class="upload-area" style="margin-top:5px; border-style:dotted;"
+            onclick="document.getElementById('stickerInput').click()">
+            <div>+ Add Free Stickers (Logo/Watermark)</div>
+        </div>
+        <div class="upload-area"
+            style="margin-top:5px; border-color:var(--primary); background:rgba(139, 92, 246, 0.1);"
+            onclick="document.getElementById('splitInput').click()">
+            <div>✂️ Upload & Split Single Image</div>
+        </div>
+        <input type="file" id="imgInput" multiple accept="image/*" style="display:none"
+            onchange="actions.addFiles(this.files)">
+        <input type="file" id="splitInput" accept="image/*" style="display:none"
+            onchange="actions.io.addSplitFile(this.files)">
+        <input type="file" id="stickerInput" multiple accept="image/*" style="display:none"
+            onchange="actions.addStickers(this.files)">
+        <div id="fileList" class="file-list"></div>
+        <div id="stickerList" class="file-list"></div>
+        <div style="display:flex; justify-content:flex-end; margin-top:10px;">
+            <button class="btn-danger btn-icon" style="width:auto; padding:0 8px; font-size:10px;"
+                onclick="actions.clearFiles()">Clear All</button>
+        </div>
+    </div>
+    <!-- Center Canvas -->
+    <div class="main">
+        <div id="preview-wrap">
+            <div id="preview-box">
+                <div id="bg-layer"></div>
+                <div id="slots-layer"></div>
+                <div id="stickers-layer"></div>
+            </div>
+        </div>
+        <div id="slotToolbar" class="slot-toolbar">
+            <button class="btn-tool" onclick="actions.toolCenter()" title="Reset">🎯</button>
+            <button class="btn-tool" onclick="actions.toolFit()" title="Fit">🖼️</button>
+            <div class="divider"></div>
+            <button class="btn-tool" onclick="actions.toolRotate()" title="Rotate">⟳</button>
+            <button class="btn-tool" onclick="actions.toolFlip('h')" title="Flip Horizontal">↔</button>
+            <button class="btn-tool" onclick="actions.toolFlip('v')" title="Flip Vertical">↕</button>
+        </div>
+
+    </div>
+    <!-- Right Panel -->
+    <div class="col">
+        <h2>🚀 Export Command</h2>
+        <div style="margin-bottom:10px;">
+            <label style="display:inline-flex; align-items:center; cursor:pointer;">
+                <input type="checkbox" id="chkExportSlots" onchange="actions.toggleExportSlots(this.checked)"
+                    style="margin-right:6px;">
+                Export Slots as Images
+            </label>
+        </div>
+        <textarea id="outputCode" readonly spellcheck="false"></textarea>
+        <button class="btn-primary" onclick="actions.copyCode()">📋 Copy Command</button>
+        <div class="hint" style="font-size:11px; color:#64748b; margin-top:10px;">
+            <span id="outFileName">📄 Output: collage_output.png</span><br>
+            * Video mode auto-fixes odd resolutions.<br>
+            * Ensure all assets are in the same directory.
+        </div>
+        <div
+            style=" bottom:15px; background:rgba(0,0,0,0.6); padding:6px 14px; border-radius:20px; font-size:11px; color:rgba(255,255,255,0.7); pointer-events:none;">
+            ⌨ When selected: Arrow keys to move | +/- to scale | R to reset
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+
+</html>

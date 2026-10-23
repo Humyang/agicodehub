@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <title>FFmpeg Template Editor Pro (Precise Drag & Layer Control)</title>
+    <style>
+        :root {
+            --bg: #18181b;
+            --panel: #27272a;
+            --accent: #6366f1;
+            --text: #e4e4e7;
+            --border: #3f3f46;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 340px;
+            background: var(--panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 20;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-content {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar-footer {
+            padding: 15px;
+            background: #202022;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Workspace */
+        .workspace {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background: #09090b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-image: radial-gradient(#333 1px, transparent 1px);
+            background-size: 20px 20px;
+            /* 网格背景 */
+        }
+
+        /* Canvas Container */
+        #canvas-container {
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            transition: width 0.3s, height 0.3s;
+            /* 关键：不再直接缩放这个容器，而是缩放它的父级或者通过 CSS zoom/transform，这里我们用 transform */
+        }
+
+        /* The Background Image Layer */
+        #bg-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            pointer-events: none;
+            /* 让点击穿透 */
+        }
+
+        /* Slots */
+        .slot {
+            position: absolute;
+            border: 2px dashed rgba(255, 255, 255, 0.7);
+            background: rgba(99, 102, 241, 0.25);
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-shadow: 0 1px 3px black;
+            font-weight: bold;
+            font-size: 14px;
+            cursor: grab;
+        }
+
+        .slot:active {
+            cursor: grabbing;
+        }
+
+        .slot.active {
+            border: 2px solid #facc15;
+            background: rgba(250, 204, 21, 0.2);
+            z-index: 100;
+        }
+
+        /* Slot Controls */
+        .slot-controls {
+            position: absolute;
+            top: -28px;
+            right: 0;
+            display: none;
+            gap: 5px;
+        }
+
+        .slot.active .slot-controls {
+            display: flex;
+        }
+
+        .s-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 1px solid white;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-del {
+            background: #ef4444;
+        }
+
+        .btn-copy-tiny {
+            background: #3b82f6;
+        }
+
+        .resize-handle {
+            position: absolute;
+            bottom: -5px;
+            right: -5px;
+            width: 15px;
+            height: 15px;
+            background: #facc15;
+            border: 1px solid #000;
+            cursor: se-resize;
+            z-index: 101;
+        }
+
+        /* UI Components */
+        h3 {
+            margin: 0 0 10px 0;
+            color: #a5b4fc;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 8px;
+            color: white;
+            transition: 0.2s;
+        }
+
+        .btn-p {
+            background: var(--accent);
+        }
+
+        .btn-p:hover {
+            background: #4f46e5;
+        }
+
+        .btn-s {
+            background: #3f3f46;
+            color: white;
+        }
+
+        .btn-s:hover {
+            background: #52525b;
+        }
+
+        .btn-green {
+            background: #10b981;
+        }
+
+        .btn-green:hover {
+            background: #059669;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            font-size: 12px;
+        }
+
+        /* Layer Control */
+        .layer-toggle {
+            display: flex;
+            background: #18181b;
+            padding: 4px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            margin-bottom: 10px;
+        }
+
+        .l-opt {
+            flex: 1;
+            text-align: center;
+            padding: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 4px;
+            color: #71717a;
+        }
+
+        .l-opt.selected {
+            background: #3f3f46;
+            color: white;
+            font-weight: bold;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: #a1a1aa;
+            line-height: 1.4;
+            margin-top: 5px;
+        }
+    </style>
+<script src="/script/legacy-i18n.js" defer></script></head>
+
+<body>
+
+    <div class="sidebar">
+        <div class="sidebar-content">
+            <!-- 1. 导入/底图 -->
+            <div>
+                <h3>1. Upload </h3>
+
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <button class="btn-s" onclick="document.getElementById('bgFile').click()">➕ Upload New
+                        Background</button>
+                    <button class="btn-s" onclick="document.getElementById('importFile').click()">📂 Import JSON to
+                        Edit</button>
+                </div>
+
+                <input type="file" id="bgFile" accept="image/*" style="display:none">
+                <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(this)">
+
+                <div id="fileInfo" class="hint">No background loaded</div>
+            </div>
+
+            <hr style="border:0; border-top:1px solid var(--border);">
+
+            <!-- 2. 图层设置 -->
+            <div>
+                <h3>2. Background Layer (Z-Order)</h3>
+                <div class="layer-toggle">
+                    <div class="l-opt selected" onclick="setLayer('bottom')" id="opt-bottom">Bottom (Background)</div>
+                    <div class="l-opt" onclick="setLayer('top')" id="opt-top">Top (Overlay/Frame)</div>
+                </div>
+                <div class="hint" id="layerHint">Background at bottom layer, slots float above. Suitable for regular
+                    collage.</div>
+            </div>
+
+            <hr style="border:0; border-top:1px solid var(--border);">
+
+            <!-- 3. 插槽操作 -->
+            <div>
+                <h3>3. Slot Management</h3>
+                <button class="btn-p" onclick="addSlot()">+ Add Slot</button>
+                <button class="btn-s" onclick="duplicateActiveSlot()">❐ Duplicate Selected Slot</button>
+                <div class="hint">
+                    Tips: Select a slot, press <b>Delete</b> to delete, <b>Ctrl+C</b> to copy.
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. 导出 -->
+        <div class="sidebar-footer">
+            <h3>4. Export</h3>
+            <label style="font-size:12px; display:flex; align-items:center; margin-bottom:10px; cursor:pointer;">
+                <input type="checkbox" id="includeBg" checked> Include background data (Recommended)
+            </label>
+            <button class="btn-green" onclick="exportJSON()">💾 Export Template JSON</button>
+        </div>
+    </div>
+
+    <div class="workspace">
+        <!-- Transform Container specifically for scaling -->
+        <div id="transform-wrap" style="transform-origin: center center; transition: transform 0.1s;">
+            <div id="canvas-container">
+                <!-- Slots go here -->
+
+                <!-- Background Layer (Can be z-index -1 or 999) -->
+                <div id="bg-layer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- State Management ---
+        const state = {
+            bgW: 0,
+            bgH: 0,
+            bgData: null, // Base64
+            bgLayer: 'bottom', // 'bottom' or 'top'
+            scale: 1, // 关键：当前的缩放比例
+            slots: [], // {id, x, y, w, h}
+            currentId: 0,
+            activeSlotId: null
+        };
+
+        const els = {
+            wrap: document.getElementById('transform-wrap'),
+            canvas: document.getElementById('canvas-container'),
+            bgLayer: document.getElementById('bg-layer'),
+            info: document.getElementById('fileInfo')
+        };
+
+        // --- 1. 初始化与底图 ---
+        document.getElementById('bgFile').addEventListener('change', e => loadBg(e.target.files[0]));
+
+        function loadBg(file) {
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    state.bgW = img.width; state.bgH = img.height;
+                    state.bgData = e.target.result;
+
+                    // 设置画布尺寸
+                    els.canvas.style.width = img.width + 'px';
+                    els.canvas.style.height = img.height + 'px';
+                    els.bgLayer.style.backgroundImage = `url(${state.bgData})`;
+
+                    els.info.innerText = `Background: ${file.name || 'Imported'} (${img.width}x${img.height})`;
+
+                    fitCanvas();
+                    setLayer(state.bgLayer); // 刷新层级
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // --- 2. 缩放与视图 (解决拖动不跟手) ---
+        function fitCanvas() {
+            if (state.bgW === 0) return;
+            const workspace = document.querySelector('.workspace');
+            const pad = 60;
+
+            // 计算缩放比
+            const scaleX = (workspace.clientWidth - pad) / state.bgW;
+            const scaleY = (workspace.clientHeight - pad) / state.bgH;
+            state.scale = Math.min(scaleX, scaleY, 1); // 不超过 100%
+
+            // 应用缩放
+            els.wrap.style.transform = `scale(${state.scale})`;
+        }
+        window.addEventListener('resize', fitCanvas);
+
+        // --- 3. 图层控制 (置顶/置底) ---
+        function setLayer(mode) {
+            state.bgLayer = mode;
+
+            // UI 更新
+            document.querySelectorAll('.l-opt').forEach(el => el.classList.remove('selected'));
+            document.getElementById(`opt-${mode}`).classList.add('selected');
+
+            const hint = document.getElementById('layerHint');
+
+            if (mode === 'bottom') {
+                els.bgLayer.style.zIndex = '0'; // 背景在最底层
+                els.bgLayer.style.opacity = '1';
+                hint.innerText = "Background at bottom layer, suitable as backdrop.";
+            } else {
+                els.bgLayer.style.zIndex = '999'; // 背景在最顶层
+                els.bgLayer.style.opacity = '0.6'; // 半透明以便编辑
+                hint.innerText = "Background at top layer (semi-transparent preview), fully opaque on export. Suitable for frames/masks.";
+            }
+        }
+
+        // --- 4. 插槽逻辑 (添加、复制、删除) ---
+        function addSlot(presetData = null) {
+            if (state.bgW === 0) return alert("Please load a background image first");
+
+            const id = state.currentId++;
+            // 默认居中
+            const defW = 300, defH = 200;
+
+            let sData = presetData ? { ...presetData, id } : {
+                id,
+                x: (state.bgW - defW) / 2,
+                y: (state.bgH - defH) / 2,
+                w: defW,
+                h: defH
+            };
+
+            // 稍微错开一点，防止复制时重叠完全看不见
+            if (!presetData && state.slots.length > 0) {
+                sData.x += 20; sData.y += 20;
+            }
+
+            state.slots.push(sData);
+
+            // DOM 创建
+            const el = document.createElement('div');
+            el.className = 'slot';
+            el.id = `slot-${id}`;
+            el.style.zIndex = 10; // 默认高于 bg-layer(bottom) 但低于 bg-layer(top)
+
+            el.innerHTML = `
+            <span>Slot</span>
+            <div class="slot-controls">
+                <div class="s-btn btn-copy-tiny" title="Duplicate" onclick="duplicateSlot(${id}, event)">❐</div>
+                <div class="s-btn btn-del" title="Delete" onclick="deleteSlot(${id}, event)">×</div>
+            </div>
+            <div class="resize-handle"></div>
+        `;
+
+            // 绑定事件
+            const resizer = el.querySelector('.resize-handle');
+
+            // 移动事件
+            el.addEventListener('mousedown', e => {
+                if (e.target === resizer || e.target.closest('.slot-controls')) return;
+                startDrag(e, id, 'move');
+            });
+
+            // 缩放事件
+            resizer.addEventListener('mousedown', e => startDrag(e, id, 'resize'));
+
+            els.canvas.appendChild(el);
+            renderSlot(sData);
+            activateSlot(id);
+        }
+
+        function renderSlot(s) {
+            const el = document.getElementById(`slot-${s.id}`);
+            if (el) {
+                el.style.left = s.x + 'px';
+                el.style.top = s.y + 'px';
+                el.style.width = s.w + 'px';
+                el.style.height = s.h + 'px';
+                el.querySelector('span').innerText = `Slot ${state.slots.indexOf(s) + 1}`;
+            }
+        }
+
+        function activateSlot(id) {
+            state.activeSlotId = id;
+            document.querySelectorAll('.slot').forEach(e => e.classList.remove('active'));
+            const el = document.getElementById(`slot-${id}`);
+            if (el) el.classList.add('active');
+        }
+
+        // --- 5. 核心：拖拽逻辑 (修复偏移问题) ---
+        function startDrag(e, id, mode) {
+            e.preventDefault(); e.stopPropagation();
+
+            const s = state.slots.find(item => item.id === id);
+            activateSlot(id);
+
+            const startX = e.clientX;
+            const startY = e.clientY;
+            const startLeft = s.x;
+            const startTop = s.y;
+            const startW = s.w;
+            const startH = s.h;
+
+            function onMove(ev) {
+                // 关键修复：除以 state.scale
+                const deltaX = (ev.clientX - startX) / state.scale;
+                const deltaY = (ev.clientY - startY) / state.scale;
+
+                if (mode === 'move') {
+                    s.x = startLeft + deltaX;
+                    s.y = startTop + deltaY;
+                } else {
+                    s.w = Math.max(20, startW + deltaX);
+                    s.h = Math.max(20, startH + deltaY);
+                }
+                renderSlot(s);
+            }
+
+            function onUp() {
+                window.removeEventListener('mousemove', onMove);
+                window.removeEventListener('mouseup', onUp);
+            }
+            window.addEventListener('mousemove', onMove);
+            window.addEventListener('mouseup', onUp);
+        }
+
+        // --- 6. 复制与删除 ---
+        function deleteSlot(id, e) {
+            if (e) e.stopPropagation();
+            const el = document.getElementById(`slot-${id}`);
+            if (el) el.remove();
+            state.slots = state.slots.filter(s => s.id !== id);
+            // 重刷序号
+            state.slots.forEach(s => renderSlot(s));
+        }
+
+        function duplicateSlot(id, e) {
+            if (e) e.stopPropagation();
+            const src = state.slots.find(s => s.id === id);
+            if (!src) return;
+
+            // 偏移一点
+            addSlot({
+                x: src.x + 30,
+                y: src.y + 30,
+                w: src.w,
+                h: src.h
+            });
+        }
+
+        function duplicateActiveSlot() {
+            if (state.activeSlotId !== null) duplicateSlot(state.activeSlotId);
+        }
+
+        // --- 7. 导入与导出 ---
+
+        // 导出
+        function exportJSON() {
+            if (state.bgW === 0) return alert("Empty project cannot be exported");
+
+            const data = {
+                width: state.bgW,
+                height: state.bgH,
+                bgLayer: state.bgLayer, // 新增：保存图层设置
+                bgImage: document.getElementById('includeBg').checked ? state.bgData : null,
+                slots: state.slots.map(s => ({ x: Math.round(s.x), y: Math.round(s.y), w: Math.round(s.w), h: Math.round(s.h) }))
+            };
+
+            const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'template_pro.json';
+            a.click();
+        }
+
+        // 导入
+        function importJSON(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const json = JSON.parse(e.target.result);
+
+                    // 1. 恢复底图
+                    if (json.bgImage) {
+                        const img = new Image();
+                        img.onload = () => {
+                            state.bgW = img.width; state.bgH = img.height;
+                            state.bgData = json.bgImage;
+                            els.canvas.style.width = img.width + 'px';
+                            els.canvas.style.height = img.height + 'px';
+                            els.bgLayer.style.backgroundImage = `url(${state.bgData})`;
+                            els.info.innerText = `Imported: template.json (${img.width}x${img.height})`;
+
+                            // 2. 恢复图层设置
+                            if (json.bgLayer) setLayer(json.bgLayer);
+                            else setLayer('bottom');
+
+                            // 3. 恢复插槽
+                            state.slots = [];
+                            els.canvas.querySelectorAll('.slot').forEach(el => el.remove());
+                            state.currentId = 0;
+
+                            json.slots.forEach(s => addSlot(s));
+
+                            fitCanvas();
+                        };
+                        img.src = json.bgImage;
+                    } else {
+                        alert("JSON does not contain background data. Please upload a background image first, then import slots again.");
+                    }
+                } catch (err) {
+                    alert("JSON parsing failed: " + err.message);
+                }
+            };
+            reader.readAsText(file);
+            input.value = '';
+        }
+
+        // --- 8. 键盘快捷键 ---
+        window.addEventListener('keydown', e => {
+            if (e.key === 'Delete' && state.activeSlotId !== null) {
+                deleteSlot(state.activeSlotId);
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+                duplicateActiveSlot();
+            }
+        });
+
+    </script>
+</body>
+
+</html>

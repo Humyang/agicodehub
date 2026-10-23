@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Test transparent background video playback in browsers. Explore multiple technical solutions for playing videos with alpha channels using WebM VP9, Canvas, and CSS blend modes.">
+    <meta name="keywords"
+        content="transparent video, alpha channel, WebM VP9, Canvas video, CSS blend modes, video effects, browser compatibility">
+    <title>Transparent Background Video Playback Test</title>
+    <link rel="stylesheet" href="./videovide.css">
+<script src="/script/legacy-i18n.js" defer></script></head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Transparent Background Video Playback Test</h1>
+            <p class="subtitle">Explore multiple technical solutions for playing videos with transparent backgrounds in
+                browsers. Detect browser support for alpha channel videos, suitable for effects, overlays, and creative
+                design scenarios.</p>
+
+            <!-- Upload section -->
+            <div class="upload-section">
+                <input type="file" id="videoUpload" accept="video/*" class="file-input">
+                <label for="videoUpload" class="upload-btn">Upload Video File for Preview</label>
+                <div class="file-info" id="fileInfo"></div>
+            </div>
+        </header>
+
+        <div class="cards">
+            <div class="card">
+                <h2>Solution 1: WebM + VP9 Encoding</h2>
+                <p>Use WebM format with VP9 encoding that supports alpha channels for transparent backgrounds.</p>
+                <div class="demo-container" id="demo1">
+                    <video class="video-demo" id="video1" loop muted>
+                        <source src="./dark-to-light.webm" type="video/webm">
+                        Your browser does not support WebM video format
+                    </video>
+                </div>
+                <div class="background-selector">
+                    <div class="bg-option active" data-bg="transparent" data-target="demo1">Transparent Background</div>
+                    <div class="bg-option" data-bg="gradient" data-target="demo1">Gradient Background</div>
+                    <div class="bg-option" data-bg="pattern" data-target="demo1">Pattern Background</div>
+                </div>
+                <div class="controls">
+                    <button id="play1">Play</button>
+                    <button id="pause1">Pause</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Solution 2: Canvas Drawing</h2>
+                <p>Use Canvas to process video frame by frame, achieving custom transparency effects and interactions.
+                </p>
+                <div class="demo-container" id="demo2">
+                    <canvas id="canvasVideo" width="640" height="360"></canvas>
+                </div>
+                <div class="background-selector">
+                    <div class="bg-option active" data-bg="transparent" data-target="demo2">Transparent Background</div>
+                    <div class="bg-option" data-bg="gradient" data-target="demo2">Gradient Background</div>
+                    <div class="bg-option" data-bg="pattern" data-target="demo2">Pattern Background</div>
+                </div>
+                <div class="controls">
+                    <button id="play2">Play</button>
+                    <button id="pause2">Pause</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Solution 3: CSS Blend Modes</h2>
+                <p>Use CSS mix-blend-mode property to achieve similar transparent overlay effects.</p>
+                <div class="demo-container" id="demo3">
+                    <video class="video-demo" id="video3" loop muted>
+                        <source src="./dark-to-light.webm" type="video/webm">
+                        Your browser does not support WebM video format
+                    </video>
+                </div>
+                <div class="background-selector">
+                    <div class="bg-option active" data-bg="transparent" data-target="demo3">Normal Mode</div>
+                    <div class="bg-option" data-bg="gradient" data-target="demo3">Screen Mode</div>
+                    <div class="bg-option" data-bg="pattern" data-target="demo3">Overlay Mode</div>
+                </div>
+                <div class="controls">
+                    <button id="play3">Play</button>
+                    <button id="pause3">Pause</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-box">
+            <h3>Technical Implementation Points</h3>
+            <ul>
+                <li><strong>WebM + VP9</strong>: Currently the most widely supported transparent video format,
+                    compatible with Chrome, Firefox, and Edge</li>
+                <li><strong>Video Encoding</strong>: Requires encoders that support alpha channels, such as VP9</li>
+                <li><strong>Canvas Processing</strong>: Can process video frame by frame for more complex transparency
+                    effects and interactions</li>
+                <li><strong>CSS Blend Modes</strong>: While not true transparency, can achieve visual overlay effects
+                </li>
+                <li><strong>Alternative Solutions</strong>: For browsers that don't support WebM, consider using APNG or
+                    GIF, but with lower quality</li>
+            </ul>
+        </div>
+
+        <div class="note">
+            <p>Note: Transparent background videos require specific video formats and encoding methods. Regular video
+                formats do not support alpha channels.</p>
+        </div>
+
+        <footer>
+            <p>Transparent Background Video Playback Solutions Demo &copy; 2023</p>
+        </footer>
+    </div>
+
+    <script>
+        // Video controls
+        document.getElementById('play1').addEventListener('click', () => {
+            document.getElementById('video1').play();
+        });
+
+        document.getElementById('pause1').addEventListener('click', () => {
+            document.getElementById('video1').pause();
+        });
+
+        document.getElementById('play3').addEventListener('click', () => {
+            document.getElementById('video3').play();
+        });
+
+        document.getElementById('pause3').addEventListener('click', () => {
+            document.getElementById('video3').pause();
+        });
+
+        // Background switching
+        const bgOptions = document.querySelectorAll('.bg-option');
+        bgOptions.forEach(option => {
+            option.addEventListener('click', function () {
+                const targetId = this.getAttribute('data-target');
+                const bgType = this.getAttribute('data-bg');
+                const container = document.getElementById(targetId);
+
+                // Update active state
+                document.querySelectorAll(`[data-target="${targetId}"]`).forEach(opt => {
+                    opt.classList.remove('active');
+                });
+                this.classList.add('active');
+
+                // Apply background
+                applyBackground(container, bgType, targetId);
+            });
+        });
+
+        function applyBackground(container, bgType, targetId) {
+            // Clear existing background
+            container.style.background = '';
+
+            if (bgType === 'transparent') {
+                if (targetId === 'demo3') {
+                    container.querySelector('video').style.mixBlendMode = 'normal';
+                }
+            } else if (bgType === 'gradient') {
+                container.style.background = 'linear-gradient(45deg, #ff9a9e, #fad0c4)';
+                if (targetId === 'demo3') {
+                    container.querySelector('video').style.mixBlendMode = 'screen';
+                }
+            } else if (bgType === 'pattern') {
+                container.style.background = 'repeating-linear-gradient(45deg, #606dbc, #606dbc 10px, #465298 10px, #465298 20px)';
+                if (targetId === 'demo3') {
+                    container.querySelector('video').style.mixBlendMode = 'overlay';
+                }
+            }
+        }
+
+        // Canvas video processing
+        const canvas = document.getElementById('canvasVideo');
+        const ctx = canvas.getContext('2d');
+
+        // Adjust canvas size to fit container
+        function resizeCanvas() {
+            const container = document.getElementById('demo2');
+            canvas.width = container.clientWidth;
+            canvas.height = container.clientHeight;
+        }
+
+        window.addEventListener('load', resizeCanvas);
+        window.addEventListener('resize', resizeCanvas);
+
+        // Create video element for canvas drawing
+        const video = document.createElement('video');
+        video.src = './dark-to-light.webm';
+        video.loop = true;
+        video.muted = true;
+
+        // Playback controls
+        document.getElementById('play2').addEventListener('click', () => {
+            video.play();
+            drawVideoFrame();
+        });
+
+        document.getElementById('pause2').addEventListener('click', () => {
+            video.pause();
+        });
+
+        // Draw video frame to canvas
+        function drawVideoFrame() {
+            if (video.paused || video.ended) return;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Calculate video drawing dimensions, maintaining aspect ratio
+            const videoRatio = video.videoWidth / video.videoHeight;
+            const canvasRatio = canvas.width / canvas.height;
+
+            let drawWidth, drawHeight, offsetX, offsetY;
+
+            if (videoRatio > canvasRatio) {
+                drawHeight = canvas.height;
+                drawWidth = drawHeight * videoRatio;
+                offsetX = (canvas.width - drawWidth) / 2;
+                offsetY = 0;
+            } else {
+                drawWidth = canvas.width;
+                drawHeight = drawWidth / videoRatio;
+                offsetX = 0;
+                offsetY = (canvas.height - drawHeight) / 2;
+            }
+
+            ctx.drawImage(video, offsetX, offsetY, drawWidth, drawHeight);
+
+            requestAnimationFrame(drawVideoFrame);
+        }
+
+        // Initial drawing
+        video.addEventListener('loadeddata', () => {
+            drawVideoFrame();
+        });
+
+        // Upload preview functionality - automatically apply to all solutions
+        const videoUpload = document.getElementById('videoUpload');
+        const fileInfo = document.getElementById('fileInfo');
+        let uploadedVideoURL = null;
+
+        videoUpload.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Display file information
+                fileInfo.innerHTML = `
+                    <strong>File Name:</strong> ${file.name}<br>
+                    <strong>Size:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB<br>
+                    <strong>Type:</strong> ${file.type}
+                `;
+
+                // Create object URL
+                if (uploadedVideoURL) {
+                    URL.revokeObjectURL(uploadedVideoURL);
+                }
+                uploadedVideoURL = URL.createObjectURL(file);
+
+                // Automatically apply to all solutions
+                applyUploadedVideoToAll();
+            }
+        });
+
+        function applyUploadedVideoToAll() {
+            if (!uploadedVideoURL) return;
+
+            // Solution 1: WebM + VP9 Encoding
+            const video1 = document.getElementById('video1');
+            video1.src = uploadedVideoURL;
+            video1.load();
+            video1.play().catch(e => {
+                console.log('Solution 1 autoplay blocked:', e);
+            });
+
+            // Solution 2: Canvas Drawing
+            video.src = uploadedVideoURL;
+            video.load();
+            video.play().catch(e => {
+                console.log('Solution 2 autoplay blocked:', e);
+            });
+
+            // Solution 3: CSS Blend Modes
+            const video3 = document.getElementById('video3');
+            video3.src = uploadedVideoURL;
+            video3.load();
+            video3.play().catch(e => {
+                console.log('Solution 3 autoplay blocked:', e);
+            });
+        }
+
+        // Initial background setup
+        applyBackground(document.getElementById('demo1'), 'transparent', 'demo1');
+        applyBackground(document.getElementById('demo2'), 'transparent', 'demo2');
+        applyBackground(document.getElementById('demo3'), 'transparent', 'demo3');
+
+        // ==========================================
+        // 新增：VS Code 扩展通信逻辑
+        // ==========================================
+        window.addEventListener('message', function (event) {
+            console.log('message');
+
+            const message = event.data;
+            if (message && message.command === 'loadVideo') {
+                // 接收数据，转为 Blob
+                const uint8Array = new Uint8Array(message.fileData);
+                const blob = new Blob([uint8Array], { type: 'video/webm' }); // 也可以根据 fileName 动态判断 mime
+                const url = URL.createObjectURL(blob);
+
+                // 3. 更新界面信息
+                if (fileInfo) {
+                    fileInfo.innerHTML = `
+                        <strong>File Name:</strong> ${message.fileName} (From VS Code)<br>
+                        <strong>Size:</strong> ${(blob.size / 1024 / 1024).toFixed(2)} MB<br>
+                    `;
+                }
+
+                // 4. 创建 Blob URL
+                if (uploadedVideoURL) {
+                    URL.revokeObjectURL(uploadedVideoURL);
+                }
+                uploadedVideoURL = URL.createObjectURL(blob);
+
+                // 5. 调用你现有的函数应用视频到所有演示中
+                applyUploadedVideoToAll();
+            }
+        });
+    </script>
+    <!-- -->
+    <script src="/script/vscode-bridge.js"></script>
+    <script>
+        window.navbarConfig = {
+            browserUrl: location.href // 点击 Browsers 按钮时通过 Bridge 发送此 URL
+        };
+    </script>
+    <!-- navbar的命令需要通过桥接发送 -->
+</body>
+
+</html>

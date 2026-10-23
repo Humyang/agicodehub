@@ -1,0 +1,54 @@
+<div class="tab-content active" id="extract">
+    <div class="instructions">
+        <h3>视频按帧提取图片</h3>
+        <p>生成从视频中按指定帧率提取图片的FFmpeg脚本。</p>
+    </div>
+
+    <!-- Video Upload Section -->
+    <div class="form-group">
+        <label for="video-upload">上传视频文件:</label>
+        <div class="file-upload" id="video-upload-area">
+            <p>点击或拖拽视频文件到这里上传</p>
+            <input type="file" id="video-upload" accept="video/*" style="display: none;">
+        </div>
+    </div>
+
+    <!-- Video Preview Section -->
+    <div class="video-preview" id="video-preview-container" style="display: none;">
+        <h4>视频预览</h4>
+        <video id="video-preview" controls style="max-width: 100%; max-height: 300px;">
+            您的浏览器不支持视频播放
+        </video>
+        <div class="video-info" id="video-info">
+            <p>视频信息: <span id="video-duration">-</span> | <span id="video-resolution">-</span></p>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="input-video">输入视频文件路径:</label>
+        <input type="text" id="input-video" placeholder="例如: input.mp4">
+    </div>
+
+    <div class="form-group">
+        <label for="output-dir">输出目录:</label>
+        <input type="text" id="output-dir" placeholder="例如: frames/">
+    </div>
+
+    <div class="form-group">
+        <label for="frame-rate">帧率 (fps):</label>
+        <input type="number" id="frame-rate" value="1" min="0.1" step="0.1">
+    </div>
+
+    <div class="form-group">
+        <label for="image-format">图片格式:</label>
+        <select id="image-format">
+            <option value="jpg">JPEG</option>
+            <option value="png">PNG</option>
+            <option value="bmp">BMP</option>
+        </select>
+    </div>
+
+    <button class="btn-generate" id="generate-extract">生成提取脚本</button>
+
+    <div class="output" id="extract-output"></div>
+</div>

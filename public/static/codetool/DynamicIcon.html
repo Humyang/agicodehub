@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glitch Generator V5 - Final Config</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --neon-color: #00ffea;
+            /* 故障时的发光色 */
+            --static-border: #333333;
+            /* 静止时的边框色 */
+            --border-width: 2px;
+            --icon-scale: 1.5;
+            --crt-opacity: 0.1;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            color: #eee;
+            background: #1e1e1e;
+        }
+
+        /* --- 侧边栏 --- */
+        .sidebar {
+            width: 400px;
+            background: #252526;
+            border-right: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            background: #333;
+            border-bottom: 1px solid #444;
+        }
+
+        .sidebar-header h2 {
+            margin: 0;
+            font-size: 16px;
+            color: #fff;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .control-group {
+            background: #2d2d30;
+            padding: 12px;
+            border-radius: 6px;
+            border: 1px solid #3e3e42;
+        }
+
+        .control-group h3 {
+            margin: 0 0 10px 0;
+            font-size: 12px;
+            color: #00d2ff;
+            text-transform: uppercase;
+            border-bottom: 1px dashed #444;
+            padding-bottom: 5px;
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .row label {
+            flex: 1;
+        }
+
+        .row input[type="color"] {
+            width: 30px;
+            height: 20px;
+            border: none;
+            padding: 0;
+            background: none;
+            cursor: pointer;
+        }
+
+        .row input[type="range"] {
+            flex: 1.5;
+            margin-left: 10px;
+            cursor: pointer;
+        }
+
+        .row input[type="number"] {
+            width: 60px;
+            background: #1e1e1e;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 2px 5px;
+            margin-left: 5px;
+        }
+
+        .row input[type="text"] {
+            flex: 1.5;
+            background: #1e1e1e;
+            border: 1px solid #555;
+            color: #fff;
+            padding: 2px 5px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            margin-bottom: 10px;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 5px;
+            background: #222;
+            border: 1px solid #444;
+            color: #888;
+            cursor: pointer;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        .tab.active {
+            background: #007acc;
+            color: #fff;
+            border-color: #007acc;
+        }
+
+        textarea {
+            width: 100%;
+            height: 60px;
+            background: #1e1e1e;
+            color: #0f0;
+            border: 1px solid #444;
+            font-family: monospace;
+            font-size: 10px;
+            resize: vertical;
+        }
+
+        .btn {
+            padding: 10px;
+            background: #007acc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            width: 100%;
+            transition: 0.2s;
+            margin-top: auto;
+        }
+
+        .btn:hover {
+            background: #0062a3;
+        }
+
+        /* --- 预览区 --- */
+        .preview-area {
+            flex: 1;
+            position: relative;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .preview-area::before {
+            content: " ";
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            z-index: 10;
+            opacity: var(--crt-opacity);
+        }
+
+        .glitch-wrapper {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.02);
+            /* 动态应用变量 */
+            border: var(--border-width) solid var(--static-border);
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            transition: border-color 0.1s;
+        }
+
+        .glitch-wrapper.active {
+            border-color: var(--neon-color);
+            box-shadow: 0 0 25px var(--neon-color), inset 0 0 10px var(--neon-color);
+        }
+
+        #target-icon {
+            transform: scale(var(--icon-scale));
+            transition: transform 0.1s;
+            display: inline-block;
+        }
+
+        @keyframes shake-hard {
+            0% {
+                transform: translate(1px, 1px) skewX(0deg) scale(var(--icon-scale));
+            }
+
+            25% {
+                transform: translate(-3px, 0px) skewX(3deg) scale(var(--icon-scale));
+            }
+
+            50% {
+                transform: translate(3px, 1px) skewX(-3deg) scale(var(--icon-scale));
+            }
+
+            75% {
+                transform: translate(-1px, -2px) skewX(1deg) scale(var(--icon-scale));
+            }
+
+            100% {
+                transform: translate(0, 0) skewX(0) scale(var(--icon-scale));
+            }
+        }
+
+        .glitching {
+            animation: shake-hard 0.15s infinite linear;
+            filter: drop-shadow(4px 0px 0px rgba(255, 0, 0, 0.5)) drop-shadow(-4px 0px 0px rgba(0, 200, 255, 0.5));
+        }
+
+        /* --- 代码弹窗 --- */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: #1e1e1e;
+            width: 800px;
+            max-width: 90%;
+            height: 85vh;
+            display: flex;
+            flex-direction: column;
+            border-radius: 8px;
+            border: 1px solid #444;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+        }
+
+        .modal-header {
+            padding: 15px;
+            border-bottom: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #252526;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .code-editor {
+            flex: 1;
+            background: #111;
+            color: #a9b7c6;
+            font-family: Consolas, monospace;
+            padding: 15px;
+            border: none;
+            resize: none;
+            font-size: 12px;
+            line-height: 1.5;
+            outline: none;
+            white-space: pre;
+            overflow: auto;
+        }
+
+        .modal-footer {
+            padding: 10px;
+            background: #252526;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        #dynamic-styles {
+            display: none;
+        }
+    </style>
+<script src="/script/legacy-i18n.js" defer></script></head>
+
+<body>
+
+    <style id="dynamic-styles"></style>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>⚡ 配置生成器 V5.0</h2>
+        </div>
+
+        <div class="sidebar-content">
+
+            <!-- 1. 资源加载 (保留原有逻辑) -->
+            <div class="control-group">
+                <h3>1. 资源加载</h3>
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('file')">本地文件</div>
+                    <div class="tab" onclick="switchTab('url')">URL 链接</div>
+                </div>
+
+                <div id="mode-file">
+                    <div class="row">
+                        <label>上传 CSS:</label>
+                        <input type="file" accept=".css" onchange="handleCssFile(this)">
+                    </div>
+                    <div class="row" style="margin-top:5px">
+                        <label>预览图片 (可选):</label>
+                        <input type="file" accept="image/*" onchange="handleImgFile(this)">
+                    </div>
+                    <div class="row"><small style="color:#666">注意：图片仅用于此处预览，导出代码不包含图片数据。</small></div>
+                </div>
+
+                <div id="mode-url" style="display:none;">
+                    <div class="row">
+                        <input type="text" id="urlCSS" placeholder="https://example.com/style.css">
+                    </div>
+                    <button class="btn" onclick="fetchCssUrl()" style="margin-top:5px; padding:5px;">加载 URL</button>
+                </div>
+            </div>
+
+            <!-- 2. 边框 & 颜色配置 -->
+            <div class="control-group">
+                <h3>2. 静态/边框配置</h3>
+                <div class="row">
+                    <label>静止边框色</label>
+                    <input type="color" id="staticBorder" value="#333333">
+                </div>
+                <div class="row">
+                    <label>静止边框宽 (px)</label>
+                    <input type="number" id="borderWidth" value="2" min="0" max="20">
+                </div>
+                <div class="row">
+                    <label>故障/霓虹色</label>
+                    <input type="color" id="neonColor" value="#00ffea">
+                </div>
+                <div class="row">
+                    <label>背景颜色</label>
+                    <input type="color" id="bgColor" value="#050505">
+                </div>
+            </div>
+
+            <!-- 3. 时间与动画行为 -->
+            <div class="control-group">
+                <h3>3. 动画行为配置</h3>
+                <div class="row">
+                    <label>触发间隔 Min (ms)</label>
+                    <input type="number" id="minInterval" value="1000" step="100">
+                </div>
+                <div class="row">
+                    <label>触发间隔 Max (ms)</label>
+                    <input type="number" id="maxInterval" value="3000" step="100">
+                </div>
+                <div class="row">
+                    <label>切换过程时长 (ms)</label>
+                    <input type="number" id="processTime" value="200" step="10">
+                </div>
+                <div class="row">
+                    <label>故障概率 (Chaos %)</label>
+                    <input type="range" id="chaosProb" min="0" max="100" value="30">
+                    <span id="chaos-val" style="width:30px; text-align:right">30%</span>
+                </div>
+                <div class="row"><small style="color:#666">概率越高，触发红色严重故障的几率越大</small></div>
+            </div>
+
+            <div class="control-group">
+                <h3>检测结果</h3>
+                <textarea id="classList" placeholder="Waiting for CSS..."></textarea>
+            </div>
+
+            <button class="btn" onclick="showCodeModal()">生成并查看代码</button>
+        </div>
+    </div>
+
+    <div class="preview-area">
+        <div class="glitch-wrapper" id="wrapper">
+            <i id="target-icon"></i>
+        </div>
+    </div>
+
+    <!-- 代码导出弹窗 -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Vue 组件代码 (Copy & Paste)</h3>
+                <button onclick="document.getElementById('modal').style.display='none'"
+                    style="background:none;border:none;color:#fff;cursor:pointer;font-size:16px;">✕</button>
+            </div>
+            <div class="code-editor" id="codeResult"></div>
+            <div class="modal-footer">
+                <button class="btn" style="width:auto; margin:0;" onclick="copyCode()">复制代码</button>
+                <button class="btn" style="width:auto; margin:0; background:#444;"
+                    onclick="document.getElementById('modal').style.display='none'">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 状态管理 ---
+        const state = {
+            baseClass: '',
+            classes: [],
+            cssRaw: '',      // 原始CSS文本
+            previewImgUrl: '', // 仅用于预览的 Blob URL
+            timer: null
+        };
+
+        const els = {
+            style: document.getElementById('dynamic-styles'),
+            wrapper: document.getElementById('wrapper'),
+            icon: document.getElementById('target-icon'),
+            classList: document.getElementById('classList'),
+            codeResult: document.getElementById('codeResult'),
+            inputs: {
+                bg: document.getElementById('bgColor'),
+                neon: document.getElementById('neonColor'),
+                staticBorder: document.getElementById('staticBorder'),
+                borderWidth: document.getElementById('borderWidth'),
+                minInt: document.getElementById('minInterval'),
+                maxInt: document.getElementById('maxInterval'),
+                processTime: document.getElementById('processTime'),
+                chaos: document.getElementById('chaosProb'),
+                urlCss: document.getElementById('urlCSS')
+            }
+        };
+
+        // --- 1. 资源加载逻辑 (保持原样) ---
+
+        function switchTab(mode) {
+            document.querySelector('.tab.active').classList.remove('active');
+            event.target.classList.add('active');
+            document.getElementById('mode-file').style.display = mode === 'file' ? 'block' : 'none';
+            document.getElementById('mode-url').style.display = mode === 'url' ? 'block' : 'none';
+        }
+
+        function parseCss(cssText) {
+            const clean = cssText.replace(/\/\*[\s\S]*?\*\//g, '');
+            const baseMatch = clean.match(/\.([a-zA-Z0-9_-]+)\s*\{[^}]*background-image\s*:/i);
+            const baseClass = baseMatch ? baseMatch[1] : '';
+            const iconRegex = /\.([a-zA-Z0-9_-]+)\s*\{[^}]*background-position\s*:/gi;
+            const matches = clean.match(iconRegex) || [];
+            const iconClasses = matches.map(s => {
+                const m = s.match(/\.([a-zA-Z0-9_-]+)/);
+                return m ? m[1] : null;
+            }).filter(c => c && c !== baseClass);
+            return { baseClass, iconClasses };
+        }
+
+        function applyCss(cssText) {
+            state.cssRaw = cssText;
+            const res = parseCss(cssText);
+            state.baseClass = res.baseClass || 'unknown-base';
+            state.classes = res.iconClasses;
+            els.classList.value = state.classes.join('\n');
+            updatePreviewStyle();
+
+            // Reset loop
+            if (state.timer) clearTimeout(state.timer);
+            chaosLoop();
+        }
+
+        // 仅用于更新预览区的样式 (处理本地 Blob 图片)
+        function updatePreviewStyle() {
+            let finalCss = state.cssRaw;
+            // 如果用户上传了预览图，覆盖 background-image
+            if (state.previewImgUrl && state.baseClass) {
+                finalCss += `\n.${state.baseClass} { background-image: url('${state.previewImgUrl}') !important; }`;
+            }
+            els.style.innerHTML = finalCss;
+
+            if (state.classes.length) {
+                els.icon.className = `${state.baseClass} ${state.classes[0]}`;
+            }
+        }
+
+        function handleCssFile(input) {
+            const f = input.files[0];
+            if (f) { const r = new FileReader(); r.onload = e => applyCss(e.target.result); r.readAsText(f); }
+        }
+
+        function handleImgFile(input) {
+            const f = input.files[0];
+            if (f) {
+                state.previewImgUrl = URL.createObjectURL(f);
+                updatePreviewStyle();
+            }
+        }
+
+        function fetchCssUrl() {
+            const url = els.inputs.urlCss.value;
+            if (url) fetch(url).then(r => r.text()).then(t => applyCss(t)).catch(e => alert('CORS Error / Loading Failed: ' + e));
+        }
+
+
+        // --- 2. 视觉更新 & 动画逻辑 ---
+
+        function updateVisuals() {
+            const i = els.inputs;
+            const root = document.documentElement.style;
+
+            // CSS 变量更新预览
+            root.setProperty('--bg-color', i.bg.value);
+            root.setProperty('--neon-color', i.neon.value);
+            root.setProperty('--static-border', i.staticBorder.value);
+            root.setProperty('--border-width', i.borderWidth.value + 'px');
+
+            document.getElementById('chaos-val').innerText = i.chaos.value + '%';
+        }
+
+        Object.values(els.inputs).forEach(input => input.addEventListener('input', updateVisuals));
+
+        function r(min, max) { return Math.floor(Math.random() * (max - min + 1) + min); }
+
+        function chaosLoop() {
+            const minInt = parseInt(els.inputs.minInt.value) || 1000;
+            const maxInt = parseInt(els.inputs.maxInt.value) || 3000;
+            const procTime = parseInt(els.inputs.processTime.value) || 200;
+            const chaosProb = parseInt(els.inputs.chaos.value) / 100;
+
+            // 清理
+            els.wrapper.classList.remove('active');
+            els.icon.classList.remove('glitching');
+
+            if (!state.classes.length) {
+                state.timer = setTimeout(chaosLoop, 1000);
+                return;
+            }
+
+            const mood = Math.random();
+
+            if (mood > chaosProb) {
+                // [普通切换]
+                const cls = state.classes[r(0, state.classes.length - 1)];
+                els.icon.className = `${state.baseClass} ${cls}`;
+
+                // 过程：轻微闪烁
+                els.icon.classList.add('glitching');
+                setTimeout(() => els.icon.classList.remove('glitching'), procTime); // 使用配置的时间
+
+                state.timer = setTimeout(chaosLoop, r(minInt, maxInt)); // 使用配置的间隔
+
+            } else {
+                // [严重故障]
+                els.wrapper.classList.add('active');
+                els.icon.classList.add('glitching');
+
+                // 过程：在 procTime 内快速切换多次
+                const bursts = 5;
+                const step = procTime / bursts;
+                let c = 0;
+                function burst() {
+                    const cls = state.classes[r(0, state.classes.length - 1)];
+                    els.icon.className = `${state.baseClass} ${cls}`;
+                    c++;
+                    if (c < bursts) setTimeout(burst, step);
+                    else {
+                        // 结束
+                        state.timer = setTimeout(chaosLoop, r(minInt, maxInt));
+                    }
+                }
+                burst();
+            }
+        }
+
+        // --- 3. 导出代码 (不包含 Base64，纯代码) ---
+
+        function showCodeModal() {
+            if (!state.baseClass) { alert('请先加载 CSS！'); return; }
+
+            const i = els.inputs;
+
+            // 将 HTML 字符转义，用于在 div 中显示
+            const escape = (str) => str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+            const vueCode = `<template>
+  <div class="glitch-box" :class="{ critical: isCritical }">
+    <i :class="[baseClass, currentIcon, { glitching: isGlitching }]"></i>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
+
+// --- 自动生成的配置 ---
+const baseClass = '${state.baseClass}'
+const icons = ${JSON.stringify(state.classes)}
+
+const config = {
+  minInterval: ${i.minInt.value},
+  maxInterval: ${i.maxInt.value},
+  processTime: ${i.processTime.value},
+  chaosProb: ${i.chaos.value / 100}
+}
+
+// --- 状态逻辑 ---
+const currentIcon = ref(icons[0])
+const isCritical = ref(false)
+const isGlitching = ref(false)
+let timer = null
+
+function r(min, max) { return Math.floor(Math.random() * (max - min + 1) + min) }
+
+function loop() {
+  isCritical.value = false
+  isGlitching.value = false
+  
+  const mood = Math.random()
+  
+  if (mood > config.chaosProb) {
+    // 正常切换
+    currentIcon.value = icons[r(0, icons.length - 1)]
+    isGlitching.value = true
+    
+    setTimeout(() => { isGlitching.value = false }, config.processTime)
+    timer = setTimeout(loop, r(config.minInterval, config.maxInterval))
+    
+  } else {
+    // 严重故障
+    isCritical.value = true
+    isGlitching.value = true
+    
+    const bursts = 5
+    const step = config.processTime / bursts
+    let c = 0
+    
+    function burst() {
+      currentIcon.value = icons[r(0, icons.length - 1)]
+      if (++c < bursts) setTimeout(burst, step)
+      else timer = setTimeout(loop, r(config.minInterval, config.maxInterval))
+    }
+    burst()
+  }
+}
+
+onMounted(() => loop())
+onUnmounted(() => clearTimeout(timer))
+<\/script>
+
+<style scoped>
+/* 容器样式 */
+.glitch-box {
+  width: 120px; height: 120px;
+  display: flex; justify-content: center; align-items: center;
+  background: rgba(0,0,0,0.2);
+  border-radius: 4px;
+  transition: all 0.1s;
+  
+  /* 静态配置 */
+  border: ${i.borderWidth.value}px solid ${i.staticBorder.value};
+}
+
+/* 故障激活状态 */
+.glitch-box.critical {
+  border-color: ${i.neon.value};
+  box-shadow: 0 0 15px ${i.neon.value};
+}
+
+.glitch-box i {
+  transform: scale(1.5);
+  display: inline-block;
+}
+
+.glitching {
+  animation: shake 0.15s infinite linear;
+  filter: drop-shadow(2px 0 ${i.neon.value}) drop-shadow(-2px 0 #ff003c);
+}
+
+@keyframes shake {
+  0% { transform: translate(1px, 1px) scale(1.5); }
+  50% { transform: translate(-1px, -1px) scale(1.5); }
+  100% { transform: translate(1px, -1px) scale(1.5); }
+}
+
+/* --- Sprite CSS (请确保图片路径正确) --- */
+${state.cssRaw}
+</style>`;
+
+            els.codeResult.textContent = vueCode;
+            document.getElementById('modal').style.display = 'flex';
+        }
+
+        function copyCode() {
+            const text = els.codeResult.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('代码已复制!');
+            });
+        }
+
+        // 初始化
+        updateVisuals();
+        chaosLoop();
+    </script>
+</body>
+
+</html>

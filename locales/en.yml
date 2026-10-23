@@ -17,6 +17,11 @@ home:
     p2: 'or follow us on'
     twitterXAccount: 'AGI Code Hub X account'
     thankYou: 'Thank you!'
+  serviceBanner:
+    tag: 'Paid service'
+    title: 'Stuck setting up REA? 1:1 remote setup, done in one session'
+    desc: 'Node.js, MCP registration, agent client and decompiler wiring — 20-40 min. Full refund if it does not run.'
+    cta: 'See service details →'
   nav:
     github: 'GitHub repository'
     githubRepository: 'AGI Code Hub GitHub repository'
@@ -55,11 +60,186 @@ favoriteButton:
   add: 'Add to favorites'
 toolCard:
   new: New
+staticTool:
+  openInNewWindow: 'Open in a new window'
 search:
   label: Search
 tools:
+
+  ffmpeg-workbench:
+    title: FFmpeg Command Workbench
+    description: All-in-one FFmpeg command generator — slicing & cropping, frame extraction, speed & reverse, image sequences & tiling, watermark removal and chroma masking in one place, with batch scripts for whole folders.
+    common:
+      input: Input file
+      localPreview: Local preview
+      pickLocal: Local file
+      copy: Copy
+      copied: Copied
+      batchTitle: Batch scripts (process a whole folder)
+      emptyDefault: Fill in the parameters to generate commands here
+      addSegment: Add segment
+      addStep: Add step
+      addRegion: Add region
+      deleteSelected: Delete selected
+      sourceSize: Source {w}×{h}
+      noMedia: No media loaded
+      canvasHint: Pick a local file to select regions directly on the preview
+      width: W
+      height: H
+      output: Output file
+      commandTitle: Generated commands
+    tabs:
+      slice: Slice & Crop
+      extract: Frame extraction
+      speed: Speed & Reverse
+      images: Sequence & Tiling
+      overlay: Overlay / Watermark
+      mask: Masking / Keying
+    slice:
+      panel: Slice & Crop
+      segments: Segments
+      segment: Segment {n}
+      start: Start (s)
+      end: End (s)
+      scale: Scale
+      crop: Enable crop
+      customScalePlaceholder: Custom scale, e.g. 1280:-2
+      prefix: Output prefix
+      codec: Encoder
+      crf: CRF
+      preset: preset
+      copyAlert: Stream copy cannot be combined with crop/scale (ffmpeg cannot apply filters without decoding).
+      empty: Add a segment to generate slicing commands
+      codecs:
+        h264: H.264 (libx264, best compatibility)
+        h265: H.265 (libx265, smaller files)
+        vp9: VP9 (libvpx-vp9)
+        copy: Stream copy (-c copy, fastest, lossless)
+      scales:
+        original: Keep original size
+        w1920: 1920 wide (1080p)
+        w1280: 1280 wide (720p)
+        w854: 854 wide (480p)
+        w640: 640 wide
+        custom: Custom…
+    extract:
+      panel: Frame extraction
+      method: Method
+      methodSingle: Single frame at timestamp
+      methodFps: Periodic frames (fps)
+      methodAll: All frames
+      timestamp: Timestamp
+      grabCurrent: Current time
+      fps: Frames per second
+      fpsHint: e.g. 1 = one frame per second, 0.5 = one every 2 seconds
+      outDir: Output directory
+      pattern: Filename prefix
+      format: Image format
+      namingAlert: Frames are named {dir}/{prefix}_0001.{ext}; feed them into the "Sequence & Tiling" tab to rebuild a video.
+      empty: Choose an extraction method to generate commands
+    speed:
+      panel: Speed & Reverse
+      mode: Mode
+      modeSpeed: Speed (faster / slower)
+      modeReverse: Reverse playback
+      speed: Speed factor
+      audio: Audio
+      audioMuted: Remove audio (-an)
+      audioTempo: Tempo-adjust audio
+      videoFilter: Video
+      audioFilter: Audio
+      tempoHint: atempo only supports 0.5–2.0 per stage; larger ratios are chained automatically.
+      reverseAudio: Reverse audio
+      reverseAudioOn: Reverse audio too (-af areverse)
+      reverseAudioOff: Video only
+      reverseAlert: Reversing loads the whole video into memory (-vf reverse); slice long videos first.
+      empty: Set parameters to generate commands
+    images:
+      panel: Sequences & Tiling
+      mode: Mode
+      modeVideo: Image sequence → video
+      modeTile: Tile / contact sheet
+      modeCrop: Batch crop images
+      sequence: Image sequence
+      fps: Frame rate
+      codec: Encoder
+      videoAlert: The %04d placeholder counts from 1; pair with the "Frame extraction" tab to rebuild a video from extracted frames.
+      columns: Columns
+      rows: Rows
+      tileAlert: All images must share the same size; tile=3x3 combines the first 9 images into one grid.
+      inputDir: Input directory
+      outputDir: Output directory
+      format: Image format
+      empty: Choose a mode to generate commands
+    overlay:
+      panel: Overlay / Watermark / Erase
+      mode: Mode
+      modeDelogo: Delogo watermark removal (recommended)
+      modeOverlay: Colour patches (overlay)
+      modeBorder: Boxes (drawbox)
+      modeEraser: Transparent eraser
+      color: Colour
+      opacity: Opacity
+      thickness: Border thickness
+      boxes: Regions ({n})
+      outputName: Output name
+      outputExt: Extension
+      keepAudio: Keep audio track
+      singleFrame: Single frame only (preview image)
+      canvasTitle: Visual region picker
+      empty: Add at least one region to generate commands
+    mask:
+      panel: Masking / Keying
+      finalOutput: Final output
+      ext: Extension
+      steps: Steps (applied in order)
+      step: Step {n}
+      type: Type
+      typeChromakey: Green screen (chromakey)
+      typeColorkey: Colour key (colorkey)
+      typeAlphamask: Alpha mask composite
+      maskFile: Transparent mask image
+      keyColor: Key colour
+      stepOutput: Output
+      similarity: Similarity
+      blend: Blend
+      stepsAlert: Each step consumes the previous step's output; the last result is renamed to the final output file.
+      empty: Add a step to generate commands
+  ffmpeg-script-tool:
+    title: FFmpeg In-browser Runner
+    description: Run ffmpeg (wasm) directly in the browser — video split to GIF (with palette optimisation), slideshow and image crop tabs.
+  ffmpeg-grid-image:
+    title: FFmpeg Grid Image Tool
+    description: Grid collage and social-media cover export with layout templates, intro animations and multi-platform presets (visual template editor).
+  ffmpeg-transparent-video:
+    title: Transparent Video Playback Test
+    description: Transparent-background (alpha) video playback test page (WebM/VP9, Canvas, CSS blend modes).
+  offline-html-dev:
+    title: Offline HTML Dev Environment
+    description: In-browser offline HTML development environment — write and preview HTML offline; the UI follows the app language.
+  sprite-sheet-merger:
+    title: Multi-Sprite Sheet Merger
+    description: Merge & reorganize multiple sprite sheets, keeping class names and group styles; the UI follows the app language.
+  glitch-generator:
+    title: Glitch Icon Generator
+    description: Glitch Generator V5 — dynamic / glitch-style icon generator.
+  icon-sprite-paginator-glass:
+    title: Icon Sprite Paginator (Glass)
+    description: Icon sprite sheet paging browser - Google icons, glass style.
+  icon-sprite-paginator-cyberpunk:
+    title: Icon Sprite Paginator (Cyberpunk)
+    description: Icon sprite sheet paging browser - Google icons, cyberpunk style.
+  icon-sprite-paginator-element:
+    title: Icon Sprite Paginator (ElementUI)
+    description: Icon sprite sheet paging browser - ElementUI cyberpunk style.
+  iphone-duo-gesture:
+    title: iPhone Duo Fold Preview (3D gesture demo)
+    description: Real-time 3D demo of the foldable iPhone Duo - drag or pinch to control the folding angle, with live-rendered screen UI, material reflections and depth of field.
   categories:
     favorite-tools: 'Your favorite tools'
+    ffmpeg: 'FFmpeg'
+    'legacy tools': 'Legacy tools'
+    '3d 演示': '3D demos'
     crypto: Crypto
     converter: Converter
     web: Web
@@ -70,6 +250,7 @@ tools:
     measurement: Measurement
     text: Text
     data: Data
+    '自媒体工具': 'Social Media'
 
   password-strength-analyser:
     title: Password strength analyser
@@ -252,6 +433,65 @@ tools:
   qrcode-generator:
     title: QR Code generator
     description: Generate and download a QR code for a URL (or just plain text), and customize the background and foreground colors.
+
+  wechat-qr-namecard-generator:
+    title: WeChat QR namecard generator
+    description: Generate a customizable WeChat QR business namecard — edit nickname, region, service items, colors and tag styles, then export high-resolution PNG.
+    copy: Content
+    nickname: Nickname
+    region: Region
+    topSlogan: Top slogan
+    bottomHint: Bottom hint
+    nicknamePlaceholder: Enter nickname
+    regionPlaceholder: 'e.g. Guangdong Shenzhen'
+    sloganPlaceholder: 'Optional, e.g. Media tools · Custom services'
+    hintPlaceholder: 'Scan the QR code to add me as a friend.'
+    services: Services
+    serviceTitle: Section title
+    serviceTitlePlaceholder: Services
+    addService: Add service
+    servicePlaceholder: Enter service name
+    qr: QR code
+    uploadQr: Upload QR image
+    set: Set
+    unset: Not set
+    qrLinkPlaceholder: 'Or enter a WeChat link / text to generate QR offline'
+    generate: Generate
+    qrTip: 'Tip: paste a link or text to generate a QR code with the built-in engine (no network needed); you can also upload your own QR image.'
+    style: Style
+    preset: Color preset
+    wechatGreen: WeChat green
+    freshBlue: Fresh blue
+    vividOrange: Vivid orange
+    darkGreen: Dark green
+    themeColor: Theme color
+    bgColor: Background color
+    cardRadius: Card radius
+    servicePosition: Service position
+    belowQr: Below QR
+    aboveQr: Above QR
+    tagStyle: Tag style
+    tag: Rounded tag
+    card: Color card
+    list: Simple list
+    avatarShape: Avatar shape
+    circle: Circle
+    rounded: Rounded
+    square: Square
+    qrRounded: QR rounded
+    preview: Preview
+    exportPng: Export PNG
+    wechatNickLabel: WeChat nickname
+    unnamed: Unnamed
+    qrEmpty: Upload a QR image or enter a link to generate
+    qrNeedText: Please enter a WeChat link or text first
+    qrGenerated: QR code generated
+    qrFailed: Failed to generate QR code, please check the input
+    qrNeedFirst: Please upload a QR image or generate a QR code from a link first
+    exportUnsupported: Export is not supported in this environment
+    exportFailed: Export failed, please try again
+    exported: Exported {size} PNG
+    defaultRegion: 'Guangdong, Shenzhen'
 
   wifi-qrcode-generator:
     title: WiFi QR Code generator

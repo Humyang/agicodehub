@@ -6,6 +6,9 @@ import { createI18n } from 'vue-i18n';
 const i18n = createI18n({
   legacy: false,
   locale: 'en',
+  // 显式指定回退语言：新增文案只补 zh/en 时，其它小语种会显示英文，
+  // 而不是把 home.serviceBanner.title 这种键名直接暴露到页面上。
+  fallbackLocale: 'en',
   messages,
 });
 

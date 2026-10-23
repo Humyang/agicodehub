@@ -64,8 +64,8 @@ export default defineConfig({
         lang: 'zh-CN',
         start_url: `${baseUrl}?utm_source=pwa&utm_medium=pwa`,
         orientation: 'any',
-        theme_color: '#18a058',
-        background_color: '#f1f5f9',
+        theme_color: '#0058A0',
+        background_color: '#ffffff',
         icons: [
           {
             src: '/favicon-16x16.png',

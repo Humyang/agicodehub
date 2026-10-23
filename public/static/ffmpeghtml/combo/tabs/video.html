@@ -1,0 +1,34 @@
+<div class="tab-content" id="video">
+    <div class="instructions">
+        <h3>图片合成视频</h3>
+        <p>将图片序列合成为视频。</p>
+    </div>
+
+    <div class="form-group">
+        <label for="input-video-dir">输入图片目录:</label>
+        <input type="text" id="input-video-dir" placeholder="例如: frames/">
+    </div>
+
+    <div class="form-group">
+        <label for="output-video">输出视频路径:</label>
+        <input type="text" id="output-video" placeholder="例如: output.mp4">
+    </div>
+
+    <div class="form-group">
+        <label for="video-frame-rate">视频帧率 (fps):</label>
+        <input type="number" id="video-frame-rate" value="24" min="1">
+    </div>
+
+    <div class="form-group">
+        <label for="video-format">视频格式:</label>
+        <select id="video-format">
+            <option value="mp4">MP4</option>
+            <option value="avi">AVI</option>
+            <option value="mov">MOV</option>
+        </select>
+    </div>
+
+    <button class="btn-generate" id="generate-video">生成视频合成脚本</button>
+
+    <div class="output" id="video-output"></div>
+</div>

@@ -1,0 +1,802 @@
+
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>Icon Sprite Paginator</title>
+        <style>
+            :root { 
+                --bg: #1e1e1e; --card: #252526; --border: #333; --text: #cccccc; 
+                --accent: #007acc; --sel: #094771; --code-bg: #101010;
+                --card-min-width: 150px; 
+                --checker-bg: #FFFFFF;
+                --base-w: 141; --base-h: 136;
+                --scale-x: 1; --scale-y: 1;
+            }
+            body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; padding: 0; margin: 0; height: 100vh; overflow: hidden; display: flex; }
+            ::-webkit-scrollbar { width: 8px; height: 8px; }
+            ::-webkit-scrollbar-track { background: var(--bg); }
+            ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+            
+            .sidebar { width: 450px; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column; height: 100%; z-index: 10; box-shadow: 2px 0 10px rgba(0,0,0,0.3); overflow: hidden; }
+            .sidebar-scroll { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+            .sidebar-footer { flex-shrink: 0; background: var(--card); border-top: 1px solid var(--border); padding: 15px; z-index: 20; }
+
+            .main { flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+            .panel { padding: 15px; border-bottom: 1px solid var(--border); }
+            .panel-title { font-size: 12px; font-weight: bold; color: #888; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+            .input-group { margin-bottom: 10px; }
+            .input-group label { display: block; font-size: 12px; margin-bottom: 4px; color: #aaa; }
+            .row { display: flex; gap: 8px; align-items: center; }
+            input[type="text"], input[type="number"], select { background: #3c3c3c; border: 1px solid #3c3c3c; color: white; padding: 6px; border-radius: 2px; width: 100%; box-sizing: border-box; font-family: inherit; font-size: 13px; }
+            input:focus, select:focus { border-color: var(--accent); outline: none; }
+            input[type="color"] { -webkit-appearance: none; border: none; width: 30px; height: 30px; padding: 0; background: none; cursor: pointer; }
+            button { background: #333; color: white; border: 1px solid transparent; padding: 6px 12px; border-radius: 2px; cursor: pointer; font-size: 12px; transition: 0.2s; }
+            button:hover { background: #444; }
+            button.primary { background: var(--accent); }
+            button:disabled { opacity: 0.5; cursor: not-allowed; }
+            textarea { width: 100%; height: 80px; background: var(--code-bg); color: #9cdcfe; border: 1px solid var(--border); padding: 8px; font-family: 'Consolas', monospace; font-size: 11px; resize: none; box-sizing: border-box; }
+            .preview-scroll { flex: 1; overflow-y: auto; padding: 20px; background: #1e1e1e; }
+            .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(var(--card-min-width), 1fr)); gap: 15px; }
+            .card { background: #2d2d2d; border-radius: 4px; padding: 8px; text-align: center; cursor: pointer; border: 1px solid transparent; transition: 0.1s; position: relative; }
+            .card:hover { background: #383838; }
+            .card.selected { background: var(--sel); border-color: var(--accent); }
+            .card.hidden { display: none !important; }
+            
+            .checker { background-color: var(--checker-bg); border-radius: 2px; display: inline-block; padding: 10px; margin-bottom: 5px; display: inline-flex; align-items: center; justify-content: center; }
+            .label { font-size: 10px; color: #aaa; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top:5px; }
+            .icon-preview {
+                display: inline-block;
+                background-repeat: no-repeat;
+                width: calc(var(--real-w) * var(--scale-x) * 1px);
+                height: calc(var(--real-h) * var(--scale-y) * 1px);
+                background-size: calc(var(--sp-w) * var(--scale-x) * 1px) calc(var(--sp-h) * var(--scale-y) * 1px);
+                background-position: calc(var(--pos-x) * -1px * var(--scale-x)) calc(var(--pos-y) * -1px * var(--scale-y));
+            }
+            .tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 5px; gap: 2px; }
+            .tab { padding: 5px 8px; font-size: 11px; cursor: pointer; color: #888; border-bottom: 2px solid transparent; }
+            .tab:hover { color: #bbb; }
+            .tab.active { color: white; border-color: var(--accent); }
+            .code-block { display: none; background: var(--code-bg); padding: 10px; border-radius: 4px; font-family: 'Consolas', monospace; font-size: 11px; color: #ce9178; overflow-x: auto; white-space: pre; border: 1px solid var(--border); height: 200px; overflow-y: auto; }
+            .code-block.active { display: block; }
+            .tag { color: #569cd6; } .attr { color: #9cdcfe; } .val { color: #ce9178; } .comment { color: #6a9955; } .str { color: #ce9178; } .kwd { color: #c586c0; } .cls { color: #4ec9b0; }
+            
+            .drop-zone {
+                border: 2px dashed #444;
+                border-radius: 6px;
+                padding: 20px 10px;
+                text-align: center;
+                color: #888;
+                font-size: 12px;
+                cursor: pointer;
+                transition: all 0.2s;
+                position: relative;
+                background: #222;
+            }
+            .drop-zone:hover, .drop-zone.dragover {
+                border-color: var(--accent);
+                background: #2a2a2a;
+                color: #fff;
+            }
+            .drop-zone input[type=file] {
+                position: absolute;
+                top: 0; left: 0; width: 100%; height: 100%;
+                opacity: 0;
+                cursor: pointer;
+            }
+            .drop-icon { font-size: 24px; margin-bottom: 5px; display: block; opacity: 0.5; }
+
+            .toolbar {
+                padding: 10px 20px;
+                background: #252526;
+                border-bottom: 1px solid var(--border);
+                display: flex;
+                gap: 10px;
+                align-items: center;
+            }
+            .toolbar input, .toolbar select { width: auto; min-width: 150px; }
+            .filter-stats { font-size: 11px; color: #666; margin-left: auto; }
+        </style>
+    <script src="/script/legacy-i18n.js" defer></script></head>
+    <body>
+        <div class="sidebar">
+            <div class="sidebar-scroll">
+                <div class="panel">
+                    <div class="panel-title">Import / Restore</div>
+                    <div class="drop-zone" id="dropZone">
+                        <span class="drop-icon">📂</span>
+                        <span>Drag & Drop CSS here<br>or Click to Upload</span>
+                        <input type="file" id="cssUpload" accept=".css" onchange="handleCssUpload(this.files[0])" />
+                    </div>
+                    <div style="font-size:10px; color:#666; margin-top:8px; line-height:1.4;">
+                        Parses CSS to:
+                        <ul style="margin:2px 0 0 -20px;">
+                            <li>Detect Base Class & Prefix</li>
+                            <li>Add matching icons to selection</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="panel-title">Naming Settings</div>
+                    <div class="input-group">
+                        <label>Base Class Name</label>
+                        <input type="text" id="spriteClass" value="sprite-icon" placeholder="e.g.: icon">
+                    </div>
+                    <div class="input-group">
+                        <label>Item Class Prefix</label>
+                        <input type="text" id="classPrefix" value="icon" placeholder="e.g.: ico">
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">Visual Settings</div>
+                    <div class="input-group">
+                        <label>CSS Display Size</label>
+                        <div class="row">
+                            <input type="number" id="inputW" value="80">
+                            <span style="color:#FFFFFF">x</span>
+                            <input type="number" id="inputH" value="136">
+                        </div>
+                        <div style="margin-top:5px; font-size:11px; color:#aaa;">
+                            <input type="checkbox" id="lockRatio" checked> Lock Aspect Ratio<br>
+                            (Note: Export keeps original image size; CSS handles scaling)
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <label>Preview Background</label>
+                        <input type="color" id="checkerColor" value="#333333" oninput="updateVisuals()">
+                    </div>
+                </div>
+                <div class="panel">
+                    <div class="panel-title">Export Options</div>
+                    <div class="input-group">
+                        <label>Image Format</label>
+                        <select id="exportFormat">
+                            <option value="webp">WebP (Smaller size)</option>
+                            <option value="png">PNG (Better compatibility)</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="panel">
+                    <div class="panel-title">
+                        <span>CSS / Usage Code</span>
+                        <button onclick="copyCSS()" style="padding:2px 6px; font-size:10px;">Copy CSS</button>
+                    </div>
+                    <textarea id="cssOutput" spellcheck="false"></textarea>
+                    
+                    <div class="tabs" style="margin-top:10px">
+                        <div class="tab active" onclick="switchTab('guide')">Guide</div>
+                        <div class="tab" onclick="switchTab('html')">HTML</div>
+                        <div class="tab" onclick="switchTab('vue')">Vue</div>
+                        <div class="tab" onclick="switchTab('react')">React/Next</div>
+                    </div>
+                    
+                    <div id="code-guide" class="code-block active"></div>
+                    <div id="code-html" class="code-block"></div>
+                    <div id="code-vue" class="code-block"></div>
+                    <div id="code-react" class="code-block"></div>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="row" style="gap:5px;">
+                    <button onclick="selectAll(true)" style="font-size:10px; flex:1">Select All</button>
+                    <button onclick="selectAll(false)" style="font-size:10px; flex:1">Clear</button>
+                </div>
+                <button class="primary" id="btnExport" style="width:100%; margin-top:5px;" onclick="exportSelected()" disabled>
+                    Export Selected
+                </button>
+            </div>
+        </div>
+
+        <div class="main">
+            <div class="toolbar">
+                <div style="flex:1">
+                    <input type="text" id="filterInput" placeholder="Filter by name..." oninput="applyFilters()">
+                </div>
+                <div>
+                    <select id="filterStatus" onchange="applyFilters()">
+                        <option value="all">Show All Status</option>
+                        <option value="selected">Selected Only</option>
+                        <option value="unselected">Unselected Only</option>
+                    </select>
+                </div>
+                <div class="filter-stats" id="filterStats"></div>
+            </div>
+            
+            <div class="preview-scroll">
+                <div class="grid" id="grid"></div>
+            </div>
+        </div>
+        <canvas id="exportCanvas" style="display:none"></canvas>
+        <script>
+            const rawData = [{"file": "icon_1.png", "x": 0, "y": 0, "width": 103, "height": 98, "index": 1, "customName": "el-icon-platform-eleme", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_2.png", "x": 141, "y": 0, "width": 91, "height": 89, "index": 2, "customName": "el-icon-eleme", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_3.png", "x": 282, "y": 0, "width": 109, "height": 100, "index": 3, "customName": "el-icon-delete-solid", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_4.png", "x": 423, "y": 0, "width": 110, "height": 100, "index": 4, "customName": "el-icon-delete", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_5.png", "x": 564, "y": 0, "width": 105, "height": 98, "index": 5, "customName": "el-icon-s-tools", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_6.png", "x": 705, "y": 0, "width": 105, "height": 102, "index": 6, "customName": "el-icon-setting", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_7.png", "x": 846, "y": 0, "width": 95, "height": 93, "index": 7, "customName": "el-icon-user-solid", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_8.png", "x": 987, "y": 0, "width": 93, "height": 95, "index": 8, "customName": "el-icon-user", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_9.png", "x": 1128, "y": 0, "width": 103, "height": 95, "index": 9, "customName": "el-icon-phone", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_10.png", "x": 1269, "y": 0, "width": 100, "height": 97, "index": 10, "customName": "el-icon-phone-outline", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_11.png", "x": 0, "y": 136, "width": 107, "height": 43, "index": 11, "customName": "el-icon-more", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_12.png", "x": 141, "y": 136, "width": 102, "height": 41, "index": 12, "customName": "el-icon-more-outline", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_13.png", "x": 282, "y": 136, "width": 95, "height": 88, "index": 13, "customName": "el-icon-star-on", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_14.png", "x": 423, "y": 136, "width": 105, "height": 96, "index": 14, "customName": "el-icon-star-off", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_15.png", "x": 564, "y": 136, "width": 96, "height": 91, "index": 15, "customName": "el-icon-s-goods", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_16.png", "x": 705, "y": 136, "width": 96, "height": 93, "index": 16, "customName": "el-icon-goods", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_17.png", "x": 846, "y": 136, "width": 108, "height": 102, "index": 17, "customName": "el-icon-warning", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_18.png", "x": 987, "y": 136, "width": 110, "height": 108, "index": 18, "customName": "el-icon-warning-outline", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_19.png", "x": 1128, "y": 136, "width": 100, "height": 102, "index": 19, "customName": "el-icon-question", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_20.png", "x": 1269, "y": 136, "width": 103, "height": 100, "index": 20, "customName": "el-icon-info", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_21.png", "x": 0, "y": 272, "width": 103, "height": 98, "index": 21, "customName": "el-icon-remove", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_22.png", "x": 141, "y": 272, "width": 105, "height": 103, "index": 22, "customName": "el-icon-circle-plus", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_23.png", "x": 282, "y": 272, "width": 103, "height": 103, "index": 23, "customName": "el-icon-success", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_24.png", "x": 423, "y": 272, "width": 102, "height": 105, "index": 24, "customName": "el-icon-error", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_25.png", "x": 564, "y": 272, "width": 97, "height": 96, "index": 25, "customName": "el-icon-zoom-in", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_26.png", "x": 705, "y": 272, "width": 100, "height": 96, "index": 26, "customName": "el-icon-zoom-out", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_27.png", "x": 846, "y": 272, "width": 103, "height": 98, "index": 27, "customName": "el-icon-remove-outline", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_28.png", "x": 987, "y": 272, "width": 98, "height": 96, "index": 28, "customName": "el-icon-circle-plus-outline", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_29.png", "x": 1128, "y": 272, "width": 102, "height": 98, "index": 29, "customName": "el-icon-circle-check", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_30.png", "x": 1269, "y": 272, "width": 105, "height": 101, "index": 30, "customName": "el-icon-circle-close", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_31.png", "x": 0, "y": 408, "width": 100, "height": 100, "index": 31, "customName": "el-icon-s-help", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_32.png", "x": 141, "y": 408, "width": 100, "height": 102, "index": 32, "customName": "el-icon-help", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_33.png", "x": 282, "y": 408, "width": 98, "height": 32, "index": 33, "customName": "el-icon-minus", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_34.png", "x": 423, "y": 408, "width": 98, "height": 100, "index": 34, "customName": "el-icon-plus", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_35.png", "x": 564, "y": 408, "width": 96, "height": 74, "index": 35, "customName": "el-icon-check", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_36.png", "x": 705, "y": 408, "width": 84, "height": 82, "index": 36, "customName": "el-icon-close", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_37.png", "x": 846, "y": 408, "width": 138, "height": 119, "index": 37, "customName": "el-icon-picture", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_38.png", "x": 987, "y": 408, "width": 122, "height": 120, "index": 38, "customName": "el-icon-picture-outline", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_39.png", "x": 1128, "y": 408, "width": 130, "height": 129, "index": 39, "customName": "el-icon-picture-outline-round", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_40.png", "x": 1269, "y": 408, "width": 141, "height": 112, "index": 40, "customName": "el-icon-upload", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_41.png", "x": 0, "y": 544, "width": 114, "height": 116, "index": 41, "customName": "el-icon-upload2", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_42.png", "x": 141, "y": 544, "width": 114, "height": 119, "index": 42, "customName": "el-icon-download", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_43.png", "x": 282, "y": 544, "width": 131, "height": 122, "index": 43, "customName": "el-icon-camera-solid", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_44.png", "x": 423, "y": 544, "width": 130, "height": 120, "index": 44, "customName": "el-icon-camera", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_45.png", "x": 564, "y": 544, "width": 135, "height": 114, "index": 45, "customName": "el-icon-video-camera-solid", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_46.png", "x": 705, "y": 544, "width": 130, "height": 101, "index": 46, "customName": "el-icon-video-camera", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_47.png", "x": 846, "y": 544, "width": 137, "height": 131, "index": 47, "customName": "el-icon-message-solid", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_48.png", "x": 987, "y": 544, "width": 130, "height": 123, "index": 48, "customName": "el-icon-bell", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_49.png", "x": 1128, "y": 544, "width": 131, "height": 119, "index": 49, "customName": "el-icon-s-cooperation", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_50.png", "x": 1269, "y": 544, "width": 119, "height": 126, "index": 50, "customName": "el-icon-s-order", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_51.png", "x": 0, "y": 680, "width": 137, "height": 116, "index": 51, "customName": "el-icon-s-platform", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_52.png", "x": 141, "y": 680, "width": 127, "height": 109, "index": 52, "customName": "el-icon-s-fold", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_53.png", "x": 282, "y": 680, "width": 130, "height": 109, "index": 53, "customName": "el-icon-s-unfold", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_54.png", "x": 423, "y": 680, "width": 121, "height": 114, "index": 54, "customName": "el-icon-s-operation", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_55.png", "x": 564, "y": 680, "width": 122, "height": 116, "index": 55, "customName": "el-icon-s-promotion", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_56.png", "x": 705, "y": 680, "width": 128, "height": 128, "index": 56, "customName": "el-icon-s-home", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_57.png", "x": 846, "y": 680, "width": 123, "height": 130, "index": 57, "customName": "el-icon-s-release", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_58.png", "x": 987, "y": 680, "width": 137, "height": 107, "index": 58, "customName": "el-icon-s-ticket", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_59.png", "x": 1128, "y": 680, "width": 126, "height": 118, "index": 59, "customName": "el-icon-s-management", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_60.png", "x": 1269, "y": 680, "width": 116, "height": 125, "index": 60, "customName": "el-icon-s-open", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_61.png", "x": 0, "y": 816, "width": 126, "height": 121, "index": 61, "customName": "el-icon-s-shop", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_62.png", "x": 141, "y": 816, "width": 126, "height": 129, "index": 62, "customName": "el-icon-s-marketing", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_63.png", "x": 282, "y": 816, "width": 119, "height": 135, "index": 63, "customName": "el-icon-s-flag", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_64.png", "x": 423, "y": 816, "width": 128, "height": 123, "index": 64, "customName": "el-icon-s-comment", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_65.png", "x": 564, "y": 816, "width": 121, "height": 118, "index": 65, "customName": "el-icon-s-finance", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_66.png", "x": 705, "y": 816, "width": 123, "height": 131, "index": 66, "customName": "el-icon-s-claim", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_67.png", "x": 846, "y": 816, "width": 138, "height": 131, "index": 67, "customName": "el-icon-s-custom", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_68.png", "x": 987, "y": 816, "width": 119, "height": 136, "index": 68, "customName": "el-icon-s-opportunity", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_69.png", "x": 1128, "y": 816, "width": 126, "height": 127, "index": 69, "customName": "el-icon-s-data", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_70.png", "x": 1269, "y": 816, "width": 130, "height": 123, "index": 70, "customName": "el-icon-s-check", "spritePage": 0, "spriteFile": "sprite_sheet_0.webp"}, {"file": "icon_71.png", "x": 0, "y": 0, "width": 126, "height": 121, "index": 71, "customName": "el-icon-s-grid", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_72.png", "x": 141, "y": 0, "width": 128, "height": 126, "index": 72, "customName": "el-icon-menu", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_73.png", "x": 282, "y": 0, "width": 88, "height": 93, "index": 73, "customName": "el-icon-share", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_74.png", "x": 423, "y": 0, "width": 70, "height": 90, "index": 74, "customName": "el-icon-d-caret", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_75.png", "x": 564, "y": 0, "width": 59, "height": 81, "index": 75, "customName": "el-icon-caret-left", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_76.png", "x": 705, "y": 0, "width": 56, "height": 78, "index": 76, "customName": "el-icon-caret-right", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_77.png", "x": 846, "y": 0, "width": 76, "height": 59, "index": 77, "customName": "el-icon-caret-bottom", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_78.png", "x": 987, "y": 0, "width": 76, "height": 60, "index": 78, "customName": "el-icon-caret-top", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_79.png", "x": 1128, "y": 0, "width": 75, "height": 79, "index": 79, "customName": "el-icon-bottom-left", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_80.png", "x": 1269, "y": 0, "width": 75, "height": 80, "index": 80, "customName": "el-icon-bottom-right", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_81.png", "x": 0, "y": 136, "width": 84, "height": 78, "index": 81, "customName": "el-icon-back", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_82.png", "x": 141, "y": 136, "width": 91, "height": 78, "index": 82, "customName": "el-icon-right", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_83.png", "x": 282, "y": 136, "width": 75, "height": 98, "index": 83, "customName": "el-icon-bottom", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_84.png", "x": 423, "y": 136, "width": 72, "height": 93, "index": 84, "customName": "el-icon-top", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_85.png", "x": 564, "y": 136, "width": 73, "height": 77, "index": 85, "customName": "el-icon-top-left", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_86.png", "x": 705, "y": 136, "width": 73, "height": 79, "index": 86, "customName": "el-icon-top-right", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_87.png", "x": 846, "y": 136, "width": 57, "height": 92, "index": 87, "customName": "el-icon-arrow-left", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_88.png", "x": 987, "y": 136, "width": 57, "height": 91, "index": 88, "customName": "el-icon-arrow-right", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_89.png", "x": 1128, "y": 136, "width": 85, "height": 58, "index": 89, "customName": "el-icon-arrow-down", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_90.png", "x": 1269, "y": 136, "width": 93, "height": 61, "index": 90, "customName": "el-icon-arrow-up", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_91.png", "x": 0, "y": 272, "width": 81, "height": 91, "index": 91, "customName": "el-icon-d-arrow-left", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_92.png", "x": 141, "y": 272, "width": 78, "height": 90, "index": 92, "customName": "el-icon-d-arrow-right", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_93.png", "x": 282, "y": 272, "width": 100, "height": 107, "index": 93, "customName": "el-icon-video-pause", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_94.png", "x": 423, "y": 272, "width": 101, "height": 104, "index": 94, "customName": "el-icon-video-play", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_95.png", "x": 564, "y": 272, "width": 87, "height": 95, "index": 95, "customName": "el-icon-refresh", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_96.png", "x": 705, "y": 272, "width": 89, "height": 94, "index": 96, "customName": "el-icon-refresh-right", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_97.png", "x": 846, "y": 272, "width": 87, "height": 96, "index": 97, "customName": "el-icon-refresh-left", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_98.png", "x": 987, "y": 272, "width": 106, "height": 86, "index": 98, "customName": "el-icon-finished", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_99.png", "x": 1128, "y": 272, "width": 91, "height": 105, "index": 99, "customName": "el-icon-sort", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_100.png", "x": 1269, "y": 272, "width": 53, "height": 98, "index": 100, "customName": "el-icon-sort-up", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_101.png", "x": 0, "y": 408, "width": 54, "height": 103, "index": 101, "customName": "el-icon-sort-down", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_102.png", "x": 141, "y": 408, "width": 99, "height": 99, "index": 102, "customName": "el-icon-rank", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_103.png", "x": 282, "y": 408, "width": 99, "height": 105, "index": 103, "customName": "el-icon-loading", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_104.png", "x": 423, "y": 408, "width": 120, "height": 88, "index": 104, "customName": "el-icon-view", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_105.png", "x": 564, "y": 408, "width": 99, "height": 94, "index": 105, "customName": "el-icon-c-scale-to-original", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_106.png", "x": 705, "y": 408, "width": 106, "height": 108, "index": 106, "customName": "el-icon-date", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_107.png", "x": 846, "y": 408, "width": 97, "height": 110, "index": 107, "customName": "el-icon-edit", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_108.png", "x": 987, "y": 408, "width": 97, "height": 102, "index": 108, "customName": "el-icon-edit-outline", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_109.png", "x": 1128, "y": 408, "width": 124, "height": 106, "index": 109, "customName": "el-icon-folder", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_110.png", "x": 1269, "y": 408, "width": 125, "height": 106, "index": 110, "customName": "el-icon-folder-opened", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_111.png", "x": 0, "y": 544, "width": 127, "height": 106, "index": 111, "customName": "el-icon-folder-add", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_112.png", "x": 141, "y": 544, "width": 128, "height": 106, "index": 112, "customName": "el-icon-folder-remove", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_113.png", "x": 282, "y": 544, "width": 122, "height": 106, "index": 113, "customName": "el-icon-folder-delete", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_114.png", "x": 423, "y": 544, "width": 122, "height": 106, "index": 114, "customName": "el-icon-folder-checked", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_115.png", "x": 564, "y": 544, "width": 115, "height": 117, "index": 115, "customName": "el-icon-tickets", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_116.png", "x": 705, "y": 544, "width": 113, "height": 118, "index": 116, "customName": "el-icon-document-remove", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_117.png", "x": 846, "y": 544, "width": 113, "height": 120, "index": 117, "customName": "el-icon-document-delete", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_118.png", "x": 987, "y": 544, "width": 128, "height": 113, "index": 118, "customName": "el-icon-document-copy", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_119.png", "x": 1128, "y": 544, "width": 113, "height": 113, "index": 119, "customName": "el-icon-document-checked", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_120.png", "x": 1269, "y": 544, "width": 111, "height": 115, "index": 120, "customName": "el-icon-document", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_121.png", "x": 0, "y": 680, "width": 118, "height": 118, "index": 121, "customName": "el-icon-document-add", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_122.png", "x": 141, "y": 680, "width": 128, "height": 113, "index": 122, "customName": "el-icon-printer", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_123.png", "x": 282, "y": 680, "width": 118, "height": 114, "index": 123, "customName": "el-icon-paperclip", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_124.png", "x": 423, "y": 680, "width": 137, "height": 110, "index": 124, "customName": "el-icon-takeaway-box", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_125.png", "x": 564, "y": 680, "width": 118, "height": 115, "index": 125, "customName": "el-icon-search", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_126.png", "x": 705, "y": 680, "width": 130, "height": 108, "index": 126, "customName": "el-icon-monitor", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_127.png", "x": 846, "y": 680, "width": 113, "height": 106, "index": 127, "customName": "el-icon-attract", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_128.png", "x": 987, "y": 680, "width": 111, "height": 113, "index": 128, "customName": "el-icon-mobile", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_129.png", "x": 1128, "y": 680, "width": 117, "height": 108, "index": 129, "customName": "el-icon-scissors", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_130.png", "x": 1269, "y": 680, "width": 125, "height": 108, "index": 130, "customName": "el-icon-umbrella", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_131.png", "x": 0, "y": 816, "width": 124, "height": 110, "index": 131, "customName": "el-icon-headset", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_132.png", "x": 141, "y": 816, "width": 122, "height": 111, "index": 132, "customName": "el-icon-brush", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_133.png", "x": 282, "y": 816, "width": 97, "height": 112, "index": 133, "customName": "el-icon-mouse", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_134.png", "x": 423, "y": 816, "width": 113, "height": 116, "index": 134, "customName": "el-icon-coordinate", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_135.png", "x": 564, "y": 816, "width": 120, "height": 110, "index": 135, "customName": "el-icon-magic-stick", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_136.png", "x": 705, "y": 816, "width": 125, "height": 105, "index": 136, "customName": "el-icon-reading", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_137.png", "x": 846, "y": 816, "width": 131, "height": 110, "index": 137, "customName": "el-icon-data-line", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_138.png", "x": 987, "y": 816, "width": 132, "height": 108, "index": 138, "customName": "el-icon-data-board", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_139.png", "x": 1128, "y": 816, "width": 129, "height": 122, "index": 139, "customName": "el-icon-pie-chart", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_140.png", "x": 1269, "y": 816, "width": 130, "height": 111, "index": 140, "customName": "el-icon-data-analysis", "spritePage": 1, "spriteFile": "sprite_sheet_1.webp"}, {"file": "icon_141.png", "x": 0, "y": 0, "width": 98, "height": 115, "index": 141, "customName": "el-icon-collection-tag", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_142.png", "x": 141, "y": 0, "width": 117, "height": 113, "index": 142, "customName": "el-icon-film", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_143.png", "x": 282, "y": 0, "width": 132, "height": 104, "index": 143, "customName": "el-icon-suitcase", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_144.png", "x": 423, "y": 0, "width": 127, "height": 111, "index": 144, "customName": "el-icon-suitcase-1", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_145.png", "x": 564, "y": 0, "width": 122, "height": 103, "index": 145, "customName": "el-icon-receiving", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_146.png", "x": 705, "y": 0, "width": 110, "height": 113, "index": 146, "customName": "el-icon-collection", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_147.png", "x": 846, "y": 0, "width": 120, "height": 104, "index": 147, "customName": "el-icon-files", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_148.png", "x": 987, "y": 0, "width": 113, "height": 113, "index": 148, "customName": "el-icon-notebook-1", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_149.png", "x": 1128, "y": 0, "width": 110, "height": 111, "index": 149, "customName": "el-icon-notebook-2", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_150.png", "x": 1269, "y": 0, "width": 118, "height": 113, "index": 150, "customName": "el-icon-toilet-paper", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_151.png", "x": 0, "y": 136, "width": 115, "height": 105, "index": 151, "customName": "el-icon-office-building", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_152.png", "x": 141, "y": 136, "width": 118, "height": 109, "index": 152, "customName": "el-icon-school", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_153.png", "x": 282, "y": 136, "width": 106, "height": 113, "index": 153, "customName": "el-icon-table-lamp", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_154.png", "x": 423, "y": 136, "width": 110, "height": 111, "index": 154, "customName": "el-icon-house", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_155.png", "x": 564, "y": 136, "width": 115, "height": 103, "index": 155, "customName": "el-icon-no-smoking", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_156.png", "x": 705, "y": 136, "width": 118, "height": 94, "index": 156, "customName": "el-icon-smoking", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_157.png", "x": 846, "y": 136, "width": 121, "height": 111, "index": 157, "customName": "el-icon-shopping-cart-full", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_158.png", "x": 987, "y": 136, "width": 125, "height": 106, "index": 158, "customName": "el-icon-shopping-cart-1", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_159.png", "x": 1128, "y": 136, "width": 124, "height": 111, "index": 159, "customName": "el-icon-shopping-cart-2", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_160.png", "x": 1269, "y": 136, "width": 111, "height": 113, "index": 160, "customName": "el-icon-shopping-bag-1", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_161.png", "x": 0, "y": 272, "width": 110, "height": 113, "index": 161, "customName": "el-icon-shopping-bag-2", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_162.png", "x": 141, "y": 272, "width": 108, "height": 113, "index": 162, "customName": "el-icon-sold-out", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_163.png", "x": 282, "y": 272, "width": 111, "height": 113, "index": 163, "customName": "el-icon-sell", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_164.png", "x": 423, "y": 272, "width": 118, "height": 110, "index": 164, "customName": "el-icon-present", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_165.png", "x": 564, "y": 272, "width": 124, "height": 113, "index": 165, "customName": "el-icon-box", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_166.png", "x": 705, "y": 272, "width": 120, "height": 96, "index": 166, "customName": "el-icon-bank-card", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_167.png", "x": 846, "y": 272, "width": 122, "height": 101, "index": 167, "customName": "el-icon-money", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_168.png", "x": 987, "y": 272, "width": 118, "height": 111, "index": 168, "customName": "el-icon-coin", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_169.png", "x": 1128, "y": 272, "width": 125, "height": 111, "index": 169, "customName": "el-icon-wallet", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_170.png", "x": 1269, "y": 272, "width": 106, "height": 116, "index": 170, "customName": "el-icon-discount", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_171.png", "x": 0, "y": 408, "width": 111, "height": 116, "index": 171, "customName": "el-icon-price-tag", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_172.png", "x": 141, "y": 408, "width": 115, "height": 106, "index": 172, "customName": "el-icon-news", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_173.png", "x": 282, "y": 408, "width": 122, "height": 115, "index": 173, "customName": "el-icon-guide", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_174.png", "x": 423, "y": 408, "width": 113, "height": 99, "index": 174, "customName": "el-icon-male", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_175.png", "x": 564, "y": 408, "width": 90, "height": 108, "index": 175, "customName": "el-icon-female", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_176.png", "x": 705, "y": 408, "width": 120, "height": 117, "index": 176, "customName": "el-icon-thumb", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_177.png", "x": 846, "y": 408, "width": 118, "height": 110, "index": 177, "customName": "el-icon-cpu", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_178.png", "x": 987, "y": 408, "width": 111, "height": 105, "index": 178, "customName": "el-icon-link", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_179.png", "x": 1128, "y": 408, "width": 125, "height": 106, "index": 179, "customName": "el-icon-connection", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_180.png", "x": 1269, "y": 408, "width": 136, "height": 94, "index": 180, "customName": "el-icon-open", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_181.png", "x": 0, "y": 544, "width": 107, "height": 77, "index": 181, "customName": "el-icon-turn-off", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_182.png", "x": 141, "y": 544, "width": 89, "height": 92, "index": 182, "customName": "el-icon-set-up", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_183.png", "x": 282, "y": 544, "width": 95, "height": 96, "index": 183, "customName": "el-icon-chat-round", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_184.png", "x": 423, "y": 544, "width": 91, "height": 93, "index": 184, "customName": "el-icon-chat-line-round", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_185.png", "x": 564, "y": 544, "width": 89, "height": 92, "index": 185, "customName": "el-icon-chat-square", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_186.png", "x": 705, "y": 544, "width": 95, "height": 96, "index": 186, "customName": "el-icon-chat-dot-round", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_187.png", "x": 846, "y": 544, "width": 95, "height": 88, "index": 187, "customName": "el-icon-chat-dot-square", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_188.png", "x": 987, "y": 544, "width": 93, "height": 88, "index": 188, "customName": "el-icon-chat-line-square", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_189.png", "x": 1128, "y": 544, "width": 95, "height": 84, "index": 189, "customName": "el-icon-message", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_190.png", "x": 1269, "y": 544, "width": 99, "height": 83, "index": 190, "customName": "el-icon-postcard", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_191.png", "x": 0, "y": 680, "width": 99, "height": 91, "index": 191, "customName": "el-icon-position", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_192.png", "x": 141, "y": 680, "width": 86, "height": 96, "index": 192, "customName": "el-icon-turn-off-microphone", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_193.png", "x": 282, "y": 680, "width": 78, "height": 101, "index": 193, "customName": "el-icon-microphone", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_194.png", "x": 423, "y": 680, "width": 95, "height": 98, "index": 194, "customName": "el-icon-close-notification", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_195.png", "x": 564, "y": 680, "width": 95, "height": 98, "index": 195, "customName": "el-icon-bangzhu", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_196.png", "x": 705, "y": 680, "width": 97, "height": 98, "index": 196, "customName": "el-icon-time", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_197.png", "x": 846, "y": 680, "width": 97, "height": 99, "index": 197, "customName": "el-icon-odometer", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_198.png", "x": 987, "y": 680, "width": 95, "height": 97, "index": 198, "customName": "el-icon-crop", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_199.png", "x": 1128, "y": 680, "width": 97, "height": 95, "index": 199, "customName": "el-icon-aim", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_200.png", "x": 1269, "y": 680, "width": 91, "height": 95, "index": 200, "customName": "el-icon-switch-button", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_201.png", "x": 0, "y": 816, "width": 93, "height": 95, "index": 201, "customName": "el-icon-full-screen", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_202.png", "x": 141, "y": 816, "width": 97, "height": 95, "index": 202, "customName": "el-icon-copy-document", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_203.png", "x": 282, "y": 816, "width": 69, "height": 95, "index": 203, "customName": "el-icon-mic", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_204.png", "x": 423, "y": 816, "width": 97, "height": 95, "index": 204, "customName": "el-icon-stopwatch", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_205.png", "x": 564, "y": 816, "width": 79, "height": 97, "index": 205, "customName": "el-icon-medal-1", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_206.png", "x": 705, "y": 816, "width": 77, "height": 97, "index": 206, "customName": "el-icon-medal", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_207.png", "x": 846, "y": 816, "width": 90, "height": 97, "index": 207, "customName": "el-icon-trophy", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_208.png", "x": 987, "y": 816, "width": 89, "height": 97, "index": 208, "customName": "el-icon-trophy-1", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_209.png", "x": 1128, "y": 816, "width": 97, "height": 89, "index": 209, "customName": "el-icon-first-aid-kit", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_210.png", "x": 1269, "y": 816, "width": 95, "height": 95, "index": 210, "customName": "el-icon-discover", "spritePage": 2, "spriteFile": "sprite_sheet_2.webp"}, {"file": "icon_211.png", "x": 0, "y": 0, "width": 89, "height": 97, "index": 211, "customName": "el-icon-place", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_212.png", "x": 141, "y": 0, "width": 79, "height": 95, "index": 212, "customName": "el-icon-location", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_213.png", "x": 282, "y": 0, "width": 83, "height": 97, "index": 213, "customName": "el-icon-location-outline", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_214.png", "x": 423, "y": 0, "width": 79, "height": 95, "index": 214, "customName": "el-icon-location-information", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_215.png", "x": 564, "y": 0, "width": 81, "height": 95, "index": 215, "customName": "el-icon-add-location", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_216.png", "x": 705, "y": 0, "width": 79, "height": 95, "index": 216, "customName": "el-icon-delete-location", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_217.png", "x": 846, "y": 0, "width": 97, "height": 99, "index": 217, "customName": "el-icon-map-location", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_218.png", "x": 987, "y": 0, "width": 95, "height": 97, "index": 218, "customName": "el-icon-alarm-clock", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_219.png", "x": 1128, "y": 0, "width": 87, "height": 97, "index": 219, "customName": "el-icon-timer", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_220.png", "x": 1269, "y": 0, "width": 79, "height": 99, "index": 220, "customName": "el-icon-watch-1", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_221.png", "x": 0, "y": 136, "width": 79, "height": 97, "index": 221, "customName": "el-icon-watch", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_222.png", "x": 141, "y": 136, "width": 89, "height": 97, "index": 222, "customName": "el-icon-lock", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_223.png", "x": 282, "y": 136, "width": 104, "height": 113, "index": 223, "customName": "el-icon-unlock", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_224.png", "x": 423, "y": 136, "width": 75, "height": 110, "index": 224, "customName": "el-icon-key", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_225.png", "x": 564, "y": 136, "width": 115, "height": 113, "index": 225, "customName": "el-icon-service", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_226.png", "x": 705, "y": 136, "width": 96, "height": 120, "index": 226, "customName": "el-icon-mobile-phone", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_227.png", "x": 846, "y": 136, "width": 120, "height": 106, "index": 227, "customName": "el-icon-bicycle", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_228.png", "x": 987, "y": 136, "width": 118, "height": 94, "index": 228, "customName": "el-icon-truck", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_229.png", "x": 1128, "y": 136, "width": 113, "height": 101, "index": 229, "customName": "el-icon-ship", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_230.png", "x": 1269, "y": 136, "width": 110, "height": 108, "index": 230, "customName": "el-icon-basketball", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_231.png", "x": 0, "y": 272, "width": 111, "height": 111, "index": 231, "customName": "el-icon-football", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_232.png", "x": 141, "y": 272, "width": 110, "height": 108, "index": 232, "customName": "el-icon-soccer", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_233.png", "x": 282, "y": 272, "width": 113, "height": 111, "index": 233, "customName": "el-icon-baseball", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_234.png", "x": 423, "y": 272, "width": 104, "height": 111, "index": 234, "customName": "el-icon-wind-power", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_235.png", "x": 564, "y": 272, "width": 115, "height": 98, "index": 235, "customName": "el-icon-light-rain", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_236.png", "x": 705, "y": 272, "width": 111, "height": 113, "index": 236, "customName": "el-icon-lightning", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_237.png", "x": 846, "y": 272, "width": 115, "height": 124, "index": 237, "customName": "el-icon-heavy-rain", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_238.png", "x": 987, "y": 272, "width": 122, "height": 92, "index": 238, "customName": "el-icon-sunrise", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_239.png", "x": 1128, "y": 272, "width": 127, "height": 101, "index": 239, "customName": "el-icon-sunrise-1", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_240.png", "x": 1269, "y": 272, "width": 124, "height": 103, "index": 240, "customName": "el-icon-sunset", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_241.png", "x": 0, "y": 408, "width": 108, "height": 108, "index": 241, "customName": "el-icon-sunny", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_242.png", "x": 141, "y": 408, "width": 115, "height": 125, "index": 242, "customName": "el-icon-cloudy", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_243.png", "x": 282, "y": 408, "width": 115, "height": 122, "index": 243, "customName": "el-icon-partly-cloudy", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_244.png", "x": 423, "y": 408, "width": 111, "height": 102, "index": 244, "customName": "el-icon-cloudy-and-sunny", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_245.png", "x": 564, "y": 408, "width": 113, "height": 109, "index": 245, "customName": "el-icon-moon", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_246.png", "x": 705, "y": 408, "width": 122, "height": 111, "index": 246, "customName": "el-icon-moon-night", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_247.png", "x": 846, "y": 408, "width": 112, "height": 96, "index": 247, "customName": "el-icon-dish", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_248.png", "x": 987, "y": 408, "width": 113, "height": 100, "index": 248, "customName": "el-icon-dish-1", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_249.png", "x": 1128, "y": 408, "width": 111, "height": 106, "index": 249, "customName": "el-icon-food", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_250.png", "x": 1269, "y": 408, "width": 110, "height": 110, "index": 250, "customName": "el-icon-chicken", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_251.png", "x": 0, "y": 544, "width": 101, "height": 111, "index": 251, "customName": "el-icon-fork-spoon", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_252.png", "x": 141, "y": 544, "width": 89, "height": 110, "index": 252, "customName": "el-icon-knife-fork", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_253.png", "x": 282, "y": 544, "width": 109, "height": 101, "index": 253, "customName": "el-icon-burger", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_254.png", "x": 423, "y": 544, "width": 106, "height": 97, "index": 254, "customName": "el-icon-tableware", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_255.png", "x": 564, "y": 544, "width": 108, "height": 110, "index": 255, "customName": "el-icon-sugar", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_256.png", "x": 705, "y": 544, "width": 97, "height": 108, "index": 256, "customName": "el-icon-dessert", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_257.png", "x": 846, "y": 544, "width": 97, "height": 115, "index": 257, "customName": "el-icon-ice-cream", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_258.png", "x": 987, "y": 544, "width": 113, "height": 118, "index": 258, "customName": "el-icon-hot-water", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_259.png", "x": 1128, "y": 544, "width": 131, "height": 121, "index": 259, "customName": "el-icon-water-cup", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_260.png", "x": 1269, "y": 544, "width": 131, "height": 112, "index": 260, "customName": "el-icon-coffee-cup", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_261.png", "x": 0, "y": 680, "width": 125, "height": 125, "index": 261, "customName": "el-icon-cold-drink", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_262.png", "x": 141, "y": 680, "width": 98, "height": 128, "index": 262, "customName": "el-icon-goblet", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_263.png", "x": 282, "y": 680, "width": 99, "height": 128, "index": 263, "customName": "el-icon-goblet-full", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_264.png", "x": 423, "y": 680, "width": 99, "height": 125, "index": 264, "customName": "el-icon-goblet-square", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_265.png", "x": 564, "y": 680, "width": 99, "height": 129, "index": 265, "customName": "el-icon-goblet-square-full", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_266.png", "x": 705, "y": 680, "width": 99, "height": 132, "index": 266, "customName": "el-icon-refrigerator", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_267.png", "x": 846, "y": 680, "width": 120, "height": 132, "index": 267, "customName": "el-icon-grape", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_268.png", "x": 987, "y": 680, "width": 119, "height": 117, "index": 268, "customName": "el-icon-watermelon", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_269.png", "x": 1128, "y": 680, "width": 128, "height": 123, "index": 269, "customName": "el-icon-cherry", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_270.png", "x": 1269, "y": 680, "width": 123, "height": 129, "index": 270, "customName": "el-icon-apple", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_271.png", "x": 0, "y": 816, "width": 103, "height": 128, "index": 271, "customName": "el-icon-pear", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_272.png", "x": 141, "y": 816, "width": 125, "height": 126, "index": 272, "customName": "el-icon-orange", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_273.png", "x": 282, "y": 816, "width": 115, "height": 128, "index": 273, "customName": "el-icon-coffee", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_274.png", "x": 423, "y": 816, "width": 117, "height": 134, "index": 274, "customName": "el-icon-ice-tea", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_275.png", "x": 564, "y": 816, "width": 117, "height": 134, "index": 275, "customName": "el-icon-ice-drink", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_276.png", "x": 705, "y": 816, "width": 112, "height": 134, "index": 276, "customName": "el-icon-milk-tea", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_277.png", "x": 846, "y": 816, "width": 109, "height": 118, "index": 277, "customName": "el-icon-potato-strips", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_278.png", "x": 987, "y": 816, "width": 123, "height": 121, "index": 278, "customName": "el-icon-lollipop", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_279.png", "x": 1128, "y": 816, "width": 82, "height": 125, "index": 279, "customName": "el-icon-ice-cream-square", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_280.png", "x": 1269, "y": 816, "width": 115, "height": 115, "index": 280, "customName": "el-icon-ice-cream-round", "spritePage": 3, "spriteFile": "sprite_sheet_3.webp"}, {"file": "icon_281.png", "x": 0, "y": 0, "width": 98, "height": 126, "index": 281, "customName": null, "spritePage": 4, "spriteFile": "sprite_sheet_4.webp"}, {"file": "icon_282.png", "x": 141, "y": 0, "width": 120, "height": 118, "index": 282, "customName": null, "spritePage": 4, "spriteFile": "sprite_sheet_4.webp"}];
+            const spriteFiles = ["sprite_sheet_0.webp", "sprite_sheet_1.webp", "sprite_sheet_2.webp", "sprite_sheet_3.webp", "sprite_sheet_4.webp"]; 
+            const spriteDims = {"sprite_sheet_0.webp": {"w": 1410, "h": 952}, "sprite_sheet_1.webp": {"w": 1410, "h": 952}, "sprite_sheet_2.webp": {"w": 1410, "h": 952}, "sprite_sheet_3.webp": {"w": 1410, "h": 952}, "sprite_sheet_4.webp": {"w": 1410, "h": 136}};
+            const origW = 141;
+            const origH = 136;
+            
+            let selectedIndices = new Set();
+            let currentPrefix = 'icon';
+            let currentSpriteClass = 'sprite-icon';
+            let currentScaleX = 1;
+            let currentScaleY = 1;
+            
+            const els = {
+                prefix: document.getElementById('classPrefix'),
+                spriteClass: document.getElementById('spriteClass'),
+                w: document.getElementById('inputW'),
+                h: document.getElementById('inputH'),
+                lock: document.getElementById('lockRatio'),
+                grid: document.getElementById('grid'),
+                cssOut: document.getElementById('cssOutput'),
+                btnExport: document.getElementById('btnExport'),
+                canvas: document.getElementById('exportCanvas'),
+                format: document.getElementById('exportFormat'),
+                checkerCol: document.getElementById('checkerColor'),
+                dropZone: document.getElementById('dropZone'),
+                filterInput: document.getElementById('filterInput'),
+                filterStatus: document.getElementById('filterStatus'),
+                filterStats: document.getElementById('filterStats'),
+                codeBlocks: { 
+                    guide: document.getElementById('code-guide'),
+                    html: document.getElementById('code-html'), 
+                    vue: document.getElementById('code-vue'),
+                    react: document.getElementById('code-react')
+                },
+                root: document.documentElement
+            };
+
+            function debounce(func, wait) {
+                let timeout;
+                return function(...args) {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(() => func.apply(this, args), wait);
+                };
+            }
+
+            function getSafeBaseName() {
+                return currentSpriteClass.replace(/[^a-z0-9\-_]/gi, '_') || 'sprite';
+            }
+
+            function init() {
+                let html = '';
+                rawData.forEach((item, idx) => {
+                    // Default selection: first 10 items
+                    const isDefaultSelected = idx < 10;
+                    if (isDefaultSelected) selectedIndices.add(idx); 
+                    
+                    const offsetX = Math.floor((origW - item.width) / 2);
+                    const offsetY = Math.floor((origH - item.height) / 2);
+                    const posX = item.x + offsetX;
+                    const posY = item.y + offsetY;
+                    const dim = spriteDims[item.spriteFile] || {w: 100, h: 100};
+                    const coreName = item.customName || `${item.index}`;
+                    const displayName = currentPrefix ? `${currentPrefix}-${coreName}` : coreName;
+                    
+                    html += `
+                        <div class="card ${isDefaultSelected ? 'selected' : ''}" id="card-${idx}" onclick="toggle(${idx})">
+                            <div class="checker">
+                                <i class="icon-preview" 
+                                   style="background-image: url('${item.spriteFile}'); 
+                                          --sp-w: ${dim.w}; 
+                                          --sp-h: ${dim.h};
+                                          --real-w: ${item.width}; 
+                                          --real-h: ${item.height}; 
+                                          --pos-x: ${posX}; 
+                                          --pos-y: ${posY}"></i>
+                            </div>
+                            <div class="label" id="label-${idx}">.${displayName}</div>
+                        </div>`;
+                });
+                els.grid.innerHTML = html;
+                
+                setupDragDrop();
+                
+                els.prefix.addEventListener('input', (e) => { 
+                    currentPrefix = e.target.value.trim(); 
+                    updateLabelsDebounced(); 
+                    updateCodeDebounced(); 
+                    setTimeout(applyFilters, 350); 
+                });
+
+                els.spriteClass.addEventListener('input', (e) => { currentSpriteClass = e.target.value.trim() || 'sprite-icon'; updateCodeDebounced(); });
+                els.w.addEventListener('input', updateSize);
+                els.h.addEventListener('input', updateSize);
+                updateSelectionUI(); updateCodeDebounced();
+                applyFilters(); 
+                els.w.value = 80;
+                els.w.focus();
+                updateSize();
+            }
+
+            window.applyFilters = function() {
+                const searchText = els.filterInput.value.toLowerCase();
+                const statusMode = els.filterStatus.value;
+                let visibleCount = 0;
+
+                rawData.forEach((item, idx) => {
+                    const card = document.getElementById(`card-${idx}`);
+                    if (!card) return;
+
+                    const coreName = item.customName || `${item.index}`;
+                    const finalName = currentPrefix ? `${currentPrefix}-${coreName}` : coreName;
+                    const nameMatch = finalName.toLowerCase().includes(searchText);
+                    const isSelected = selectedIndices.has(idx);
+                    let statusMatch = true;
+                    if (statusMode === 'selected' && !isSelected) statusMatch = false;
+                    if (statusMode === 'unselected' && isSelected) statusMatch = false;
+
+                    if (nameMatch && statusMatch) {
+                        card.classList.remove('hidden');
+                        visibleCount++;
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+
+                els.filterStats.innerText = `Showing ${visibleCount} / ${rawData.length}`;
+            }
+
+            function setupDragDrop() {
+                const dz = els.dropZone;
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    dz.addEventListener(eventName, preventDefaults, false);
+                });
+                function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+                
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    dz.addEventListener(eventName, () => dz.classList.add('dragover'), false);
+                });
+                ['dragleave', 'drop'].forEach(eventName => {
+                    dz.addEventListener(eventName, () => dz.classList.remove('dragover'), false);
+                });
+                
+                dz.addEventListener('drop', (e) => {
+                    const dt = e.dataTransfer;
+                    const file = dt.files[0];
+                    handleCssUpload(file);
+                }, false);
+            }
+
+            window.updateVisuals = function() { const c = els.checkerCol.value; els.root.style.setProperty('--checker-bg', c); }
+            
+            function updateSize() {
+                let tW = parseInt(els.w.value) || 0;
+                let tH = parseInt(els.h.value) || 0;
+                if (els.lock.checked && document.activeElement === els.w) { tH = Math.round(tW * (origH / origW)); els.h.value = tH; } 
+                else if (els.lock.checked && document.activeElement === els.h) { tW = Math.round(tH * (origW / origH)); els.w.value = tW; }
+                if (tW <= 0 || tH <= 0) return;
+                currentScaleX = tW / origW; currentScaleY = tH / origH;
+                els.root.style.setProperty('--scale-x', currentScaleX); els.root.style.setProperty('--scale-y', currentScaleY);
+                updateCodeDebounced(); 
+            }
+            
+            // --- FIXED: UPLOAD HANDLER WITH VOTING MECHANISM ---
+            window.handleCssUpload = function(file) {
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const cssContent = e.target.result;
+                    // Extract all class names
+                    const classRegex = /\.([a-zA-Z0-9\-_]+)/g;
+                    const foundClasses = new Set();
+                    let match;
+                    while ((match = classRegex.exec(cssContent)) !== null) {
+                        foundClasses.add(match[1]);
+                    }
+                    
+                    if (foundClasses.size === 0) {
+                        alert("No classes found in CSS file.");
+                        return;
+                    }
+
+                    // 1. Detect Base Class (more robust regex for multiline)
+                    // Matches ".name { ... background-image" spanning lines
+                    const bgRegex = /\.([a-zA-Z0-9\-_]+)\s*\{[\s\S]*?background-image/i;
+                    const bgMatch = cssContent.match(bgRegex);
+                    let detectedBaseClass = null;
+                    if (bgMatch) {
+                        detectedBaseClass = bgMatch[1];
+                        currentSpriteClass = detectedBaseClass;
+                        els.spriteClass.value = detectedBaseClass;
+                    }
+
+                    // 2. Detect Prefix (Voting Mechanism)
+                    // Instead of picking the first match, we count which prefix appears most often
+                    // for the known icons.
+                    const prefixVotes = {};
+                    let detectedPrefix = null;
+
+                    rawData.forEach(item => {
+                        const coreName = item.customName || `${item.index}`;
+                        for (let cls of foundClasses) {
+                            if (cls === detectedBaseClass) continue;
+                            
+                            let candidate = null;
+                            if (cls === coreName) {
+                                candidate = '';
+                            } else if (cls.endsWith('-' + coreName)) {
+                                candidate = cls.substring(0, cls.length - coreName.length - 1);
+                            }
+
+                            if (candidate !== null) {
+                                prefixVotes[candidate] = (prefixVotes[candidate] || 0) + 1;
+                            }
+                        }
+                    });
+
+                    // Sort votes descending
+                    const sortedVotes = Object.entries(prefixVotes).sort((a, b) => b[1] - a[1]);
+                    
+                    if (sortedVotes.length > 0) {
+                        detectedPrefix = sortedVotes[0][0]; // The winner
+                        currentPrefix = detectedPrefix;
+                        els.prefix.value = detectedPrefix;
+                    }
+
+                    // 3. Select matching icons using the winner prefix
+                    let addedCount = 0;
+                    rawData.forEach((item, idx) => {
+                        const coreName = item.customName || `${item.index}`;
+                        const expectedName = currentPrefix ? `${currentPrefix}-${coreName}` : coreName;
+                        if (foundClasses.has(expectedName)) {
+                            if (!selectedIndices.has(idx)) {
+                                selectedIndices.add(idx);
+                                addedCount++;
+                            }
+                        }
+                    });
+
+                    // 4. Update UI
+                    updateLabelsDebounced(); 
+                    
+                    rawData.forEach((_, idx) => {
+                        const card = document.getElementById(`card-${idx}`);
+                        if (selectedIndices.has(idx)) {
+                            card.classList.add('selected');
+                        } else {
+                            card.classList.remove('selected');
+                        }
+                    });
+
+                    updateSelectionUI();
+                    updateCodeDebounced();
+                    applyFilters(); 
+                    
+                    let msg = `Parsed complete!
+`;
+                    if(detectedBaseClass) msg += `Base Class: .${detectedBaseClass}
+`;
+                    if(detectedPrefix !== null) msg += `Prefix: "${detectedPrefix}"
+`;
+                    msg += `Added ${addedCount} new icons.`;
+                    
+                    alert(msg);
+                    document.getElementById('cssUpload').value = ''; 
+                };
+                reader.readAsText(file);
+            }
+
+            const updateLabelsDebounced = debounce(() => {
+                rawData.forEach((item, idx) => {
+                    const label = document.getElementById(`label-${idx}`);
+                    const coreName = item.customName || `${item.index}`;
+                    const finalName = currentPrefix ? `${currentPrefix}-${coreName}` : coreName;
+                    if(label) label.innerText = `.${finalName}`;
+                });
+            }, 300);
+
+            const updateCodeDebounced = debounce(() => {
+                const ext = els.format.value; 
+                const baseName = getSafeBaseName();
+                
+                let displayCSS = `/* ${baseName}.css */
+`;
+                displayCSS += `.${currentSpriteClass} { display: inline-block; background-repeat: no-repeat; }
+
+`;
+                
+                const selectedItems = [];
+                rawData.forEach((item, idx) => {
+                    if (selectedIndices.has(idx)) {
+                        selectedItems.push(item);
+                        const coreName = item.customName || `${item.index}`;
+                        const name = currentPrefix ? `${currentPrefix}-${coreName}` : coreName;
+                        const realW = Math.round(item.width * currentScaleX);
+                        const realH = Math.round(item.height * currentScaleY);
+                        
+                        displayCSS += `.${name} { 
+  width: ${realW}px; height: ${realH}px; 
+  background-image: url('${baseName}.${ext}');
+  background-position: ...; 
+}
+`;
+                    }
+                });
+                
+                els.cssOut.value = `/* Click "Export Selected" to generate full CSS. Images keep original size; CSS handles scaling */
+` + displayCSS;
+                updateUsageExamples(selectedItems, baseName, ext);
+            }, 400);
+
+            els.format.addEventListener('change', updateCodeDebounced);
+
+            function updateUsageExamples(selectedItems, baseName, ext) {
+                const getCls = (item) => {
+                    const core = item.customName || item.index;
+                    return currentPrefix ? `${currentPrefix}-${core}` : core;
+                };
+                
+                const demoItems = selectedItems.slice(0, 3);
+                const classList = demoItems.map(getCls);
+                const jsArrayStr = `[${classList.map(c => `'${c}'`).join(', ')}...]`;
+                
+                const _tag = (c) => `<span class="tag">${c}</span>`;
+                const _attr = (c) => `<span class="attr">${c}</span>`;
+                const _val = (c) => `<span class="val">"${c}"</span>`;
+                const _com = (c) => `<span class="comment">${c}</span>`;
+                const _kwd = (c) => `<span class="kwd">${c}</span>`;
+                const _str = (c) => `<span class="str">"${c}"</span>`;
+
+                const cssFile = `${baseName}.css`;
+                const imgFile = `${baseName}.${ext}`;
+                const baseCls = currentSpriteClass;
+                
+                let guideHtml = `<h4>1. File Placement</h4>`;
+                guideHtml += `<p>Place the exported <code>${cssFile}</code> and <code>${imgFile}</code> into your project's static asset directory (e.g., <code>public/</code> or <code>assets/</code>).</p>`;
+                
+                guideHtml += `<h4>2. Import CSS</h4>`;
+                guideHtml += `<p><strong>Native HTML:</strong><br>${_tag('&lt;link')} ${_attr('rel')}=${_val('stylesheet')} ${_attr('href')}=${_val('./' + cssFile)} ${_tag('/&gt;')}</p>`;
+                guideHtml += `<p><strong>Vue / React / Next.js:</strong><br>${_kwd('import')} ${_str('./' + cssFile)}; <span class="comment">// In entry file (main.js / _app.js)</span></p>`;
+                guideHtml += `<p><strong>VitePress:</strong><br>Import CSS in <code>.vitepress/theme/index.js</code>.</p>`;
+                
+                guideHtml += `<h4>3. Usage</h4>`;
+                guideHtml += `<p>Combine <strong>Base Class</strong> + <strong>Icon Class</strong> on the tag.</p>`;
+                guideHtml += `<p>Example: <code>&lt;i class="${baseCls} ${currentPrefix}-xxx"&gt;&lt;/i&gt;</code></p>`;
+                
+                els.codeBlocks.guide.innerHTML = guideHtml;
+
+                els.codeBlocks.vue.innerHTML = `${_com('// Vue 3 Component')}
+${_tag('&lt;script setup&gt;')}
+${_kwd('import')} ${_str('./' + cssFile)}
+${_kwd('const')} icons = ${jsArrayStr};
+${_tag('&lt;/script&gt;')}
+
+${_tag('&lt;template&gt;')}
+  ${_tag('&lt;i')} ${_attr('v-for')}=${_val('icon in icons')} ${_attr(':class')}=${_val(`['${baseCls}', icon]`)} ${_tag('/&gt;')}
+${_tag('&lt;/template&gt;')}`;
+
+                let htmlStr = `${_com('<!-- Import Style -->')}
+${_tag('&lt;link')} ${_attr('rel')}=${_val('stylesheet')} ${_attr('href')}=${_val(cssFile)} ${_tag('/&gt;')}
+
+${_com('<!-- Use Icons -->')}
+`; 
+                classList.forEach(cls => { htmlStr += `${_tag('&lt;i')} ${_attr('class')}=${_val(`${baseCls} ${cls}`)}${_tag('&gt;&lt;/i&gt;')}
+`; });
+                els.codeBlocks.html.innerHTML = htmlStr;
+
+                els.codeBlocks.react.innerHTML = `${_com('// Next.js / React (tsx)')}
+${_com('// 1. Import style in layout.tsx or _app.js: import "./' + cssFile + '";')}
+
+${_kwd('export')} ${_kwd('default')} ${_kwd('function')} ${_tag('IconList')}() {
+  ${_kwd('const')} icons = ${jsArrayStr};
+  ${_kwd('return')} (
+    ${_tag('&lt;div&gt;')}
+      {icons.map(icon => (
+        ${_tag('&lt;i')} ${_attr('key')}={icon} ${_attr('className')}={${_str(`${baseCls} `)} + icon} ${_tag('/&gt;')}
+      ))}
+    ${_tag('&lt;/div&gt;')}
+  );
+}`;
+            }
+
+            window.toggle = function(idx) {
+                const card = document.getElementById(`card-${idx}`);
+                if (selectedIndices.has(idx)) { selectedIndices.delete(idx); card.classList.remove('selected'); } 
+                else { selectedIndices.add(idx); card.classList.add('selected'); }
+                updateSelectionUI(); 
+                updateCodeDebounced();
+                if(els.filterStatus.value !== 'all') applyFilters(); 
+            };
+
+            window.selectAll = function(state) {
+                rawData.forEach((_, idx) => {
+                    const card = document.getElementById(`card-${idx}`);
+                    if (state) { selectedIndices.add(idx); card.classList.add('selected'); }
+                    else { selectedIndices.delete(idx); card.classList.remove('selected'); }
+                });
+                updateSelectionUI(); 
+                updateCodeDebounced();
+                applyFilters(); 
+            };
+
+            function updateSelectionUI() {
+                els.btnExport.disabled = selectedIndices.size === 0;
+                els.btnExport.innerText = `Export ${selectedIndices.size} Selected`;
+            }
+
+            window.switchTab = function(type) {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.code-block').forEach(b => b.classList.remove('active'));
+                
+                const tabs = document.querySelectorAll('.tab');
+                const blocks = ['guide', 'html', 'vue', 'react'];
+                const idx = blocks.indexOf(type);
+                
+                if(idx >= 0) {
+                    tabs[idx].classList.add('active');
+                    if(els.codeBlocks[type]) els.codeBlocks[type].classList.add('active');
+                }
+            }
+
+            window.copyCSS = function() { els.cssOut.select(); document.execCommand('copy'); }
+            
+            function loadImage(src) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.onerror = reject;
+                    img.src = src;
+                });
+            }
+
+            window.exportSelected = async function() {
+                if (selectedIndices.size === 0) return;
+                
+                els.btnExport.disabled = true;
+                els.btnExport.innerText = "Processing...";
+
+                const prefix = currentPrefix;
+                const spriteCls = currentSpriteClass;
+                const selectedItems = rawData.filter((_, i) => selectedIndices.has(i));
+                const format = els.format.value;
+                const mimeType = format === 'webp' ? 'image/webp' : 'image/png';
+                
+                const safeBaseName = getSafeBaseName(); 
+                const fileName = `${safeBaseName}.${format}`; 
+                const cssFileName = `${safeBaseName}.css`;    
+                const htmlFileName = `${safeBaseName}.html`;  
+                
+                const targetCellW = origW; 
+                const targetCellH = origH;
+
+                const cols = 10;
+                const rows = Math.ceil(selectedItems.length / cols);
+                const canvasW = cols * targetCellW;
+                const canvasH = rows * targetCellH;
+                
+                if (canvasH > 16000 && format === 'webp') {
+                    alert("Warning: Export content too large. Height exceeds WebP 16383px limit. Please export in batches or use PNG format.");
+                    els.btnExport.disabled = false;
+                    els.btnExport.innerText = `Export ${selectedIndices.size} Selected`;
+                    return;
+                }
+
+                els.canvas.width = canvasW; els.canvas.height = canvasH;
+                const ctx = els.canvas.getContext('2d');
+                ctx.clearRect(0, 0, canvasW, canvasH);
+                ctx.imageSmoothingEnabled = true;
+                ctx.imageSmoothingQuality = 'high';
+
+                try {
+                    const pagesNeeded = new Set(selectedItems.map(i => i.spritePage));
+                    const loadedImages = {}; 
+                    
+                    for (let pIdx of pagesNeeded) {
+                        const filename = spriteFiles[pIdx];
+                        loadedImages[pIdx] = await loadImage(filename);
+                    }
+
+                    let cssBgW = Math.round(canvasW * currentScaleX); 
+                    let cssBgH = Math.round(canvasH * currentScaleY);
+                    
+                    let css = `/* ${cssFileName} */
+.${spriteCls} { 
+    display: inline-block; 
+    background-image: url('${fileName}'); 
+    background-repeat: no-repeat;
+    background-size: ${cssBgW}px ${cssBgH}px;
+}
+`;
+                    let demoHtmlItems = ''; 
+                    
+                    selectedItems.forEach((item, i) => {
+                        const row = Math.floor(i / cols);
+                        const col = i % cols;
+                        const destX = col * targetCellW;
+                        const destY = row * targetCellH;
+                        
+                        const sourceImg = loadedImages[item.spritePage];
+                        
+                        ctx.drawImage(sourceImg, item.x, item.y, origW, origH, destX, destY, origW, origH);
+                        
+                        const coreName = item.customName || `${item.index}`;
+                        const cls = prefix ? `${prefix}-${coreName}` : coreName;
+                        
+                        const displayW = Math.round(item.width * currentScaleX);
+                        const displayH = Math.round(item.height * currentScaleY);
+                        
+                        const physicalOffsetX = (origW - item.width) / 2;
+                        const physicalOffsetY = (origH - item.height) / 2;
+                        
+                        const physicalX = destX + physicalOffsetX;
+                        const physicalY = destY + physicalOffsetY;
+                        
+                        const cssX = Math.round(physicalX * currentScaleX);
+                        const cssY = Math.round(physicalY * currentScaleY);
+                        
+                        css += `.${cls} { width: ${displayW}px; height: ${displayH}px; background-position: -${cssX}px -${cssY}px; }
+`;
+                        demoHtmlItems += `<div class="item" onclick="copy('${cls}')"><i class="${spriteCls} ${cls}"></i><span class="label">.${cls}</span></div>
+`;
+                    });
+                    
+                    els.canvas.toBlob(blob => {
+                        downloadBlob(blob, fileName);
+                        const cssBlob = new Blob([css], {type: 'text/css'});
+                        downloadBlob(cssBlob, cssFileName);
+                        
+                        const localHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: 'Segoe UI', sans-serif; padding: 20px; background: #f5f5f5; color: #333; }
+  h1 { font-size: 20px; margin-bottom: 20px; }
+  .grid { display: flex; flex-wrap: wrap; gap: 10px; }
+  .item { background: #fff; padding: 15px; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #ddd; transition: all 0.2s; min-width: 100px; }
+  .item:hover { border-color: #007acc; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .item i { margin-bottom: 10px; }
+  .label { font-size: 12px; color: #666; font-family: Consolas, monospace; }
+  /* Toast */
+  .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: #333; color: #fff; padding: 10px 20px; border-radius: 30px; font-size: 14px; opacity: 0; transition: all 0.3s; pointer-events: none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); z-index: 1000; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+<link rel="stylesheet" href="${cssFileName}">
+</head>
+<body>
+  <h1>${fileName} Preview</h1>
+  <div class="grid">${demoHtmlItems}</div>
+  <div id="toast" class="toast">Copied!</div>
+  <script>
+    function copy(cls) {
+      navigator.clipboard.writeText(cls).then(() => {
+        const t = document.getElementById('toast');
+        t.innerText = 'Copied: .' + cls;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2000);
+      });
+    }
+  <\/script>
+</body>
+</html>`;
+
+                        const htmlBlob = new Blob([localHtml], {type: 'text/html'});
+                        downloadBlob(htmlBlob, htmlFileName);
+                        
+                        els.btnExport.disabled = false;
+                        els.btnExport.innerText = `Export ${selectedIndices.size} Selected`;
+                    }, mimeType, 1.0); 
+
+                } catch (e) {
+                    console.error(e);
+                    alert("Export failed. Check console for errors.");
+                    els.btnExport.disabled = false;
+                }
+            }
+
+            function downloadBlob(blob, name) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a'); a.href = url; a.download = name;
+                document.body.appendChild(a); a.click();
+                setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 100);
+            }
+            
+            init();
+        </script>
+    </body>
+    </html>
+    

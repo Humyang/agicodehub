@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://ffmpeg.dve2.com
+
+# Sitemaps
+Sitemap: https://ffmpeg.dve2.com/sitemap.xml

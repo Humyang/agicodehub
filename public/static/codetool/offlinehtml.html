@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Offline HTML Development Environment</title>
+    <style>
+        :root {
+            --bg-dark: #1e1e1e;
+            --bg-sidebar: #252526;
+            --bg-active: #37373d;
+            --bg-hover: #2a2d2e;
+            --text-main: #cccccc;
+            --accent: #007acc;
+            --border: #3e3e3e;
+            --danger: #d64646;
+            --success: #4caf50;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* --- 左侧侧边栏 --- */
+        aside {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: width 0.2s;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border);
+            color: var(--accent);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-actions {
+            padding: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .btn-icon {
+            background: var(--bg-active);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-icon:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .btn-icon.full-width {
+            grid-column: span 2;
+        }
+
+        .file-list {
+            flex: 1;
+            overflow-y: auto;
+            list-style: none;
+            padding-bottom: 20px;
+        }
+
+        .file-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+        }
+
+        .file-item:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .file-item.active {
+            background-color: var(--bg-active);
+            border-left: 3px solid var(--accent);
+            color: #fff;
+        }
+
+        /* 文件类型图标 */
+        .file-icon {
+            width: 16px;
+            text-align: center;
+            margin-right: 8px;
+            opacity: 0.7;
+        }
+
+        .file-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+
+        .delete-btn {
+            opacity: 0;
+            color: #aaa;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            line-height: 1;
+            padding: 0 5px;
+        }
+
+        .file-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            color: var(--danger);
+        }
+
+        /* --- 右侧主区域 --- */
+        #main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 首页 */
+        #home-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            max-width: 800px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: var(--bg-sidebar);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .feature-card h3 {
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        /* 编辑器容器 */
+        #editor-view {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .toolbar {
+            height: 40px;
+            background-color: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 10px;
+        }
+
+        .work-area {
+            flex: 1;
+            display: flex;
+            height: calc(100% - 40px);
+        }
+
+        /* 编辑器和预览窗格 */
+        .pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            transition: flex 0.3s;
+        }
+
+        /* 当全屏预览时，编辑器隐藏，预览占满 */
+        .work-area.fullscreen-mode .editor-pane {
+            display: none;
+        }
+
+        .work-area.fullscreen-mode .preview-pane {
+            flex: 1;
+        }
+
+        .pane-header {
+            background: #2d2d2d;
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            color: #888;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        textarea,
+        .image-preview-box {
+            flex: 1;
+            background-color: var(--bg-dark);
+            color: #d4d4d4;
+            border: none;
+            border-right: 1px solid var(--border);
+            padding: 15px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            white-space: pre;
+        }
+
+        .image-preview-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: repeating-linear-gradient(45deg, #222, #222 10px, #282828 10px, #282828 20px);
+        }
+
+        .image-preview-box img {
+            max-width: 90%;
+            max-height: 90%;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        iframe {
+            flex: 1;
+            border: none;
+            background: white;
+        }
+
+        /* 按钮 */
+        .btn {
+            background: var(--bg-active);
+            color: #ddd;
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .btn:hover {
+            background: #444;
+        }
+
+        .btn.primary {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .btn.primary:hover {
+            background: #005f9e;
+        }
+
+        .btn.success {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            aside {
+                width: 100%;
+                height: auto;
+                max-height: 30vh;
+            }
+
+            .work-area {
+                flex-direction: column;
+            }
+
+            textarea {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+        }
+
+        /* 全屏覆盖层样式 (Alternative approach for absolute fullscreen) */
+        #fullscreen-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: white;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+        }
+
+        #fullscreen-bar {
+            height: 40px;
+            background: #333;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        #fullscreen-iframe {
+            flex: 1;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Left Sidebar -->
+    <aside>
+        <div class="sidebar-header" onclick="showHome()">
+            <span>🚀</span> IDE Pro
+        </div>
+        <div class="file-actions">
+            <button class="btn-icon" onclick="createNewFile()">+ New File</button>
+            <label class="btn-icon" title="Upload code or images">
+                📂 Upload Files
+                <input type="file" id="uploadInput" multiple>
+            </label>
+            <label class="btn-icon" title="Import entire project configuration">
+                📥 Import Project
+                <input type="file" id="configInput" accept=".json">
+            </label>
+            <button class="btn-icon" onclick="exportConfig()">📤 Backup Project</button>
+        </div>
+        <div style="padding: 5px 10px; font-size: 0.75rem; color: #666;">File List (Click to switch)</div>
+        <ul class="file-list" id="fileList"></ul>
+    </aside>
+
+    <!-- Main Area -->
+    <div id="main-area">
+
+        <!-- 1. Home Page -->
+        <div id="home-view">
+            <h1 style="color: var(--accent); margin-bottom: 10px;">Full-Featured Offline Web Editor</h1>
+            <p style="color: #888;">No internet required, supports multi-file references, image preview, one-click
+                backup</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>🔗 File References</h3>
+                    <p>Use <code>&lt;link href="style.css"&gt;</code> or <code>&lt;img src="pic.png"&gt;</code> directly
+                        in HTML,
+                        the system will automatically link to files in the list.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🖼️ Image Support</h3>
+                    <p>Upload PNG/JPG images directly, they'll be saved in the browser and can be referenced in code.
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <h3>📺 Fullscreen Preview</h3>
+                    <p>One-click immersive fullscreen preview that simulates real website behavior.</p>
+                </div>
+            </div>
+            <button class="btn primary" style="margin-top: 40px; padding: 10px 30px; font-size: 1rem;"
+                onclick="createNewFile()">Start Coding</button>
+        </div>
+
+        <!-- 2. Editor -->
+        <div id="editor-view">
+            <div class="toolbar">
+                <span id="currentFileName" style="font-weight:bold; margin-right:auto;">filename.html</span>
+                <span id="saveStatus" style="font-size: 0.8rem; color: #666; margin-right: 10px;">Saved</span>
+                <button class="btn" onclick="copyCode()">Copy</button>
+                <button class="btn" onclick="downloadCurrentFile()">Download</button>
+                <button class="btn primary" onclick="runPreview()">🔄 Refresh</button>
+                <button class="btn success" onclick="toggleFullscreen()">📺 Fullscreen Preview</button>
+            </div>
+            <div class="work-area" id="workArea">
+                <!-- Code Editor Area (shown for text files) -->
+                <div class="pane editor-pane" id="textEditorContainer">
+                    <div class="pane-header">SOURCE CODE</div>
+                    <textarea id="codeEditor" spellcheck="false"></textarea>
+                </div>
+                <!-- Image Preview Area (shown for image files) -->
+                <div class="pane editor-pane" id="imagePreviewContainer" style="display:none;">
+                    <div class="pane-header">IMAGE PREVIEW</div>
+                    <div class="image-preview-box">
+                        <img id="imageViewer" src="" alt="Preview">
+                    </div>
+                </div>
+                <!-- Runtime Preview Area -->
+                <div class="pane preview-pane">
+                    <div class="pane-header">RESULT</div>
+                    <iframe id="previewFrame"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen Preview Layer (independent from layout) -->
+    <div id="fullscreen-container">
+        <div id="fullscreen-bar">
+            <button class="btn" onclick="closeFullscreen()">❌ Exit Fullscreen</button>
+        </div>
+        <iframe id="fullscreen-iframe"></iframe>
+    </div>
+
+    <script>
+        /**
+         * Data structure:
+         * file = {
+         *   id: Number,
+         *   name: String,
+         *   type: 'text' | 'image',
+         *   content: String (Text content OR Base64 DataURI)
+         * }
+         */
+        let files = [];
+        let activeFileId = null;
+
+        // DOM Elements
+        const elements = {
+            fileList: document.getElementById('fileList'),
+            editorView: document.getElementById('editor-view'),
+            homeView: document.getElementById('home-view'),
+            codeEditor: document.getElementById('codeEditor'),
+            previewFrame: document.getElementById('previewFrame'),
+            currentFileName: document.getElementById('currentFileName'),
+            textContainer: document.getElementById('textEditorContainer'),
+            imgContainer: document.getElementById('imagePreviewContainer'),
+            imgViewer: document.getElementById('imageViewer'),
+            fullscreenContainer: document.getElementById('fullscreen-container'),
+            fullscreenIframe: document.getElementById('fullscreen-iframe'),
+            saveStatus: document.getElementById('saveStatus')
+        };
+
+        // --- Initialization ---
+        window.onload = () => {
+            loadFromStorage();
+            renderSidebar();
+            // Auto-save timer
+            setInterval(saveToStorage, 5000);
+        };
+
+        // --- Core Logic: Virtual File System Compiler ---
+        function compileProject(entryHtml) {
+            // Core magic: Replace relative paths in entryHtml with Blob URLs
+            let processedHtml = entryHtml;
+
+            // 1. Create Blob URL mapping for all files
+            // Note: For performance, this uses simple string replacement.
+            // May have issues if filenames contain special characters, but usually sufficient for simple development.
+            files.forEach(file => {
+                // Skip self-references (though usually doesn't matter)
+                // Also no need to replace HTML file references unless it's <iframe src="other.html">
+
+                let blobUrl;
+
+                if (file.type === 'image') {
+                    // Images use Base64 DataURI directly, no need for Blob (could convert but DataURI is convenient)
+                    // For unified replacement logic, we directly replace strings
+                    blobUrl = file.content;
+                } else {
+                    // CSS / JS / HTML
+                    let mimeType = 'text/plain';
+                    if (file.name.endsWith('.css')) mimeType = 'text/css';
+                    if (file.name.endsWith('.js')) mimeType = 'application/javascript';
+                    if (file.name.endsWith('.html')) mimeType = 'text/html';
+
+                    const blob = new Blob([file.content], { type: mimeType });
+                    blobUrl = URL.createObjectURL(blob);
+                }
+
+                // Perform replacement: Find all "filename" or 'filename'
+                // Use split/join for global replacement to avoid Regex escaping issues
+                // Risk: If the content coincidentally contains "style.css" text, it will also be replaced.
+                // Improvement: Only replace href="x" src="x" url('x') is more complex, here we use simple brute-force filename replacement
+                // As long as filenames are unique (with extensions), false positives are unlikely.
+                processedHtml = processedHtml.split(file.name).join(blobUrl);
+            });
+
+            return processedHtml;
+        }
+
+        // --- View Control ---
+        function showHome() {
+            activeFileId = null;
+            elements.homeView.style.display = 'flex';
+            elements.editorView.style.display = 'none';
+            renderSidebar();
+        }
+
+        function showEditor(fileId) {
+            const file = files.find(f => f.id === fileId);
+            if (!file) return;
+
+            activeFileId = fileId;
+            elements.homeView.style.display = 'none';
+            elements.editorView.style.display = 'flex';
+            elements.currentFileName.innerText = file.name;
+
+            // Switch editor based on file type
+            if (file.type === 'image') {
+                elements.textContainer.style.display = 'none';
+                elements.imgContainer.style.display = 'flex';
+                elements.imgViewer.src = file.content;
+            } else {
+                elements.textContainer.style.display = 'flex';
+                elements.imgContainer.style.display = 'none';
+                elements.codeEditor.value = file.content;
+            }
+
+            renderSidebar();
+
+            // Only auto-refresh preview for HTML files
+            if (file.name.endsWith('.html') || file.name.endsWith('.htm')) {
+                runPreview();
+            }
+        }
+
+        function runPreview() {
+            if (!activeFileId) return;
+            const file = files.find(f => f.id === activeFileId);
+
+            // Only HTML files can be previewed, show message for other files
+            if (!file.name.match(/\.html?$/i)) {
+                // If it's CSS/JS, look for index.html, if found preview that, otherwise show message
+                const indexFile = files.find(f => f.name === 'index.html');
+                if (indexFile) {
+                    const compiled = compileProject(indexFile.content);
+                    elements.previewFrame.srcdoc = compiled;
+                    if (elements.fullscreenContainer.style.display === 'flex') {
+                        elements.fullscreenIframe.srcdoc = compiled;
+                    }
+                } else {
+                    // Cannot preview
+                    elements.previewFrame.srcdoc = `<body style="color:#888; font-family:sans-serif; text-align:center; padding-top:50px;">Editing ${file.name}<br>Switch to an HTML file to see preview</body>`;
+                }
+                return;
+            }
+
+            const compiledHtml = compileProject(elements.codeEditor.value);
+            elements.previewFrame.srcdoc = compiledHtml;
+
+            // If fullscreen is active, sync update
+            if (elements.fullscreenContainer.style.display === 'flex') {
+                elements.fullscreenIframe.srcdoc = compiledHtml;
+            }
+        }
+
+        // --- Fullscreen Logic ---
+        function toggleFullscreen() {
+            if (!activeFileId) return;
+            runPreview(); // Ensure latest content
+            elements.fullscreenContainer.style.display = 'flex';
+            // Copy preview content to fullscreen iframe
+            elements.fullscreenIframe.srcdoc = elements.previewFrame.srcdoc;
+        }
+
+        function closeFullscreen() {
+            elements.fullscreenContainer.style.display = 'none';
+            elements.fullscreenIframe.srcdoc = ''; // Clean up
+        }
+
+        // --- File Operations ---
+        function createNewFile() {
+            const name = prompt("Filename (e.g., script.js, style.css, index.html)", "new.html");
+            if (!name) return;
+
+            // Simple type detection
+            const type = 'text'; // Manual creation defaults to text
+            let initialContent = '';
+
+            if (name.endsWith('.html')) {
+                initialContent = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Page</title>
+    <!-- Reference example: -->
+    <!-- <link rel="stylesheet" href="style.css"> -->
+</head>
+<body>
+    <h1>Hello World</h1>
+</body>
+</html>`;
+            } else if (name.endsWith('.css')) {
+                initialContent = `body { background: #f0f0f0; font-family: sans-serif; }`;
+            } else if (name.endsWith('.js')) {
+                initialContent = `console.log('Loaded!');`;
+            }
+
+            const newFile = { id: Date.now(), name: name, type: type, content: initialContent };
+            files.push(newFile);
+            saveToStorage();
+            showEditor(newFile.id);
+        }
+
+        function deleteFile(e, id) {
+            e.stopPropagation();
+            if (confirm("Are you sure? This action cannot be undone.")) {
+                files = files.filter(f => f.id !== id);
+                saveToStorage();
+                if (activeFileId === id) showHome();
+                else renderSidebar();
+            }
+        }
+
+        // --- Editor Interaction ---
+        elements.codeEditor.addEventListener('input', () => {
+            if (!activeFileId) return;
+            const file = files.find(f => f.id === activeFileId);
+            if (file && file.type === 'text') {
+                file.content = elements.codeEditor.value;
+                elements.saveStatus.innerText = 'Unsaved...';
+                // Debounced auto-save logic could be optimized here, simplified for now
+            }
+        });
+
+        // Only save to Local Storage on blur or explicit calls to avoid frequent IO
+        elements.codeEditor.addEventListener('blur', () => {
+            saveToStorage();
+        });
+
+        // Tab key support
+        elements.codeEditor.addEventListener('keydown', function (e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                document.execCommand('insertText', false, '  ');
+            }
+        });
+
+        // --- Import/Export Logic (including image handling) ---
+
+        // Upload handling
+        document.getElementById('uploadInput').addEventListener('change', function (e) {
+            const uploadFiles = Array.from(e.target.files);
+            if (!uploadFiles.length) return;
+
+            let processed = 0;
+            uploadFiles.forEach(file => {
+                const reader = new FileReader();
+
+                // Check if it's an image
+                if (file.type.startsWith('image/')) {
+                    reader.readAsDataURL(file); // Read as base64
+                    reader.onload = (evt) => {
+                        addFile(file.name, 'image', evt.target.result);
+                        checkDone();
+                    };
+                } else {
+                    reader.readAsText(file); // Read as text
+                    reader.onload = (evt) => {
+                        addFile(file.name, 'text', evt.target.result);
+                        checkDone();
+                    };
+                }
+            });
+
+            function addFile(name, type, content) {
+                files.push({ id: Date.now() + Math.random(), name, type, content });
+            }
+
+            function checkDone() {
+                processed++;
+                if (processed === uploadFiles.length) {
+                    saveToStorage();
+                    renderSidebar();
+                    alert(`Successfully imported ${processed} files`);
+                }
+            }
+            this.value = '';
+        });
+
+        // Export configuration
+        window.exportConfig = function () {
+            const config = { version: "3.0", timestamp: new Date().toISOString(), files: files };
+            const blob = new Blob([JSON.stringify(config)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'project_backup.json';
+            a.click();
+        };
+
+        // Import configuration
+        document.getElementById('configInput').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const data = JSON.parse(evt.target.result);
+                    if (data.files) {
+                        if (confirm("This will overwrite the current workspace. Continue?")) {
+                            files = data.files;
+                            saveToStorage();
+                            showHome();
+                            alert("Project restored successfully");
+                        }
+                    }
+                } catch (err) { alert("Invalid file format"); }
+            };
+            reader.readAsText(file);
+            this.value = '';
+        });
+
+        // Download current file
+        window.downloadCurrentFile = function () {
+            if (!activeFileId) return;
+            const file = files.find(f => f.id === activeFileId);
+
+            if (file.type === 'image') {
+                // Download Base64 image
+                const a = document.createElement('a');
+                a.href = file.content;
+                a.download = file.name;
+                a.click();
+            } else {
+                // Download text file
+                const blob = new Blob([file.content], { type: 'text/plain' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = file.name;
+                a.click();
+            }
+        };
+
+        window.copyCode = function () {
+            if (elements.textContainer.style.display !== 'none') {
+                elements.codeEditor.select();
+                document.execCommand('copy');
+                alert('Copied to clipboard');
+            }
+        };
+
+        // --- Rendering Helpers ---
+        function renderSidebar() {
+            elements.fileList.innerHTML = '';
+            files.forEach(file => {
+                const icon = file.type === 'image' ? '🖼️' : (file.name.endsWith('.css') ? '🎨' : (file.name.endsWith('.js') ? '📜' : '📄'));
+                const li = document.createElement('li');
+                li.className = `file-item ${file.id === activeFileId ? 'active' : ''}`;
+                li.onclick = () => showEditor(file.id);
+                li.innerHTML = `
+                <span class="file-icon">${icon}</span>
+                <span class="file-name" title="${file.name}">${file.name}</span>
+                <button class="delete-btn" onclick="deleteFile(event, ${file.id})">×</button>
+            `;
+                elements.fileList.appendChild(li);
+            });
+        }
+
+        // --- Storage ---
+        function saveToStorage() {
+            localStorage.setItem('ide-v3-data', JSON.stringify(files));
+            elements.saveStatus.innerText = 'Saved';
+        }
+
+        function loadFromStorage() {
+            const data = localStorage.getItem('ide-v3-data');
+            if (data) {
+                try { files = JSON.parse(data); } catch (e) { files = []; }
+            }
+        }
+    </script>
+
+</body>
+
+</html>

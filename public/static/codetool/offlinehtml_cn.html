@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高级离线 HTML 开发环境</title>
+    <style>
+        :root {
+            --bg-dark: #1e1e1e;
+            --bg-sidebar: #252526;
+            --bg-active: #37373d;
+            --bg-hover: #2a2d2e;
+            --text-main: #cccccc;
+            --accent: #007acc;
+            --border: #3e3e3e;
+            --danger: #d64646;
+            --success: #4caf50;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+
+        /* --- 左侧侧边栏 --- */
+        aside {
+            width: 260px;
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: width 0.2s;
+        }
+
+        .sidebar-header {
+            padding: 15px;
+            font-weight: bold;
+            border-bottom: 1px solid var(--border);
+            color: var(--accent);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-actions {
+            padding: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 5px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .btn-icon {
+            background: var(--bg-active);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-icon:hover {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .btn-icon.full-width {
+            grid-column: span 2;
+        }
+
+        .file-list {
+            flex: 1;
+            overflow-y: auto;
+            list-style: none;
+            padding-bottom: 20px;
+        }
+
+        .file-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+        }
+
+        .file-item:hover {
+            background-color: var(--bg-hover);
+        }
+
+        .file-item.active {
+            background-color: var(--bg-active);
+            border-left: 3px solid var(--accent);
+            color: #fff;
+        }
+
+        /* 文件类型图标 */
+        .file-icon {
+            width: 16px;
+            text-align: center;
+            margin-right: 8px;
+            opacity: 0.7;
+        }
+
+        .file-name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            flex: 1;
+        }
+
+        .delete-btn {
+            opacity: 0;
+            color: #aaa;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            line-height: 1;
+            padding: 0 5px;
+        }
+
+        .file-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .delete-btn:hover {
+            color: var(--danger);
+        }
+
+        /* --- 右侧主区域 --- */
+        #main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* 首页 */
+        #home-view {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            max-width: 800px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: var(--bg-sidebar);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .feature-card h3 {
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+
+        /* 编辑器容器 */
+        #editor-view {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .toolbar {
+            height: 40px;
+            background-color: var(--bg-sidebar);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+            gap: 10px;
+        }
+
+        .work-area {
+            flex: 1;
+            display: flex;
+            height: calc(100% - 40px);
+        }
+
+        /* 编辑器和预览窗格 */
+        .pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            transition: flex 0.3s;
+        }
+
+        /* 当全屏预览时，编辑器隐藏，预览占满 */
+        .work-area.fullscreen-mode .editor-pane {
+            display: none;
+        }
+
+        .work-area.fullscreen-mode .preview-pane {
+            flex: 1;
+        }
+
+        .pane-header {
+            background: #2d2d2d;
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            color: #888;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        textarea,
+        .image-preview-box {
+            flex: 1;
+            background-color: var(--bg-dark);
+            color: #d4d4d4;
+            border: none;
+            border-right: 1px solid var(--border);
+            padding: 15px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            white-space: pre;
+        }
+
+        .image-preview-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: repeating-linear-gradient(45deg, #222, #222 10px, #282828 10px, #282828 20px);
+        }
+
+        .image-preview-box img {
+            max-width: 90%;
+            max-height: 90%;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        iframe {
+            flex: 1;
+            border: none;
+            background: white;
+        }
+
+        /* 按钮 */
+        .btn {
+            background: var(--bg-active);
+            color: #ddd;
+            border: 1px solid var(--border);
+            padding: 4px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .btn:hover {
+            background: #444;
+        }
+
+        .btn.primary {
+            background: var(--accent);
+            color: white;
+            border-color: var(--accent);
+        }
+
+        .btn.primary:hover {
+            background: #005f9e;
+        }
+
+        .btn.success {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            body {
+                flex-direction: column;
+            }
+
+            aside {
+                width: 100%;
+                height: auto;
+                max-height: 30vh;
+            }
+
+            .work-area {
+                flex-direction: column;
+            }
+
+            textarea {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+            }
+        }
+
+        /* 全屏覆盖层样式 (Alternative approach for absolute fullscreen) */
+        #fullscreen-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: white;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+        }
+
+        #fullscreen-bar {
+            height: 40px;
+            background: #333;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        #fullscreen-iframe {
+            flex: 1;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 左侧边栏 -->
+    <aside>
+        <div class="sidebar-header" onclick="showHome()">
+            <span>🚀</span> IDE Pro
+        </div>
+        <div class="file-actions">
+            <button class="btn-icon" onclick="createNewFile()">+ 新建代码</button>
+            <label class="btn-icon" title="上传代码或图片">
+                📂 上传文件
+                <input type="file" id="uploadInput" multiple>
+            </label>
+            <label class="btn-icon" title="导入整个项目配置">
+                📥 导入项目
+                <input type="file" id="configInput" accept=".json">
+            </label>
+            <button class="btn-icon" onclick="exportConfig()">📤 备份项目</button>
+        </div>
+        <div style="padding: 5px 10px; font-size: 0.75rem; color: #666;">文件列表 (点击切换)</div>
+        <ul class="file-list" id="fileList"></ul>
+    </aside>
+
+    <!-- 主区域 -->
+    <div id="main-area">
+
+        <!-- 1. 首页 -->
+        <div id="home-view">
+            <h1 style="color: var(--accent); margin-bottom: 10px;">全功能离线 Web 编辑器</h1>
+            <p style="color: #888;">无需联网，支持多文件引用、图片预览、一键备份</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>🔗 文件引用</h3>
+                    <p>在 HTML 中直接使用 <code>&lt;link href="style.css"&gt;</code> 或
+                        <code>&lt;img src="pic.png"&gt;</code>，系统会自动关联列表中的文件。
+                    </p>
+                </div>
+                <div class="feature-card">
+                    <h3>🖼️ 图片支持</h3>
+                    <p>直接上传 PNG/JPG 图片，它们会保存在浏览器中，并可在代码中直接引用。</p>
+                </div>
+                <div class="feature-card">
+                    <h3>📺 全屏预览</h3>
+                    <p>一键开启沉浸式全屏预览，真实模拟网站运行效果。</p>
+                </div>
+            </div>
+            <button class="btn primary" style="margin-top: 40px; padding: 10px 30px; font-size: 1rem;"
+                onclick="createNewFile()">开始编码</button>
+        </div>
+
+        <!-- 2. 编辑器 -->
+        <div id="editor-view">
+            <div class="toolbar">
+                <span id="currentFileName" style="font-weight:bold; margin-right:auto;">filename.html</span>
+                <span id="saveStatus" style="font-size: 0.8rem; color: #666; margin-right: 10px;">已保存</span>
+                <button class="btn" onclick="copyCode()">复制</button>
+                <button class="btn" onclick="downloadCurrentFile()">下载</button>
+                <button class="btn primary" onclick="runPreview()">🔄 刷新</button>
+                <button class="btn success" onclick="toggleFullscreen()">📺 全屏预览</button>
+            </div>
+            <div class="work-area" id="workArea">
+                <!-- 代码编辑区 (文本文件显示这个) -->
+                <div class="pane editor-pane" id="textEditorContainer">
+                    <div class="pane-header">SOURCE CODE</div>
+                    <textarea id="codeEditor" spellcheck="false"></textarea>
+                </div>
+                <!-- 图片预览区 (图片文件显示这个) -->
+                <div class="pane editor-pane" id="imagePreviewContainer" style="display:none;">
+                    <div class="pane-header">IMAGE PREVIEW</div>
+                    <div class="image-preview-box">
+                        <img id="imageViewer" src="" alt="Preview">
+                    </div>
+                </div>
+                <!-- 运行预览区 -->
+                <div class="pane preview-pane">
+                    <div class="pane-header">RESULT</div>
+                    <iframe id="previewFrame"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 全屏预览层 (独立于布局) -->
+    <div id="fullscreen-container">
+        <div id="fullscreen-bar">
+            <button class="btn" onclick="closeFullscreen()">❌ 退出全屏</button>
+        </div>
+        <iframe id="fullscreen-iframe"></iframe>
+    </div>
+
+    <script>
+        /**
+         * 数据结构:
+         * file = {
+         *   id: Number,
+         *   name: String,
+         *   type: 'text' | 'image',
+         *   content: String (Text content OR Base64 DataURI)
+         * }
+         */
+        let files = [];
+        let activeFileId = null;
+
+        // DOM Elements
+        const elements = {
+            fileList: document.getElementById('fileList'),
+            editorView: document.getElementById('editor-view'),
+            homeView: document.getElementById('home-view'),
+            codeEditor: document.getElementById('codeEditor'),
+            previewFrame: document.getElementById('previewFrame'),
+            currentFileName: document.getElementById('currentFileName'),
+            textContainer: document.getElementById('textEditorContainer'),
+            imgContainer: document.getElementById('imagePreviewContainer'),
+            imgViewer: document.getElementById('imageViewer'),
+            fullscreenContainer: document.getElementById('fullscreen-container'),
+            fullscreenIframe: document.getElementById('fullscreen-iframe'),
+            saveStatus: document.getElementById('saveStatus')
+        };
+
+        // --- 初始化 ---
+        window.onload = () => {
+            loadFromStorage();
+            renderSidebar();
+            // 自动保存定时器
+            setInterval(saveToStorage, 5000);
+        };
+
+        // --- 核心逻辑: 虚拟文件系统编译器 ---
+        function compileProject(entryHtml) {
+            // 核心魔法：将 entryHtml 中的相对路径替换为 Blob URL
+            let processedHtml = entryHtml;
+
+            // 1. 创建所有文件的 Blob URL 映射
+            // 注意：为了性能，这里是一个简单的字符串替换。
+            // 如果文件名包含特殊字符可能会有问题，但在简单开发中通常足够。
+            files.forEach(file => {
+                // 跳过自身引用（虽然通常不影响）
+                // 也不需要替换 HTML 文件本身的引用，除非是 <iframe src="other.html">
+
+                let blobUrl;
+
+                if (file.type === 'image') {
+                    // 图片直接使用 Base64 DataURI，不需要 Blob (也可以转Blob但DataURI方便)
+                    // 但为了统一替换逻辑，我们直接替换字符串
+                    blobUrl = file.content;
+                } else {
+                    // CSS / JS / HTML
+                    let mimeType = 'text/plain';
+                    if (file.name.endsWith('.css')) mimeType = 'text/css';
+                    if (file.name.endsWith('.js')) mimeType = 'application/javascript';
+                    if (file.name.endsWith('.html')) mimeType = 'text/html';
+
+                    const blob = new Blob([file.content], { type: mimeType });
+                    blobUrl = URL.createObjectURL(blob);
+                }
+
+                // 执行替换：查找所有 "filename" 或 'filename'
+                // 使用 split/join 进行全局替换，避免 Regex 转义问题
+                // 风险提示：如果正文中刚好有 "style.css" 文本也会被替换。
+                // 改进：只替换 href="x" src="x" url('x') 稍微复杂，这里采用简单暴力替换文件名
+                // 只要文件名起得够独特（带后缀），误伤概率低。
+                processedHtml = processedHtml.split(file.name).join(blobUrl);
+            });
+
+            return processedHtml;
+        }
+
+        // --- 视图控制 ---
+        function showHome() {
+            activeFileId = null;
+            elements.homeView.style.display = 'flex';
+            elements.editorView.style.display = 'none';
+            renderSidebar();
+        }
+
+        function showEditor(fileId) {
+            const file = files.find(f => f.id === fileId);
+            if (!file) return;
+
+            activeFileId = fileId;
+            elements.homeView.style.display = 'none';
+            elements.editorView.style.display = 'flex';
+            elements.currentFileName.innerText = file.name;
+
+            // 根据类型切换编辑器
+            if (file.type === 'image') {
+                elements.textContainer.style.display = 'none';
+                elements.imgContainer.style.display = 'flex';
+                elements.imgViewer.src = file.content;
+            } else {
+                elements.textContainer.style.display = 'flex';
+                elements.imgContainer.style.display = 'none';
+                elements.codeEditor.value = file.content;
+            }
+
+            renderSidebar();
+
+            // 只有是 HTML 文件时才自动刷新预览
+            if (file.name.endsWith('.html') || file.name.endsWith('.htm')) {
+                runPreview();
+            }
+        }
+
+        function runPreview() {
+            if (!activeFileId) return;
+            const file = files.find(f => f.id === activeFileId);
+
+            // 只有 HTML 才能预览，其他文件显示提示
+            if (!file.name.match(/\.html?$/i)) {
+                // 如果是 CSS/JS，我们找一下有没有 index.html，如果有就预览那个，否则显示提示
+                const indexFile = files.find(f => f.name === 'index.html');
+                if (indexFile) {
+                    const compiled = compileProject(indexFile.content);
+                    elements.previewFrame.srcdoc = compiled;
+                    if (elements.fullscreenContainer.style.display === 'flex') {
+                        elements.fullscreenIframe.srcdoc = compiled;
+                    }
+                } else {
+                    // 没法预览
+                    elements.previewFrame.srcdoc = `<body style="color:#888; font-family:sans-serif; text-align:center; padding-top:50px;">正在编辑 ${file.name}<br>请切换到 HTML 文件以查看预览</body>`;
+                }
+                return;
+            }
+
+            const compiledHtml = compileProject(elements.codeEditor.value);
+            elements.previewFrame.srcdoc = compiledHtml;
+
+            // 如果全屏正在开启，同步更新
+            if (elements.fullscreenContainer.style.display === 'flex') {
+                elements.fullscreenIframe.srcdoc = compiledHtml;
+            }
+        }
+
+        // --- 全屏逻辑 ---
+        function toggleFullscreen() {
+            if (!activeFileId) return;
+            runPreview(); // 确保是最新的
+            elements.fullscreenContainer.style.display = 'flex';
+            // 将预览内容复制到全屏 iframe
+            elements.fullscreenIframe.srcdoc = elements.previewFrame.srcdoc;
+        }
+
+        function closeFullscreen() {
+            elements.fullscreenContainer.style.display = 'none';
+            elements.fullscreenIframe.srcdoc = ''; // 清理
+        }
+
+        // --- 文件操作 ---
+        function createNewFile() {
+            const name = prompt("文件名 (例如: script.js, style.css, index.html)", "new.html");
+            if (!name) return;
+
+            // 简单判断类型
+            const type = 'text'; // 手动创建默认为文本
+            let initialContent = '';
+
+            if (name.endsWith('.html')) {
+                initialContent = `<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Page</title>
+    <!-- 引用示例: -->
+    <!-- <link rel="stylesheet" href="style.css"> -->
+</head>
+<body>
+    <h1>Hello World</h1>
+</body>
+</html>`;
+            } else if (name.endsWith('.css')) {
+                initialContent = `body { background: #f0f0f0; font-family: sans-serif; }`;
+            } else if (name.endsWith('.js')) {
+                initialContent = `console.log('Loaded!');`;
+            }
+
+            const newFile = { id: Date.now(), name: name, type: type, content: initialContent };
+            files.push(newFile);
+            saveToStorage();
+            showEditor(newFile.id);
+        }
+
+        function deleteFile(e, id) {
+            e.stopPropagation();
+            if (confirm("确定删除吗？此操作不可恢复。")) {
+                files = files.filter(f => f.id !== id);
+                saveToStorage();
+                if (activeFileId === id) showHome();
+                else renderSidebar();
+            }
+        }
+
+        // --- 编辑器交互 ---
+        elements.codeEditor.addEventListener('input', () => {
+            if (!activeFileId) return;
+            const file = files.find(f => f.id === activeFileId);
+            if (file && file.type === 'text') {
+                file.content = elements.codeEditor.value;
+                elements.saveStatus.innerText = '未保存...';
+                // 防抖自动保存逻辑可在此优化，这里简化
+            }
+        });
+
+        // 只有当失去焦点或显式调用时保存到 LS，避免频繁 IO
+        elements.codeEditor.addEventListener('blur', () => {
+            saveToStorage();
+        });
+
+        // Tab 键支持
+        elements.codeEditor.addEventListener('keydown', function (e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                document.execCommand('insertText', false, '  ');
+            }
+        });
+
+        // --- 导入导出逻辑 (含图片处理) ---
+
+        // 上传处理
+        document.getElementById('uploadInput').addEventListener('change', function (e) {
+            const uploadFiles = Array.from(e.target.files);
+            if (!uploadFiles.length) return;
+
+            let processed = 0;
+            uploadFiles.forEach(file => {
+                const reader = new FileReader();
+
+                // 判断是否为图片
+                if (file.type.startsWith('image/')) {
+                    reader.readAsDataURL(file); // 读取为 base64
+                    reader.onload = (evt) => {
+                        addFile(file.name, 'image', evt.target.result);
+                        checkDone();
+                    };
+                } else {
+                    reader.readAsText(file); // 读取为文本
+                    reader.onload = (evt) => {
+                        addFile(file.name, 'text', evt.target.result);
+                        checkDone();
+                    };
+                }
+            });
+
+            function addFile(name, type, content) {
+                files.push({ id: Date.now() + Math.random(), name, type, content });
+            }
+
+            function checkDone() {
+                processed++;
+                if (processed === uploadFiles.length) {
+                    saveToStorage();
+                    renderSidebar();
+                    alert(`成功导入 ${processed} 个文件`);
+                }
+            }
+            this.value = '';
+        });
+
+        // 导出配置
+        window.exportConfig = function () {
+            const config = { version: "3.0", timestamp: new Date().toISOString(), files: files };
+            const blob = new Blob([JSON.stringify(config)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'project_backup.json';
+            a.click();
+        };
+
+        // 导入配置
+        document.getElementById('configInput').addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (evt) => {
+                try {
+                    const data = JSON.parse(evt.target.result);
+                    if (data.files) {
+                        if (confirm("这将覆盖当前工作区，确定吗？")) {
+                            files = data.files;
+                            saveToStorage();
+                            showHome();
+                            alert("项目恢复成功");
+                        }
+                    }
+                } catch (err) { alert("文件格式错误"); }
+            };
+            reader.readAsText(file);
+            this.value = '';
+        });
+
+        // 下载当前文件
+        window.downloadCurrentFile = function () {
+            if (!activeFileId) return;
+            const file = files.find(f => f.id === activeFileId);
+
+            if (file.type === 'image') {
+                // 下载 Base64 图片
+                const a = document.createElement('a');
+                a.href = file.content;
+                a.download = file.name;
+                a.click();
+            } else {
+                // 下载文本
+                const blob = new Blob([file.content], { type: 'text/plain' });
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = file.name;
+                a.click();
+            }
+        };
+
+        window.copyCode = function () {
+            if (elements.textContainer.style.display !== 'none') {
+                elements.codeEditor.select();
+                document.execCommand('copy');
+                alert('已复制');
+            }
+        };
+
+        // --- 渲染辅助 ---
+        function renderSidebar() {
+            elements.fileList.innerHTML = '';
+            files.forEach(file => {
+                const icon = file.type === 'image' ? '🖼️' : (file.name.endsWith('.css') ? '🎨' : (file.name.endsWith('.js') ? '📜' : '📄'));
+                const li = document.createElement('li');
+                li.className = `file-item ${file.id === activeFileId ? 'active' : ''}`;
+                li.onclick = () => showEditor(file.id);
+                li.innerHTML = `
+                <span class="file-icon">${icon}</span>
+                <span class="file-name" title="${file.name}">${file.name}</span>
+                <button class="delete-btn" onclick="deleteFile(event, ${file.id})">×</button>
+            `;
+                elements.fileList.appendChild(li);
+            });
+        }
+
+        // --- 存储 ---
+        function saveToStorage() {
+            localStorage.setItem('ide-v3-data', JSON.stringify(files));
+            elements.saveStatus.innerText = '已保存';
+        }
+
+        function loadFromStorage() {
+            const data = localStorage.getItem('ide-v3-data');
+            if (data) {
+                try { files = JSON.parse(data); } catch (e) { files = []; }
+            }
+        }
+    </script>
+
+</body>
+
+</html>

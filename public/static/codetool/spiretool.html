@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Sprite Sheet Merger & Reorganizer</title>
+    <style>
+        :root {
+            --primary: #409eff;
+            --danger: #f56c6c;
+            --bg: #f5f7fa;
+            --border: #dcdfe6;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--bg);
+            color: #333;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        h1 {
+            font-size: 22px;
+            margin-bottom: 25px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 15px;
+        }
+
+        .layout {
+            display: flex;
+            gap: 30px;
+        }
+
+        .config-panel {
+            flex: 1;
+            min-width: 400px;
+        }
+
+        .preview-panel {
+            flex: 1;
+            min-width: 400px;
+            border-left: 1px solid #eee;
+            padding-left: 30px;
+        }
+
+        /* 分组样式 */
+        .group-list {
+            margin-bottom: 20px;
+        }
+
+        .group-item {
+            background: #f9fafc;
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .group-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .group-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .group-inputs {
+            display: flex;
+            gap: 10px;
+        }
+
+        .input-wrap {
+            flex: 1;
+        }
+
+        .input-wrap label {
+            display: block;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            font-size: 12px;
+        }
+
+        .btn {
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: opacity 0.2s;
+        }
+
+        .btn:hover {
+            opacity: 0.85;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+            padding: 4px 10px;
+            font-size: 12px;
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px dashed #aaa;
+            color: #666;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .btn-lg {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .setting-row {
+            margin: 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .canvas-box {
+            overflow: auto;
+            max-height: 600px;
+            border: 1px dashed #ccc;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%), linear-gradient(45deg, #eee 25%, transparent 25%, transparent 75%, #eee 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        textarea {
+            width: 100%;
+            height: 250px;
+            font-family: monospace;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 12px;
+            resize: vertical;
+        }
+
+        .log-area {
+            font-size: 12px;
+            color: #666;
+            background: #fafafa;
+            padding: 10px;
+            border: 1px solid #eee;
+            margin-top: 10px;
+            max-height: 150px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Multi-Sprite Sheet Merger (Preserves Class Names)</h1>
+
+        <div class="layout">
+            <!-- Left Configuration Panel -->
+            <div class="config-panel">
+
+                <h3>1. Source Old Sprite Sheets</h3>
+                <div id="groupList" class="group-list">
+                    <!-- Dynamically generated upload groups -->
+                </div>
+                <button class="btn btn-outline" onclick="addGroup()">+ Add an Old Sprite Sheet Group (CSS +
+                    Image)</button>
+
+                <h3>2. Append Independent New Images</h3>
+                <div class="group-item">
+                    <input type="file" id="newImages" accept="image/*" multiple>
+                    <div style="font-size:12px; color:#888; margin-top:5px;">Multiple selection supported. Class names
+                        will be auto-generated from filenames.</div>
+                </div>
+
+                <div class="setting-row">
+                    <label>Icon Spacing (Padding):</label>
+                    <input type="number" id="paddingVal" value="10" style="width: 60px; padding:5px;"> px
+                </div>
+
+                <button class="btn btn-primary btn-lg" id="generateBtn" onclick="processAll()">Start Merge &
+                    Generate</button>
+
+                <div id="logArea" class="log-area">Ready...</div>
+            </div>
+
+            <!-- Right Preview Panel -->
+            <div class="preview-panel">
+                <h3>Result Preview</h3>
+                <div class="canvas-box">
+                    <canvas id="resultCanvas"></canvas>
+                </div>
+
+                <div id="resultActions" style="display:none;">
+                    <div style="margin-bottom:10px;">
+                        <a id="downloadLink" href="#" download="new-sprite.png">
+                            <button class="btn btn-primary">Download Merged Image</button>
+                        </a>
+                    </div>
+                    <label>Generated CSS Code:</label>
+                    <textarea id="cssOutput" readonly></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- UI Logic ---
+        let groupCount = 0;
+
+        // Initialize with one group
+        window.onload = () => { addGroup(); };
+
+        function addGroup() {
+            groupCount++;
+            const div = document.createElement('div');
+            div.className = 'group-item';
+            div.id = `group-${groupCount}`;
+            div.innerHTML = `
+            <div class="group-header">
+                <span>Old Sprite Sheet Group #${groupCount}</span>
+                <button class="btn btn-danger" onclick="removeGroup(${groupCount})">Delete</button>
+            </div>
+            <div class="group-inputs">
+                <div class="input-wrap">
+                    <label>CSS File</label>
+                    <input type="file" class="css-file" accept=".css">
+                </div>
+                <div class="input-wrap">
+                    <label>Image File (PNG/JPG)</label>
+                    <input type="file" class="img-file" accept="image/*">
+                </div>
+            </div>
+        `;
+            document.getElementById('groupList').appendChild(div);
+        }
+
+        function removeGroup(id) {
+            const el = document.getElementById(`group-${id}`);
+            if (el) el.remove();
+        }
+
+        function log(msg) {
+            const el = document.getElementById('logArea');
+            const time = new Date().toLocaleTimeString();
+            el.innerHTML += `<div>[${time}] ${msg}</div>`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        // --- Core Business Logic ---
+
+        async function processAll() {
+            const generateBtn = document.getElementById('generateBtn');
+            generateBtn.disabled = true;
+            generateBtn.innerText = "Processing...";
+            document.getElementById('logArea').innerHTML = "Starting processing...";
+
+            try {
+                const allIcons = [];
+
+                // 1. Process each old sprite sheet group
+                const groups = document.querySelectorAll('.group-item[id^="group-"]');
+                for (let group of groups) {
+                    const cssInput = group.querySelector('.css-file');
+                    const imgInput = group.querySelector('.img-file');
+
+                    if (cssInput.files.length > 0 && imgInput.files.length > 0) {
+                        log(`Parsing: ${cssInput.files[0].name} ...`);
+                        const cssText = await readFileAsText(cssInput.files[0]);
+                        const imgObj = await readFileAsImage(imgInput.files[0]);
+
+                        // Parse this group
+                        const icons = parseAndExtract(cssText, imgObj);
+                        if (icons.length > 0) {
+                            allIcons.push(...icons);
+                            log(`  => Successfully extracted ${icons.length} icons`);
+                        } else {
+                            log(`  => Warning: No valid icons identified in this file`);
+                        }
+                    }
+                }
+
+                // 2. Process newly uploaded independent images
+                const newImgInput = document.getElementById('newImages');
+                if (newImgInput.files.length > 0) {
+                    log(`Processing ${newImgInput.files.length} new images...`);
+                    for (let file of newImgInput.files) {
+                        const img = await readFileAsImage(file);
+                        // Use filename as class name, clean suffix and illegal characters
+                        const className = '.' + file.name.replace(/\.[^/.]+$/, "").replace(/\s+/g, '-');
+                        allIcons.push({
+                            name: className,
+                            img: img,
+                            width: img.width,
+                            height: img.height,
+                            isNew: true
+                        });
+                    }
+                }
+
+                if (allIcons.length === 0) {
+                    alert("No icons found. Please check uploaded files.");
+                    throw new Error("No icons found");
+                }
+
+                // 3. Start merge layout (Packing)
+                log(`Merging ${allIcons.length} icons...`);
+                // Sort by height for better layout
+                allIcons.sort((a, b) => b.height - a.height);
+
+                const padding = parseInt(document.getElementById('paddingVal').value) || 0;
+                const packedResult = packIcons(allIcons, padding);
+
+                // 4. Draw result
+                drawResult(packedResult);
+
+            } catch (err) {
+                console.error(err);
+                log("Error: " + err.message);
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.innerText = "Start Merge & Generate";
+            }
+        }
+
+        // --- Parser (Supports Independent Scope) ---
+        function parseAndExtract(cssText, sourceImg) {
+            // 1. Preprocess CSS
+            const cleanCss = cssText.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\n/g, ' ').replace(/\s+/g, ' ');
+            const ruleRegex = /([^{]+)\{([^}]+)\}/g;
+
+            let match;
+            const rules = [];
+            let defaultWidth = 0;
+            let defaultHeight = 0;
+
+            // First pass: Find "default width/height" for this CSS file
+            while ((match = ruleRegex.exec(cleanCss)) !== null) {
+                const content = match[2];
+                const wMatch = content.match(/width:\s*(\d+)px/);
+                const hMatch = content.match(/height:\s*(\d+)px/);
+
+                // Heuristic logic: If a class defines width/height and looks like a common class (contains sprite or url), treat as default
+                if (wMatch && hMatch) {
+                    if (content.includes('url') || match[1].includes('sprite')) {
+                        defaultWidth = parseInt(wMatch[1]);
+                        defaultHeight = parseInt(hMatch[1]);
+                    }
+                }
+                rules.push({ selector: match[1].trim(), content, wMatch, hMatch });
+            }
+
+            const extracted = [];
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+
+            // Second pass: Extract icons
+            rules.forEach(rule => {
+                // Parse coordinates
+                const posMatch = rule.content.match(/background-position:\s*(-?\d+)px\s*(-?\d+)px/);
+                const posZero = rule.content.match(/background-position:\s*0\s*0/); // 0 0 syntax
+
+                let x, y;
+                if (posMatch) {
+                    x = Math.abs(parseInt(posMatch[1]));
+                    y = Math.abs(parseInt(posMatch[2]));
+                } else if (posZero) {
+                    x = 0; y = 0;
+                } else {
+                    return; // No coordinates, skip
+                }
+
+                // Parse width/height (prioritize own, fallback to file-level default)
+                let w = rule.wMatch ? parseInt(rule.wMatch[1]) : defaultWidth;
+                let h = rule.hMatch ? parseInt(rule.hMatch[1]) : defaultHeight;
+
+                if (w > 0 && h > 0) {
+                    // Crop image
+                    canvas.width = w;
+                    canvas.height = h;
+                    ctx.clearRect(0, 0, w, h);
+                    // Draw from source image to small canvas
+                    ctx.drawImage(sourceImg, x, y, w, h, 0, 0, w, h);
+
+                    // Generate new Image object for later merging
+                    const iconImg = new Image();
+                    iconImg.src = canvas.toDataURL(); // Synchronous operation
+
+                    // Preserve original class name (e.g., .el-icon-edit:before, .icon-home, etc.)
+                    // Simple comma splitting, take the first one, or keep full string as needed.
+                    // Here we clean slightly, remove extra spaces, keep original selector string.
+                    const cleanName = rule.selector;
+
+                    extracted.push({
+                        name: cleanName,
+                        img: iconImg,
+                        width: w,
+                        height: h
+                    });
+                }
+            });
+
+            return extracted;
+        }
+
+        // --- Layout Algorithm (Simple Flow) ---
+        function packIcons(items, padding) {
+            // Estimate canvas size
+            const totalArea = items.reduce((acc, item) => acc + (item.width * item.height), 0);
+            const canvasWidth = Math.max(500, Math.ceil(Math.sqrt(totalArea) * 1.5));
+
+            let currentX = padding;
+            let currentY = padding;
+            let rowHeight = 0;
+            let finalW = 0;
+            let finalH = 0;
+
+            const packed = items.map(item => {
+                // Line break detection
+                if (currentX + item.width + padding > canvasWidth) {
+                    currentX = padding;
+                    currentY += rowHeight + padding;
+                    rowHeight = 0;
+                }
+
+                const placed = {
+                    ...item,
+                    x: currentX,
+                    y: currentY
+                };
+
+                rowHeight = Math.max(rowHeight, item.height);
+                currentX += item.width + padding;
+
+                finalW = Math.max(finalW, currentX);
+                finalH = Math.max(finalH, currentY + rowHeight);
+
+                return placed;
+            });
+
+            return { items: packed, width: finalW, height: finalH + padding };
+        }
+
+        // --- Drawing & Output ---
+        async function drawResult(result) {
+            // Wait for all base64 images to load (src is set synchronously, but drawing needs async to ensure decode)
+            await Promise.all(result.items.map(i => {
+                if (i.img.complete) return Promise.resolve();
+                return new Promise(r => i.img.onload = r);
+            }));
+
+            const canvas = document.getElementById('resultCanvas');
+            canvas.width = result.width;
+            canvas.height = result.height;
+            const ctx = canvas.getContext('2d');
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            result.items.forEach(item => {
+                ctx.drawImage(item.img, item.x, item.y, item.width, item.height);
+            });
+
+            // Show download area
+            document.getElementById('resultActions').style.display = 'block';
+            document.getElementById('downloadLink').href = canvas.toDataURL('image/png');
+
+            // Generate CSS
+            generateCSS(result.items, result.width, result.height);
+            log("Generation complete!");
+        }
+
+        function generateCSS(items, totalW, totalH) {
+            const date = new Date().toISOString().slice(0, 10);
+            let css = `/** \n * Generated by Sprite Tool on ${date} \n * Total Size: ${totalW}px x ${totalH}px \n */\n\n`;
+
+            // Common base class
+            css += `.sprite-base-icon {\n`;
+            css += `    display: inline-block;\n`;
+            css += `    background-image: url('sprite.png');\n`;
+            css += `    background-repeat: no-repeat;\n`;
+            css += `}\n\n`;
+
+            // Output class for each icon
+            items.forEach(item => {
+                css += `${item.name} {\n`;
+                // If you don't want all classes to inherit base-icon, you can add width/height/bg-image properties here
+                // Or let users add .sprite-base-icon themselves in HTML
+                css += `    width: ${item.width}px;\n`;
+                css += `    height: ${item.height}px;\n`;
+                css += `    background-position: -${item.x}px -${item.y}px;\n`;
+                css += `}\n`;
+            });
+
+            document.getElementById('cssOutput').value = css;
+        }
+
+        // --- Utility Functions ---
+        function readFileAsText(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target.result);
+                reader.readAsText(file);
+            });
+        }
+
+        function readFileAsImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => resolve(img);
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    </script>
+
+</body>
+
+</html>

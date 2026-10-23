@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title data-i18n="title">iPhone Duo · 折叠预览</title>
+  <meta name="description" content="iPhone 折叠屏双指手势 3D 交互演示：拖拽旋转、滚轮缩放、摄像头手势操控折叠动画，支持壁纸/启动器/自定义屏幕与机身颜色切换。">
+  <meta property="og:title" content="iPhone Duo · 折叠预览">
+  <meta property="og:description" content="iPhone 折叠屏双指手势 3D 交互演示。">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="./style.css">
+  <script type="importmap">{"imports":{"@vercel/analytics":"./vendor/@vercel/analytics/dist/index.mjs","three":"./vendor/three/build/three.module.js","three/addons/":"./vendor/three/examples/jsm/"}}</script>
+</head>
+<body>
+  <main>
+    <div id="viewport" data-i18n-aria="viewportLabel" aria-label="iPhone Duo 3D 模型。拖拽旋转，滚轮缩放。"></div>
+    <button id="gesture-toggle" class="gesture-toggle" type="button" aria-pressed="false" aria-label="开启摄像头手势操控" title="开启摄像头手势操控">
+      <span class="gesture-dot" aria-hidden="true"></span><span data-gesture-label>手势操控</span>
+    </button>
+    <aside id="gesture-panel" class="gesture-panel" hidden aria-live="polite" aria-label="摄像头手势操控">
+      <div class="gesture-preview-wrap"><video id="gesture-video" playsinline muted></video><canvas id="gesture-canvas"></canvas></div>
+      <div class="gesture-panel-copy"><strong data-gesture-status>正在准备摄像头…</strong><span data-gesture-hint>双手间距控制折叠，双手连线旋转模型，中点控制视角</span></div>
+      <button id="gesture-close" class="gesture-close" type="button" aria-label="关闭摄像头手势操控" title="关闭">×</button>
+    </aside>
+    <div class="view-tools" data-i18n-aria="viewToolsLabel" aria-label="模型视图控制">
+      <button id="zoom-out" type="button" data-i18n-aria="zoomOut" aria-label="缩小模型" title="缩小模型">−</button>
+      <button id="zoom-reset" type="button" data-i18n-aria="resetView" aria-label="重置视图" title="重置视图"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.34-5.66L4 8.68M4 4v4.68h4.68"/></svg></button>
+      <button id="zoom-in" type="button" data-i18n-aria="zoomIn" aria-label="放大模型" title="放大模型">+</button>
+      <button id="immersive-toggle" type="button" data-i18n-aria="enterImmersive" aria-label="进入沉浸体验" title="进入沉浸体验"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4H4v4M16 4h4v4M8 20H4v-4M20 16v4h-4"/></svg></button>
+    </div>
+    <button id="language-toggle" class="language-toggle" type="button" aria-label="切换语言" title="切换语言">EN</button>
+    <a class="github-link" href="https://github.com/Humyang/iphone-duo-gesture" target="_blank" rel="noopener noreferrer" aria-label="在 GitHub 查看项目" title="GitHub">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.226 17.284c-2.965-.36-5.054-2.493-5.054-5.256 0-1.123.404-2.336 1.078-3.144-.292-.741-.247-2.314.09-2.965.898-.112 2.111.36 2.83 1.01.853-.269 1.752-.404 2.853-.404 1.1 0 1.999.135 2.807.382.696-.629 1.932-1.1 2.83-.988.315.606.36 2.179.067 2.942.72.854 1.101 2 1.101 3.167 0 2.763-2.089 4.852-5.098 5.234.763.494 1.28 1.572 1.28 2.807v2.336c0 .674.561 1.056 1.235.786 4.066-1.55 7.255-5.615 7.255-10.646C23.5 6.188 18.334 1 11.978 1 5.62 1 .5 6.188.5 12.545c0 4.986 3.167 9.12 7.435 10.669.606.225 1.19-.18 1.19-.786V20.63a2.9 2.9 0 0 1-1.078.224c-1.483 0-2.359-.808-2.987-2.313-.247-.607-.517-.966-1.034-1.033-.27-.023-.359-.135-.359-.27 0-.27.45-.471.898-.471.652 0 1.213.404 1.797 1.235.45.651.921.943 1.483.943.561 0 .92-.202 1.437-.719.382-.381.674-.718.944-.943"/></svg>
+    </a>
+    <div class="control-dock">
+    <aside class="screen-panel" data-i18n-aria="screenPanelLabel" aria-label="屏幕界面">
+      <div class="panel-heading"><h2 data-i18n="screenInterface">屏幕界面</h2></div>
+      <div class="ui-themes" role="tablist" data-i18n-aria="screenThemeLabel" aria-label="屏幕界面类型"><button role="tab" data-ui-theme="wallpaper" data-i18n="wallpaper" aria-selected="true" disabled>壁纸</button><button role="tab" data-ui-theme="launcher" data-i18n="launcher" aria-selected="false" disabled>启动器</button><button role="tab" data-ui-theme="custom" data-i18n="custom" aria-selected="false" disabled>自定义</button></div>
+      <div class="media-layout" data-i18n-aria="mediaSettingsLabel" aria-label="媒体显示设置">
+        <div class="layout-row">
+          <span data-i18n="modelOrientation">手机方向</span>
+          <div class="segmented" role="group" data-i18n-aria="modelOrientation" aria-label="手机方向">
+            <button type="button" data-model-orientation="portrait" data-i18n="portrait" aria-pressed="false" disabled>竖屏</button>
+            <button type="button" data-model-orientation="landscape" data-i18n="landscape" aria-pressed="true" disabled>横屏</button>
+          </div>
+        </div>
+        <div class="layout-row">
+          <span data-i18n="orientation">视频方向</span>
+          <div class="segmented" role="group" data-i18n-aria="orientation" aria-label="视频方向">
+            <button type="button" data-orientation="auto" data-i18n="auto" aria-pressed="false" disabled>自动</button>
+            <button type="button" data-orientation="portrait" data-i18n="portrait" aria-pressed="true" disabled>竖屏</button>
+            <button type="button" data-orientation="landscape" data-i18n="landscape" aria-pressed="false" disabled>横屏</button>
+          </div>
+        </div>
+        <div class="layout-row">
+          <span data-i18n="fillMode">填充方式</span>
+          <div class="segmented" role="group" data-i18n-aria="fillMode" aria-label="填充方式">
+            <button type="button" data-fill-mode="cover" data-i18n="cover" aria-pressed="true" disabled>填充</button>
+            <button type="button" data-fill-mode="contain" data-i18n="contain" aria-pressed="false" disabled>适应</button>
+            <button type="button" data-fill-mode="stretch" data-i18n="stretch" aria-pressed="false" disabled>拉伸</button>
+          </div>
+        </div>
+      </div>
+      <input id="ui-upload" type="file" accept="image/*,video/*" hidden disabled>
+      <div class="shell-section">
+        <div class="panel-heading"><h2 data-i18n="shellColor">机身颜色</h2></div>
+        <div class="shell-colors" role="radiogroup" data-i18n-aria="shellColor" aria-label="机身颜色">
+          <button role="radio" data-shell-color="white" data-i18n-aria="starLightWhite" aria-label="星光白" aria-checked="true" disabled title="星光白"></button>
+          <button role="radio" data-shell-color="black" data-i18n-aria="black" aria-label="黑色" aria-checked="false" disabled title="黑色"></button>
+          <button role="radio" data-shell-color="blue" data-i18n-aria="blue" aria-label="蓝色" aria-checked="false" disabled title="蓝色"></button>
+          <button role="radio" data-shell-color="pink" data-i18n-aria="pink" aria-label="粉色" aria-checked="false" disabled title="粉色"></button>
+          <button role="radio" data-shell-color="gold" data-i18n-aria="gold" aria-label="金色" aria-checked="false" disabled title="金色"></button>
+          <button role="radio" data-shell-color="image" data-i18n-aria="customPattern" aria-label="自定义图案" aria-checked="false" disabled title="自定义图案"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zm2 2v8l4-5 3.5 4.5L17 9l3 3V6zm-1 14h14l-4-5-3 3.5L9 15l-4 5z"/></svg></button>
+        </div>
+        <input id="body-upload" type="file" accept="image/*" hidden disabled>
+      </div>
+    </aside>
+    <div class="dock-body">
+    <section class="controls" data-i18n-aria="animationControls" aria-label="折叠动画控制">
+      <button id="play" class="play" data-i18n-aria="playAnimation" aria-label="播放动画" disabled><svg id="pause-icon" viewBox="0 0 24 24" hidden><path d="M8 6v12M16 6v12"/></svg><svg id="play-icon" viewBox="0 0 24 24"><path d="m9 5 10 7-10 7Z"/></svg></button>
+      <span id="time-current" class="time-code" aria-hidden="true">0:00</span>
+      <input id="timeline" data-i18n-aria="playbackProgress" aria-label="播放进度" type="range" min="0" max="8.6" value="8.6" step="0.01" disabled>
+      <span id="time-duration" class="time-code" aria-hidden="true">0:09</span>
+      <button id="speed" class="speed" data-i18n-aria="playbackSpeed" aria-label="播放速度 1×" disabled>1×</button>
+      <button id="export" class="export" data-i18n="exportVideo" data-i18n-aria="exportVideo" aria-label="导出视频" disabled>导出视频</button>
+    </section>
+    <section class="video-controls" id="video-controls" aria-label="上传视频控制" hidden>
+      <button id="vplay" class="vplay" aria-label="播放视频" disabled><svg id="vplay-pause" viewBox="0 0 24 24" hidden><path d="M8 6v12M16 6v12"/></svg><svg id="vplay-play" viewBox="0 0 24 24"><path d="m9 5 10 7-10 7Z"/></svg></button>
+      <span id="vtime-current" class="time-code" aria-hidden="true">0:00</span>
+      <input id="vtimeline" aria-label="视频播放进度" type="range" min="0" max="100" value="0" step="0.01" disabled>
+      <span id="vtime-duration" class="time-code" aria-hidden="true">0:00</span>
+      <button id="vmute" class="vmute" aria-label="静音" disabled><svg id="vmute-sound" viewBox="0 0 24 24" hidden><path d="M4 9v6h4l5 5V4L8 9H4z" fill="currentColor"/><path d="M16.5 8.5 21 12l-4.5 3.5" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"/></svg><svg id="vmute-muted" viewBox="0 0 24 24"><path d="M4 9v6h4l5 5V4L8 9H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <button id="vspeed" class="speed" aria-label="视频倍速 1×" disabled>1×</button>
+    </section>
+    </div>
+    </div>
+  </main>
+  <script type="module" src="./main.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+</body>
+</html>

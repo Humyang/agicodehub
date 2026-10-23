@@ -1,0 +1,51 @@
+<div class="tab-content" id="crop">
+    <div class="instructions">
+        <h3>图片批量裁剪</h3>
+        <p>上传图片，选择裁剪区域，生成批量裁剪脚本。</p>
+    </div>
+
+    <div class="file-upload" id="crop-upload-area">
+        <p>点击或拖拽图片到这里上传</p>
+        <input type="file" id="crop-upload" accept="image/*" style="display: none;">
+    </div>
+
+    <div class="form-group">
+        <label for="input-dir">输入图片目录:</label>
+        <input type="text" id="input-dir" placeholder="例如: frames/">
+    </div>
+
+    <div class="form-group">
+        <label for="output-crop-dir">输出目录:</label>
+        <input type="text" id="output-crop-dir" placeholder="例如: cropped/">
+    </div>
+
+    <div class="canvas-container" id="crop-canvas-container" style="display: none;">
+        <canvas id="crop-canvas"></canvas>
+        <div class="crop-area" id="crop-area"></div>
+    </div>
+
+    <div class="form-group" id="crop-coords" style="display: none;">
+        <div style="display: flex; gap: 10px;">
+            <div style="flex: 1;">
+                <label>X:</label>
+                <input type="number" id="crop-x" readonly>
+            </div>
+            <div style="flex: 1;">
+                <label>Y:</label>
+                <input type="number" id="crop-y" readonly>
+            </div>
+            <div style="flex: 1;">
+                <label>宽度:</label>
+                <input type="number" id="crop-width" readonly>
+            </div>
+            <div style="flex: 1;">
+                <label>高度:</label>
+                <input type="number" id="crop-height" readonly>
+            </div>
+        </div>
+    </div>
+
+    <button class="btn-generate" id="generate-crop" style="display: none;">生成裁剪脚本</button>
+
+    <div class="output" id="crop-output"></div>
+</div>

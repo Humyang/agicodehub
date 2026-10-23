@@ -17,6 +17,11 @@ home:
     p2: '关注我们的'
     twitterXAccount: 'AGI Code Hub X 账号'
     thankYou: '感谢您的支持！'
+  serviceBanner:
+    tag: '付费服务'
+    title: 'REA 环境装不起来？远程一对一帮你装到跑通'
+    desc: 'Node.js、MCP 注册、Agent 客户端、反编译引擎对接，一次远程 20-40 分钟跑通。装不通全额退款。'
+    cta: '查看服务详情 →'
   nav:
     github: 'GitHub 仓库'
     githubRepository: 'GitHub 仓库'
@@ -55,11 +60,186 @@ favoriteButton:
   add: '加入收藏'
 toolCard:
   new: '新'
+staticTool:
+  openInNewWindow: '在新窗口打开'
 search:
   label: '搜索'
 tools:
+
+  ffmpeg-workbench:
+    title: FFmpeg 命令工坊
+    description: 一体化 FFmpeg 命令生成器：切片裁剪、抽帧、变速倒放、图片合成拼图、叠加去水印、遮罩抠像，参数面板与命令输出统一，支持导出整目录批处理脚本。
+    common:
+      input: 输入文件
+      localPreview: 本地预览
+      pickLocal: 本地文件
+      copy: 复制
+      copied: 已复制
+      batchTitle: 批量脚本（整个目录一起处理）
+      emptyDefault: 填写左侧参数后这里会实时生成命令
+      addSegment: 添加片段
+      addStep: 添加步骤
+      addRegion: 添加区域
+      deleteSelected: 删除选中
+      sourceSize: 源尺寸 {w}×{h}
+      noMedia: 未加载媒体
+      canvasHint: 选择本地文件后可在画面上直接框选区域
+      width: 宽
+      height: 高
+      output: 输出文件
+      commandTitle: 生成的命令
+    tabs:
+      slice: 切片与裁剪
+      extract: 抽帧 / 提取
+      speed: 变速与倒放
+      images: 合成与拼图
+      overlay: 叠加 / 去水印
+      mask: 遮罩 / 抠像
+    slice:
+      panel: 切片与裁剪
+      segments: 片段列表
+      segment: 片段 {n}
+      start: 起始(秒)
+      end: 结束(秒)
+      scale: 缩放
+      crop: 启用裁剪
+      customScalePlaceholder: 自定义缩放，例如 1280:-2
+      prefix: 输出前缀
+      codec: 编码器
+      crf: CRF
+      preset: preset
+      copyAlert: 复制流模式下裁剪与缩放不可用（ffmpeg 无法在不解码的情况下应用滤镜）。
+      empty: 添加片段后这里会生成按区间切片的命令
+      codecs:
+        h264: H.264 (libx264，兼容性最好)
+        h265: H.265 (libx265，体积更小)
+        vp9: VP9 (libvpx-vp9)
+        copy: 直接复制流 (-c copy，最快，无画质损失)
+      scales:
+        original: 保持原始尺寸
+        w1920: 1920 宽（1080p）
+        w1280: 1280 宽（720p）
+        w854: 854 宽（480p）
+        w640: 640 宽
+        custom: 自定义…
+    extract:
+      panel: 抽帧 / 提取图片
+      method: 抽帧方式
+      methodSingle: 指定时间点抽单帧
+      methodFps: 按帧率周期抽帧
+      methodAll: 抽取全部帧
+      timestamp: 时间点
+      grabCurrent: 当前时间
+      fps: 每秒抽帧数
+      fpsHint: 例如 1 = 每秒 1 张，0.5 = 每 2 秒 1 张
+      outDir: 输出目录
+      pattern: 文件名前缀
+      format: 图片格式
+      namingAlert: 抽帧结果按 {dir}/{prefix}_0001.{ext} 顺序命名，可直接用于后续「图片合成视频」或「拼图」。
+      empty: 选择抽帧方式后这里会生成命令
+    speed:
+      panel: 变速与倒放
+      mode: 功能
+      modeSpeed: 变速（加速 / 减速）
+      modeReverse: 倒放（视频反向）
+      speed: 倍速
+      audio: 音频
+      audioMuted: 移除音轨 (-an)
+      audioTempo: 音轨同步变速
+      videoFilter: 视频
+      audioFilter: 音频
+      tempoHint: atempo 单次只支持 0.5–2.0，超出范围会自动串联。
+      reverseAudio: 音频反转
+      reverseAudioOn: 音轨一并倒放 (-af areverse)
+      reverseAudioOff: 仅视频倒放
+      reverseAlert: 倒放需要把整段视频读入内存（-vf reverse），长视频会消耗大量内存，建议先切片再倒放。
+      empty: 设置参数后这里会生成命令
+    images:
+      panel: 图片合成视频与拼图
+      mode: 功能
+      modeVideo: 图片序列 → 视频
+      modeTile: 拼图 / 九宫格（tile）
+      modeCrop: 批量裁剪图片
+      sequence: 图片序列
+      fps: 帧率
+      codec: 编码器
+      videoAlert: 序号占位符 %04d 从 1 开始连续编号；配合「抽帧」标签页可直接把抽出的帧合成回视频。
+      columns: 每行张数
+      rows: 行数
+      tileAlert: 需要序列中的图片尺寸一致；tile=3x3 会把前 9 张拼成一张九宫格。
+      inputDir: 输入目录
+      outputDir: 输出目录
+      format: 图片格式
+      empty: 选择功能后这里会生成命令
+    overlay:
+      panel: 叠加 / 去水印 / 擦除
+      mode: 处理方式
+      modeDelogo: Delogo 去水印（推荐）
+      modeOverlay: 色块遮盖（overlay）
+      modeBorder: 画框标注（drawbox）
+      modeEraser: 透明擦除（eraser）
+      color: 颜色
+      opacity: 不透明度
+      thickness: 边框粗细
+      boxes: 区域列表（{n}）
+      outputName: 输出名
+      outputExt: 扩展名
+      keepAudio: 保留音轨
+      singleFrame: 只输出单帧（做预览图）
+      canvasTitle: 可视化框选
+      empty: 添加至少一个区域后生成命令
+    mask:
+      panel: 遮罩 / 抠像
+      finalOutput: 最终输出
+      ext: 扩展名
+      steps: 处理步骤（按顺序串联）
+      step: Step {n}
+      type: 类型
+      typeChromakey: 绿幕抠像 (chromakey)
+      typeColorkey: 颜色键控 (colorkey)
+      typeAlphamask: 透明背景图合成 (alphamask)
+      maskFile: 透明背景图
+      keyColor: 键控颜色
+      stepOutput: 输出
+      similarity: 相似度
+      blend: 混合
+      stepsAlert: 每一步以上一步的输出作为输入，最后一步的结果会被重命名为最终输出文件。
+      empty: 添加步骤后这里会生成命令
+  ffmpeg-script-tool:
+    title: FFmpeg 脚本工具（浏览器内执行）
+    description: 在浏览器内直接跑 ffmpeg（wasm）：视频切割转 GIF（含调色板优化）、幻灯片、图片裁剪三个标签页。
+  ffmpeg-grid-image:
+    title: FFmpeg 九宫格图片工具
+    description: 网格/九宫格拼图与社媒封面导出，支持布局模板、入场动画与多平台尺寸预设（可视化模板编辑器）。
+  ffmpeg-transparent-video:
+    title: 透明背景视频播放测试
+    description: 透明背景（Alpha）视频播放测试与方案演示页（WebM/VP9、Canvas、CSS 混合模式）。
+  offline-html-dev:
+    title: 高级离线 HTML 开发环境
+    description: 浏览器内的离线 HTML 开发环境，可离线编写与预览 HTML；界面语言随应用切换。
+  sprite-sheet-merger:
+    title: 多雪碧图合并与重组工具
+    description: 合并与重组多张雪碧图，支持保留类名与分组样式；界面语言随应用切换。
+  glitch-generator:
+    title: Glitch 动态图标生成器
+    description: Glitch Generator V5：动态/故障风图标生成。
+  icon-sprite-paginator-glass:
+    title: Icon Sprite Paginator（玻璃风格）
+    description: 图标雪碧图分页浏览工具 - Google 图标玻璃风格。
+  icon-sprite-paginator-cyberpunk:
+    title: Icon Sprite Paginator（赛博朋克）
+    description: 图标雪碧图分页浏览工具 - Google 图标赛博朋克风格。
+  icon-sprite-paginator-element:
+    title: Icon Sprite Paginator（ElementUI）
+    description: 图标雪碧图分页浏览工具 - ElementUI 赛博朋克风格。
+  iphone-duo-gesture:
+    title: iPhone Duo 折叠预览（3D 手势演示）
+    description: 折叠屏 iPhone Duo 的 3D 实时演示：拖拽与双指手势操控折叠角度，屏幕 UI、材质反射与镜头景深实时渲染。
   categories:
     favorite-tools: '我的收藏'
+    ffmpeg: 'FFmpeg 工具'
+    'legacy tools': '经典工具'
+    '3d 演示': '3D 演示'
     crypto: '加密'
     converter: '转换器'
     web: Web
@@ -70,6 +250,7 @@ tools:
     measurement: '测量'
     text: '文本'
     data: '数据'
+    '自媒体工具': '自媒体工具'
 
   password-strength-analyser:
     title: 密码强度分析仪
@@ -249,6 +430,65 @@ tools:
   qrcode-generator:
     title: 二维码生成器
     description: 生成并下载url或文本的QR代码，并自定义背景和前景颜色。
+
+  wechat-qr-namecard-generator:
+    title: 微信二维码名片生成器
+    description: 生成自定义微信二维码服务名片，可自定义文案与样式（昵称、地区、服务项目、配色、标签样式等），一键导出高清PNG。
+    copy: 文案
+    nickname: 昵称
+    region: 地区
+    topSlogan: 顶部标语
+    bottomHint: 底部提示语
+    nicknamePlaceholder: 输入昵称
+    regionPlaceholder: '如：广东 深圳'
+    sloganPlaceholder: '可选，如：自媒体工具 · 定制服务'
+    hintPlaceholder: '扫二维码，添加我为朋友。'
+    services: 服务项目
+    serviceTitle: 服务区标题
+    serviceTitlePlaceholder: 服务项目
+    addService: 添加服务
+    servicePlaceholder: 输入服务名称
+    qr: 二维码
+    uploadQr: 上传二维码图片
+    set: 已设置
+    unset: 未设置
+    qrLinkPlaceholder: '或输入微信链接 / 文本，离线生成二维码'
+    generate: 生成
+    qrTip: 提示：支持输入链接或文本直接生成二维码（内置组件，无需联网）；也可上传自己的二维码图片。
+    style: 样式
+    preset: 配色预设
+    wechatGreen: 微信绿
+    freshBlue: 清新蓝
+    vividOrange: 活力橙
+    darkGreen: 暗夜绿
+    themeColor: 主题色
+    bgColor: 背景色
+    cardRadius: 卡片圆角
+    servicePosition: 服务区位置
+    belowQr: 二维码下方
+    aboveQr: 二维码上方
+    tagStyle: 服务标签样式
+    tag: 圆角标签
+    card: 彩色卡片
+    list: 简约列表
+    avatarShape: 头像形状
+    circle: 圆形
+    rounded: 圆角
+    square: 方形
+    qrRounded: 二维码圆角
+    preview: 名片预览
+    exportPng: 导出 PNG
+    wechatNickLabel: 微信昵称
+    unnamed: 未命名
+    qrEmpty: 上传二维码或输入链接生成
+    qrNeedText: 请先输入微信链接或文本
+    qrGenerated: 二维码已生成
+    qrFailed: 二维码生成失败，请检查输入内容
+    qrNeedFirst: 请先上传二维码图片，或输入链接生成二维码
+    exportUnsupported: 当前环境不支持导出
+    exportFailed: 导出失败，请重试
+    exported: 已导出 {size} PNG
+    defaultRegion: '广东 深圳'
 
   wifi-qrcode-generator:
     title: WiFi 二维码生成器

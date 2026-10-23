@@ -2,7 +2,7 @@
 import { NIcon, useThemeVars } from 'naive-ui';
 
 import { RouterLink } from 'vue-router';
-import { Heart, Home2, Menu2 } from '@vicons/tabler';
+import { Heart, Home2, Menu2, Tool } from '@vicons/tabler';
 
 import { storeToRefs } from 'pinia';
 import HeroGradient from '../assets/hero-gradient.svg?component';
@@ -103,6 +103,12 @@ const tools = computed<ToolCategory[]>(() => [
         <c-tooltip :tooltip="$t('home.home')" position="bottom">
           <c-button to="/" circle variant="text" :aria-label="$t('home.home')">
             <NIcon size="25" :component="Home2" />
+          </c-button>
+        </c-tooltip>
+
+        <c-tooltip tooltip="REA 环境搭建服务" position="bottom">
+          <c-button to="/service" circle variant="text" aria-label="REA 环境搭建服务">
+            <NIcon size="25" :component="Tool" />
           </c-button>
         </c-tooltip>
 

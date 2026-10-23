@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FFmpeg Speed & Frame Extractor</title>
+    <style>
+        :root {
+            --primary-color: #673AB7;
+            /* Purple scheme matching delogo_overlay */
+            --accent-color: #00BCD4;
+            --bg-color: #f0f2f5;
+            --panel-bg: #ffffff;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+
+        /* Control Panel */
+        .controls {
+            background: var(--panel-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            align-items: flex-start;
+            justify-content: center;
+            width: 100%;
+            max-width: 1100px;
+            box-sizing: border-box;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-group label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="file"] {
+            font-size: 13px;
+        }
+
+        select,
+        input[type="number"],
+        input[type="text"],
+        input[type="color"],
+        input[type="range"] {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: #fff;
+            outline: none;
+        }
+
+        select:focus,
+        input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-copy {
+            background-color: var(--primary-color);
+        }
+
+        .btn-copy:hover {
+            background-color: #512DA8;
+            transform: translateY(-1px);
+        }
+
+        /* Workspace/Preview */
+        #workspace {
+            position: relative;
+            margin: 20px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ccc;
+            background: #000;
+            line-height: 0;
+            border-radius: 4px;
+            overflow: hidden;
+            min-width: 320px;
+            min-height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #media-el {
+            display: block;
+            max-width: 90vw;
+            max-height: 60vh;
+        }
+
+        /* Output Panel */
+        .output-panel {
+            background: var(--panel-bg);
+            width: 100%;
+            max-width: 1100px;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+            box-sizing: border-box;
+        }
+
+        textarea {
+            width: 100%;
+            height: 120px;
+            background: #282a36;
+            color: #50fa7b;
+            font-family: 'Consolas', 'Fira Code', monospace;
+            padding: 15px;
+            border-radius: 8px;
+            border: none;
+            resize: vertical;
+            margin-top: 10px;
+            box-sizing: border-box;
+            line-height: 1.4;
+        }
+
+        .tips {
+            font-size: 12px;
+            color: #888;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>FFmpeg Speed & Frame Extractor</h1>
+    <span class="subtitle">Accelerate/Decelerate Video or Extract Frames with ease</span>
+
+    <div class="controls">
+        <div class="control-group">
+            <label>1. Upload Video</label>
+            <input type="file" id="fileInput" accept="video/*">
+        </div>
+
+        <div class="control-group">
+            <label>2. Function Mode</label>
+            <select id="modeSelect">
+                <option value="speed">Adjust Speed (Fast/Slow)</option>
+                <option value="frames">Extract Frames (To Images)</option>
+            </select>
+        </div>
+
+        <!-- Speed Controls -->
+        <div id="speedControls" class="row">
+            <div class="control-group">
+                <label>Speed Factor</label>
+                <div class="row">
+                    <input type="number" id="speedInput" value="2.0" step="0.1" min="0.1" max="100" style="width: 80px;">
+                    <span style="font-size: 0.9em; color: #666;">(>1 Fast, <1 Slow)</span>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Audio</label>
+                <div class="row">
+                    <input type="checkbox" id="muteAudio">
+                    <label for="muteAudio" style="font-weight: normal; text-transform: none;">Mute Audio (-an)</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Frame Extraction Controls -->
+        <div id="frameControls" class="row" style="display: none;">
+            <div class="control-group">
+                <label>Extraction Method</label>
+                <select id="extractMethod">
+                    <option value="single">Single Frame (at Timestamp)</option>
+                    <option value="fps">Periodic (e.g. every X sec)</option>
+                    <option value="all">All Frames (Careful!)</option>
+                </select>
+            </div>
+
+            <div class="control-group" id="timestampGroup">
+                <label>Timestamp (hh:mm:ss)</label>
+                <input type="text" id="timestampInput" value="00:00:05" placeholder="00:00:05" style="width: 100px;">
+                <button id="getCurrentTimeBtn" class="btn" style="padding: 5px 10px; font-size: 0.8em; background: #999;">Get Current</button>
+            </div>
+
+            <div class="control-group" id="fpsGroup" style="display: none;">
+                <label>Frame Rate (FPS)</label>
+                <div class="row">
+                    <input type="number" id="fpsInput" value="1" step="0.1" style="width: 60px;">
+                    <span style="font-size: 0.8em; color: #666;">(1 = 1 img/sec)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="workspace">
+        <div style="padding: 100px; text-align: center; color: #999; font-size: 14px;" id="placeholderText">
+            Please upload a video file
+        </div>
+    </div>
+
+    <div class="output-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label>Generated FFmpeg Command:</label>
+            <div style="display: flex; gap: 5px;">
+                <button class="btn btn-copy" style="background-color: #ff9800;" onclick="generateBatch()">📦 Batch Script</button>
+                <button class="btn btn-copy" onclick="copyCmd()">📋 Copy</button>
+                <button class="btn btn-copy" onclick="runFFmpegCommand()">📋 Run On Vscode</button>
+            </div>
+        </div>
+        <textarea id="ffmpegCommandInput" readonly placeholder="Waiting to generate..."></textarea>
+        <div id="outputResult" style="margin-top: 10px; font-size: 0.9em; color: green;"></div>
+    </div>
+
+</body>
+
+<script>
+    // Elements
+    const fileInput = document.getElementById('fileInput');
+    const modeSelect = document.getElementById('modeSelect');
+    const speedControls = document.getElementById('speedControls');
+    const frameControls = document.getElementById('frameControls');
+    const extractMethod = document.getElementById('extractMethod');
+    const timestampGroup = document.getElementById('timestampGroup');
+    const fpsGroup = document.getElementById('fpsGroup');
+    const workspace = document.getElementById('workspace');
+    const ffmpegCommandInput = document.getElementById('ffmpegCommandInput');
+    
+    // Inputs
+    const speedInput = document.getElementById('speedInput');
+    const muteAudio = document.getElementById('muteAudio');
+    const timestampInput = document.getElementById('timestampInput');
+    const fpsInput = document.getElementById('fpsInput');
+    const getCurrentTimeBtn = document.getElementById('getCurrentTimeBtn');
+
+    let currentVideoEl = null;
+
+    // --- Event Listeners ---
+    fileInput.addEventListener('change', handleFileSelect);
+    
+    modeSelect.addEventListener('change', updateUI);
+    extractMethod.addEventListener('change', updateUI);
+    
+    // Trigger generation on any input change
+    [speedInput, muteAudio, extractMethod, timestampInput, fpsInput].forEach(el => {
+        el.addEventListener('input', generateCode);
+        el.addEventListener('change', generateCode);
+    });
+
+    getCurrentTimeBtn.addEventListener('click', () => {
+        if(currentVideoEl) {
+            const t = currentVideoEl.currentTime;
+            // Format to hh:mm:ss.ms
+            const date = new Date(0);
+            date.setSeconds(t);
+            const timeStr = date.toISOString().substr(11, 8);
+            
+            // Add milliseconds
+            const ms = Math.floor((t % 1) * 1000).toString().padStart(3, '0');
+            timestampInput.value = `${timeStr}.${ms}`;
+            generateCode();
+        }
+    });
+
+    // --- UI Logic ---
+    function updateUI() {
+        const mode = modeSelect.value;
+        const method = extractMethod.value;
+
+        // Toggle Main Sections
+        if (mode === 'speed') {
+            speedControls.style.display = 'flex';
+            frameControls.style.display = 'none';
+        } else {
+            speedControls.style.display = 'none';
+            frameControls.style.display = 'flex';
+        }
+
+        // Toggle Extract Sub-sections
+        if (mode === 'frames') {
+            if (method === 'single') {
+                timestampGroup.style.display = 'flex';
+                fpsGroup.style.display = 'none';
+            } else if (method === 'fps') {
+                timestampGroup.style.display = 'none';
+                fpsGroup.style.display = 'flex';
+            } else {
+                timestampGroup.style.display = 'none';
+                fpsGroup.style.display = 'none';
+            }
+        }
+        
+        generateCode();
+    }
+
+    function handleFileSelect(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const url = URL.createObjectURL(file);
+        
+        workspace.innerHTML = '';
+        const video = document.createElement('video');
+        video.src = url;
+        video.controls = true;
+        video.style.maxWidth = '100%';
+        video.style.maxHeight = '100%';
+        video.id = 'media-el';
+        
+        currentVideoEl = video;
+        workspace.appendChild(video);
+        
+        generateCode();
+    }
+
+    // --- Core FFmpeg Generation ---
+    function generateCode() {
+        const file = fileInput.files[0];
+        const fileName = file ? `"${file.name}"` : `"input.mp4"`;
+        const mode = modeSelect.value;
+
+        let cmd = "";
+
+        if (mode === 'speed') {
+            const speed = parseFloat(speedInput.value) || 1.0;
+            const isMute = muteAudio.checked;
+
+            if (speed === 1.0 && !isMute) {
+                ffmpegCommandInput.value = `# No changes selected (Speed is 1.0)`;
+                return;
+            }
+
+            // Video Speed: setpts = (1/speed) * PTS
+            // Check for division by zero or negative
+            const safeSpeed = speed <= 0 ? 0.1 : speed;
+            const ptsFactor = (1 / safeSpeed).toFixed(4);
+            const videoFilter = `setpts=${ptsFactor}*PTS`;
+
+            let audioOpts = "";
+            
+            if (isMute) {
+                audioOpts = "-an";
+            } else {
+                // Audio Speed: atempo only supports 0.5 to 2.0
+                // We need to chain filters for speeds outside this range
+                const audioFilter = getAudioTempoChain(safeSpeed);
+                audioOpts = `-filter:a "${audioFilter}"`;
+            }
+
+            // Combine video filter
+            cmd = `ffmpeg -i ${fileName} -filter:v "${videoFilter}" ${audioOpts} output_speed.mp4`;
+
+        } else if (mode === 'frames') {
+            const method = extractMethod.value;
+
+            if (method === 'single') {
+                const time = timestampInput.value.trim() || "00:00:00";
+                // -ss before -i is faster (seek) but less accurate keyframes, after -i is slower but accurate
+                // For extraction, accurate is better usually, or -ss before -i for speed.
+                // Let's put -ss before -i for standard seeking.
+                cmd = `ffmpeg -ss ${time} -i ${fileName} -frames:v 1 output_frame.png`;
+            } else if (method === 'fps') {
+                const fps = fpsInput.value || "1";
+                cmd = `ffmpeg -i ${fileName} -vf "fps=${fps}" output_%04d.png`;
+            } else if (method === 'all') {
+                cmd = `ffmpeg -i ${fileName} output_%04d.png`;
+            }
+        }
+
+        ffmpegCommandInput.value = cmd;
+        return cmd;
+    }
+
+    // Helper to chain atempo filters
+    function getAudioTempoChain(speed) {
+        if (speed >= 0.5 && speed <= 2.0) {
+            return `atempo=${speed}`;
+        }
+        
+        // If speed > 2.0, chain multiple 2.0s
+        if (speed > 2.0) {
+            let current = 1.0;
+            let filters = [];
+            while (current * 2.0 < speed) {
+                filters.push("atempo=2.0");
+                current *= 2.0;
+            }
+            // Add remaining
+            filters.push(`atempo=${speed / current}`);
+            return filters.join(",");
+        }
+        
+        // If speed < 0.5, chain multiple 0.5s
+        if (speed < 0.5) {
+            let current = 1.0;
+            let filters = [];
+            while (current * 0.5 > speed) {
+                filters.push("atempo=0.5");
+                current *= 0.5;
+            }
+            // Add remaining
+            filters.push(`atempo=${speed / current}`);
+            return filters.join(",");
+        }
+    }
+
+    // --- Batch Script Generation ---
+    function generateBatch() {
+        const cmd = generateCode();
+        if (!cmd || cmd.startsWith("#")) {
+            alert("Please generate a valid command first.");
+            return;
+        }
+
+        const file = fileInput.files[0];
+        const ext = file ? file.name.split('.').pop() : "mp4";
+        
+        // Use a simple regex to replace input filename with variables
+        // We assume input is the first -i argument
+        // We need to reconstruct the command template
+        
+        // A safer way: rebuild the command string with placeholders
+        // We can reuse the logic but replace filename with variable
+        
+        const mode = modeSelect.value;
+        const speed = parseFloat(speedInput.value);
+        let batchCmd = "";
+        let outNamePattern = ""; 
+        
+        // Windows
+        let winLoop = "";
+        // Unix
+        let unixLoop = "";
+
+        if (mode === 'speed') {
+             // For speed, output is a single file
+             // We strip the actual input filename from current command logic
+             // But simpler is to re-call logic logic maybe?
+             // Let's just do text replacement on the generated command
+             
+            const parts = cmd.split(' -i ')[1]; // "input.mp4" -filter...
+            const afterInput = parts.substring(parts.indexOf(' ')); //  -filter...
+            
+            winLoop = `for %%f in (*.${ext}) do (\n    ffmpeg -i "%%f"${afterInput.replace('output_speed.mp4', 'output_%%~nf_speed.mp4')}\n)`;
+            unixLoop = `for f in *.${ext}; do\n    ffmpeg -i "$f"${afterInput.replace('output_speed.mp4', 'output_${f%.*}_speed.mp4')}\ndone`;
+            
+        } else {
+            // For frames
+             const parts = cmd.split(' -i ')[1];
+             const afterInput = parts.substring(parts.indexOf(' '));
+             // output_%04d.png or similar
+             // We need to put them in folders probably to avoid mess, or just prefix
+             
+             // If output is pattern like output_%04d.png
+             // Windows: "%%~nf_%04d.png"
+             // Unix: "${f%.*}_%04d.png"
+             
+             let outPattern = "";
+             if (cmd.includes("output_%04d.png")) outPattern = "output_%04d.png";
+             if (cmd.includes("output_frame.png")) outPattern = "output_frame.png";
+             
+             let winOut = outPattern.replace("output_", "%%~nf_");
+             let unixOut = outPattern.replace("output_", "${f%.*}_");
+             
+             // Handle % in batch
+             if(winOut.includes("%04d")) winOut = winOut.replace("%04d", "%%04d");
+             
+             let safeAfterInput = afterInput.replace(outPattern, winOut);
+             winLoop = `for %%f in (*.${ext}) do (\n    if not exist "frames_%%~nf" mkdir "frames_%%~nf"\n    ffmpeg -i "%%f"${afterInput.replace(outPattern, 'frames_%%~nf/' + outPattern).replace(/%04d/g, '%%04d')}\n)`;
+             
+             unixLoop = `for f in *.${ext}; do\n    mkdir -p "frames_\${f%.*}"\n    ffmpeg -i "$f"${afterInput.replace(outPattern, 'frames_${f%.*}/' + outPattern)}\ndone`;
+        }
+
+        const winBatch = `:: [Windows Batch Script]\n@echo off\n${winLoop}\npause`;
+        const unixShell = `# [Mac/Linux Shell Script]\n#!/bin/bash\n${unixLoop}`;
+
+        ffmpegCommandInput.value = `${winBatch}\n\n\n${unixShell}`;
+        document.getElementById('outputResult').innerText = "✅ Batch scripts generated!";
+    }
+
+    function copyCmd() {
+        ffmpegCommandInput.select();
+        document.execCommand('copy');
+        // Visual feedback could be added here
+    }
+</script>
+<!-- 引入 VS Code 通信脚本 -->
+<script src="/script/vscode-bridge.js"></script>
+<script>
+    window.navbarConfig = {
+        browserUrl: location.href // 点击 Browsers 按钮时通过 Bridge 发送此 URL
+    };
+</script>
+<!-- navbar的命令需要通过桥接发送 -->
+
+</html>

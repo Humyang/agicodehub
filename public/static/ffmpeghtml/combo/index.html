@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FFmpeg 脚本生成工具</title>
+    <link rel="stylesheet" href="./index.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>FFmpeg 脚本生成工具</h1>
+            <p class="subtitle">生成用于视频处理、图片裁剪和合成的FFmpeg脚本</p>
+        </header>
+
+        <div class="tabs">
+            <div class="tab active" data-tab="extract">1. 视频按帧提取</div>
+            <div class="tab" data-tab="crop">2. 图片批量裁剪</div>
+            <div class="tab" data-tab="combine">3. 图片组合</div>
+            <div class="tab" data-tab="reverse">4. 反向操作</div>
+            <div class="tab" data-tab="video">5. 图片合成视频</div>
+        </div>
+
+        <!-- Content will be loaded dynamically -->
+        <div id="tab-content-container"></div>
+
+        <footer>
+            <p>FFmpeg 脚本生成工具 &copy; 2023 - 注意：此工具仅生成脚本，需要安装FFmpeg才能执行生成的命令</p>
+        </footer>
+    </div>
+
+    <script src="./js/main.js"></script>
+</body>
+
+</html>

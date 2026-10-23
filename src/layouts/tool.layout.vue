@@ -28,11 +28,16 @@ const { t } = useI18n();
 const i18nKey = computed<string>(() => route.path.trim().replace('/', ''));
 const toolTitle = computed<string>(() => t(`tools.${i18nKey.value}.title`, String(route.meta.name)));
 const toolDescription = computed<string>(() => t(`tools.${i18nKey.value}.description`, String(route.meta.description)));
+
+// Full-page tools (migrated legacy apps embedded in an iframe) need room to breathe.
+const isWide = computed<boolean>(() => route.meta.wide === true);
+// Embedded apps ship their own header, so ours would just be duplicated chrome.
+const isBare = computed<boolean>(() => route.meta.bare === true);
 </script>
 
 <template>
   <BaseLayout>
-    <div class="tool-layout">
+    <div v-if="!isBare" class="tool-layout" :class="{ wide: isWide }">
       <div class="tool-header">
         <div flex flex-nowrap items-center justify-between>
           <n-h1>
@@ -52,7 +57,7 @@ const toolDescription = computed<string>(() => t(`tools.${i18nKey.value}.descrip
       </div>
     </div>
 
-    <div class="tool-content">
+    <div class="tool-content" :class="{ wide: isWide }">
       <slot />
     </div>
   </BaseLayout>
@@ -70,12 +75,27 @@ const toolDescription = computed<string>(() => t(`tools.${i18nKey.value}.descrip
   ::v-deep(& > *) {
     flex: 0 1 600px;
   }
+
+  &.wide {
+    justify-content: stretch;
+
+    ::v-deep(& > *) {
+      flex: 1 1 100%;
+      min-width: 0;
+      max-width: 100%;
+    }
+  }
 }
 
 .tool-layout {
   max-width: 600px;
   margin: 0 auto;
   box-sizing: border-box;
+
+  &.wide {
+    max-width: none;
+    width: 100%;
+  }
 
   .tool-header {
     padding: 40px 0;

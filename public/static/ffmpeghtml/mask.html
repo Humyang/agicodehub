@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FFmpeg Video Masking Command Generator</title>
+    <meta name="description"
+        content="Generate professional FFmpeg video masking commands with multi-step processing for green screen removal, transparent backgrounds, and color key effects.">
+    <meta name="keywords"
+        content="ffmpeg, video masking, chromakey, alphamask, colorkey, green screen, transparent background, video editing">
+    <meta name="author" content="FFmpeg Tools">
+    <link rel="stylesheet" href="./mask.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>FFmpeg Video Masking Command Generator</h1>
+            <p class="subtitle">Generate professional video masking commands with support for multi-step processing and
+                transparent background images</p>
+        </header>
+
+        <div class="card" id="basicSettingsCard">
+            <h2>Basic Settings</h2>
+            <div class="form-group">
+                <label for="inputFile">Input Video File</label>
+                <div class="file-input-group">
+                    <input type="text" id="inputFile" placeholder="e.g., input.mp4" value="input.mp4" readonly>
+                    <input type="file" id="fileUpload" accept="video/*,image/*" style="display: none;">
+                    <button class="btn" id="browseButton">Browse</button>
+                </div>
+                <div class="file-info" id="inputFileInfo"></div>
+            </div>
+
+            <!-- Add video preview -->
+            <div class="form-group" id="videoPreviewGroup" style="display: none;">
+                <label>Preview</label>
+                <div class="video-preview-container">
+                    <video id="videoPreview" controls style="max-width: 100%; max-height: 200px;">
+                        Your browser does not support the video tag.
+                    </video>
+                    <img id="imagePreview" style="max-width: 100%; max-height: 200px; display: none; margin: 0 auto; object-fit: contain;">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="outputFile">Output Video File</label>
+                <input type="text" id="outputFile" placeholder="e.g., output.mp4" value="output.mp4">
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="step-header">
+                <h2>Masking Steps</h2>
+                <button class="btn" id="addStep">+ Add Step</button>
+            </div>
+
+            <div class="steps-container" id="stepsContainer">
+                <!-- Steps will be dynamically added here -->
+            </div>
+            <div class="help-text">Supports color names (e.g., green) or hex values (e.g., #00FF00)</div>
+            <div class="card command-output">
+                <h2>Generated FFmpeg Command</h2>
+                <textarea rows="6" class="command-block" id="ffmpegCommandInput">
+                    # Command will be displayed here
+                </textarea>
+                <button class="btn copy-btn" id="copyCommand">Copy Command</button>
+                <button class="btn btn-copy" onclick="runFFmpegCommand()">📋 Run On Vscode</button>
+
+            </div>
+        </div>
+
+        <script>
+            // Step counter
+            let stepCounter = 1;
+
+            // Initially add one step
+            document.addEventListener('DOMContentLoaded', function () {
+                addStep();
+                updateCommand();
+
+                // Drag and Drop
+                const dragDropCard = document.getElementById('basicSettingsCard');
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    dragDropCard.addEventListener(eventName, preventDefaults, false);
+                });
+                function preventDefaults(e) { e.preventDefault(); e.stopPropagation(); }
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    dragDropCard.addEventListener(eventName, highlight, false);
+                });
+                ['dragleave', 'drop'].forEach(eventName => {
+                    dragDropCard.addEventListener(eventName, unhighlight, false);
+                });
+                function highlight(e) { dragDropCard.classList.add('drag-over'); }
+                function unhighlight(e) { dragDropCard.classList.remove('drag-over'); }
+                dragDropCard.addEventListener('drop', handleDrop, false);
+                function handleDrop(e) {
+                    const dt = e.dataTransfer;
+                    if (dt.files.length > 0) handleFile(dt.files[0]);
+                }
+
+                // Add file upload event listener
+                document.getElementById('browseButton').addEventListener('click', function () {
+                    document.getElementById('fileUpload').click();
+                });
+
+                document.getElementById('fileUpload').addEventListener('change', function (e) {
+                    if (e.target.files.length > 0) handleFile(e.target.files[0]);
+                });
+
+                function handleFile(file) {
+                    const fileName = file.name;
+                    const filePath = file.path || file.webkitRelativePath || file.name;
+
+                    // Set input file path
+                    const inputFileEl = document.getElementById('inputFile');
+                    inputFileEl.value = filePath;
+
+                    // Reset dimensions data
+                    delete inputFileEl.dataset.width;
+                    delete inputFileEl.dataset.height;
+
+                    // Check if file is video or image
+                    const isVideo = file.type.startsWith('video/');
+                    const isImage = file.type.startsWith('image/');
+                    
+                    const videoPreviewGroup = document.getElementById('videoPreviewGroup');
+                    const videoPreview = document.getElementById('videoPreview');
+                    const imagePreview = document.getElementById('imagePreview');
+
+                    if (isVideo) {
+                        // Show video preview
+                        videoPreview.style.display = 'block';
+                        imagePreview.style.display = 'none';
+                        
+                        const videoURL = URL.createObjectURL(file);
+                        videoPreview.src = videoURL;
+                        videoPreviewGroup.style.display = 'block';
+
+                        // Get and display video dimensions AND STORE THEM
+                        getVideoDimensions(file).then(dimensions => {
+                            const fileInfo = document.getElementById('inputFileInfo');
+                            fileInfo.innerHTML = `Dimensions: ${dimensions.width}×${dimensions.height} | Size: ${formatFileSize(file.size)}`;
+
+                            // [MODIFICATION 1] Store dimensions on the input element
+                            inputFileEl.dataset.width = dimensions.width;
+                            inputFileEl.dataset.height = dimensions.height;
+                            updateCommand(); // Update command after getting dimensions
+                        }).catch(error => {
+                            console.error('Error getting video dimensions:', error);
+                            const fileInfo = document.getElementById('inputFileInfo');
+                            fileInfo.innerHTML = `Size: ${formatFileSize(file.size)}`;
+                        });
+                    } else if (isImage) {
+                        // Show image preview
+                        videoPreview.style.display = 'none';
+                        imagePreview.style.display = 'block';
+                        
+                        const imageURL = URL.createObjectURL(file);
+                        imagePreview.src = imageURL;
+                        videoPreviewGroup.style.display = 'block';
+
+                        // Get and display image dimensions
+                        getImageDimensions(file).then(dimensions => {
+                            const fileInfo = document.getElementById('inputFileInfo');
+                            fileInfo.innerHTML = `Dimensions: ${dimensions.width}×${dimensions.height} | Size: ${formatFileSize(file.size)}`;
+
+                            // [MODIFICATION 1] Store dimensions (even if input is image)
+                            inputFileEl.dataset.width = dimensions.width;
+                            inputFileEl.dataset.height = dimensions.height;
+                            updateCommand();
+                        }).catch(error => {
+                            console.error('Error getting image dimensions:', error);
+                            const fileInfo = document.getElementById('inputFileInfo');
+                            fileInfo.innerHTML = `Size: ${formatFileSize(file.size)}`;
+                        });
+                    }
+
+                    // Auto-set output file in the same folder
+                    const baseName = fileName.replace(/\.[^/.]+$/, ""); // Remove extension
+                    const extension = fileName.split('.').pop();
+                    const outputFileName = `${baseName}_masked.${extension}`;
+                    document.getElementById('outputFile').value = outputFileName;
+
+                    // Update all step output files to use the same extension
+                    updateStepOutputExtensions(extension);
+
+                    updateCommand();
+                }
+            });
+
+            function updateStepOutputExtensions(extension) {
+                const steps = document.querySelectorAll('.step');
+                steps.forEach((step, index) => {
+                    const stepNum = index + 1;
+                    const outputStepInput = document.getElementById(`outputStep${stepNum}`);
+                    if (outputStepInput) {
+                        const currentValue = outputStepInput.value;
+                        const baseName = currentValue.replace(/\.[^/.]+$/, ""); // Remove existing extension
+                        outputStepInput.value = `${baseName}.${extension}`;
+                    }
+                });
+            }
+
+            // Add step button event
+            document.getElementById('addStep').addEventListener('click', function () {
+                addStep();
+                updateCommand();
+            });
+
+            // Copy command button event
+            document.getElementById('copyCommand').addEventListener('click', function () {
+                const commandText = document.getElementById('ffmpegCommandInput').textContent;
+                navigator.clipboard.writeText(commandText).then(function () {
+                    alert('Command copied to clipboard!');
+                }, function () {
+                    alert('Copy failed, please manually select and copy the command.');
+                });
+            });
+
+            // Add new step
+            function addStep() {
+                const stepsContainer = document.getElementById('stepsContainer');
+                const stepDiv = document.createElement('div');
+                const currentStep = stepCounter; // Store current step number
+
+                // Get current input file extension for default step output
+                const inputFile = document.getElementById('inputFile').value;
+                const inputExtension = inputFile.split('.').pop() || 'mp4';
+                const defaultStepOutput = `step${currentStep}.${inputExtension}`;
+
+                stepDiv.className = 'step';
+                stepDiv.innerHTML = `
+<div class="step-header">
+    <div class="step-number">${currentStep}</div>
+    <button class="remove-step" type="button">×</button>
+</div>
+
+<div class="form-group">
+    <label for="stepType${currentStep}">Masking Type</label>
+    <select id="stepType${currentStep}">
+        <option value="chromakey">Green Screen (chromakey)</option>
+        <option value="alphamask" selected>Transparent Background (alphamask)</option>
+        <option value="colorkey">Color Key (colorkey)</option>
+    </select>
+</div>
+
+<div class="form-group color-group" id="colorGroup${currentStep}">
+    <label for="color${currentStep}">Remove Color</label>
+    <div class="color-input">
+        <input type="text" id="color${currentStep}" placeholder="e.g., green or #00FF00" value="green">
+        <input type="color" id="colorPicker${currentStep}" value="#00FF00" style="width: 40px; height: 40px; margin-left: 10px;">
+        <div class="color-preview" id="colorPreview${currentStep}" style="background-color: green;"></div>
+    </div>
+    <div class="help-text">Supports color names (e.g., green) or hex values (e.g., #00FF00)</div>
+</div>
+
+<div class="form-group mask-group" id="maskGroup${currentStep}" style="display: none;">
+    <label for="maskFile${currentStep}">Transparent Background Image (alphamask only)</label>
+    <div class="file-input-group">
+        <input type="text" id="maskFile${currentStep}" placeholder="e.g., mask.png" value="mask.png" readonly>
+        <input type="file" id="maskUpload${currentStep}" accept="image/*" style="display: none;">
+        <button class="btn browse-mask-btn" data-step="${currentStep}">Browse</button>
+    </div>
+    <div class="file-info" id="maskFileInfo${currentStep}"></div>
+</div>
+
+<div class="form-group">
+    <label for="similarity${currentStep}">Color Similarity</label>
+    <input type="range" id="similarity${currentStep}" min="0.01" max="1" step="0.01" value="0.1">
+    <div class="help-text">Current value: <span id="similarityValue${currentStep}">0.1</span> (smaller values = more precise matching)</div>
+</div>
+
+<div class="form-group">
+    <label for="blend${currentStep}">Blend Level</label>
+    <input type="range" id="blend${currentStep}" min="0.01" max="1" step="0.01" value="0.1">
+    <div class="help-text">Current value: <span id="blendValue${currentStep}">0.1</span> (smaller values = sharper edges)</div>
+</div>
+
+<div class="form-group">
+    <label for="outputStep${currentStep}">Step Output File</label>
+    <input type="text" id="outputStep${currentStep}" placeholder="e.g., step${currentStep}.${inputExtension}" value="${defaultStepOutput}">
+</div>
+`;
+
+                stepsContainer.appendChild(stepDiv);
+
+                // Add event listeners - use setTimeout to ensure DOM is fully updated
+                setTimeout(() => {
+                    const stepType = document.getElementById(`stepType${currentStep}`);
+                    const colorGroup = document.getElementById(`colorGroup${currentStep}`);
+                    const maskGroup = document.getElementById(`maskGroup${currentStep}`);
+                    const colorInput = document.getElementById(`color${currentStep}`);
+                    const colorPicker = document.getElementById(`colorPicker${currentStep}`);
+                    const similaritySlider = document.getElementById(`similarity${currentStep}`);
+                    const blendSlider = document.getElementById(`blend${currentStep}`);
+                    const similarityValue = document.getElementById(`similarityValue${currentStep}`);
+                    const blendValue = document.getElementById(`blendValue${currentStep}`);
+                    const colorPreview = document.getElementById(`colorPreview${currentStep}`);
+
+                    // Function to toggle fields based on masking type
+                    function toggleFields() {
+                        const selectedType = stepType.value;
+
+                        if (selectedType === 'alphamask') {
+                            colorGroup.style.display = 'block';
+                            maskGroup.style.display = 'block';
+                        } else {
+                            colorGroup.style.display = 'block';
+                            maskGroup.style.display = 'none';
+                        }
+                    }
+
+                    // Function to update color picker from text input
+                    function updateColorPreview(stepNum) {
+                        const colorInput = document.getElementById(`color${stepNum}`);
+                        const colorPreview = document.getElementById(`colorPreview${stepNum}`);
+                        const color = colorInput.value.toLowerCase().trim();
+
+                        // Simple color conversion
+                        let hexColor = color;
+                        if (color === 'green') hexColor = '#00FF00';
+                        else if (color === 'blue') hexColor = '#0000FF';
+                        else if (color === 'red') hexColor = '#FF0000';
+                        else if (color === 'white') hexColor = '#FFFFFF';
+                        else if (color === 'black') hexColor = '#000000';
+                        else if (color.match(/^[0-9A-F]{6}$/i)) hexColor = '#' + color;
+                        else if (!color.match(/^#[0-9A-F]{6}$/i)) hexColor = '#00FF00'; // default to green
+
+                        colorPreview.style.backgroundColor = hexColor;
+                    }
+
+                    // Color picker event listener - updates text input
+                    colorPicker.addEventListener('input', function () {
+                        const hexColor = colorPicker.value;
+                        colorInput.value = hexColor;
+                        updateColorPreview(currentStep);
+                        updateCommand();
+                    });
+
+                    // Initial field toggle
+                    toggleFields();
+
+                    stepType.addEventListener('change', function () {
+                        toggleFields();
+                        updateCommand();
+                    });
+
+                    similaritySlider.addEventListener('input', function () {
+                        similarityValue.textContent = similaritySlider.value;
+                        updateCommand();
+                    });
+                    blendSlider.addEventListener('input', function () {
+                        blendValue.textContent = blendSlider.value;
+                        updateCommand();
+                    });
+
+                    // Set color preview
+                    updateColorPreview(currentStep);
+
+                    // Add mask file upload event listener
+                    const maskBrowseBtn = stepDiv.querySelector('.browse-mask-btn');
+                    const maskUpload = document.getElementById(`maskUpload${currentStep}`);
+
+                    maskBrowseBtn.addEventListener('click', function () {
+                        maskUpload.click();
+                    });
+
+                    maskUpload.addEventListener('change', function (e) {
+                        if (e.target.files.length > 0) {
+                            const file = e.target.files[0];
+                            const filePath = file.webkitRelativePath || file.name;
+                            const maskInputEl = document.getElementById(`maskFile${currentStep}`);
+                            maskInputEl.value = filePath;
+
+                            // Reset mask dimensions
+                            delete maskInputEl.dataset.width;
+                            delete maskInputEl.dataset.height;
+
+                            // Get and display image dimensions AND STORE THEM
+                            getImageDimensions(file).then(dimensions => {
+                                const fileInfo = document.getElementById(`maskFileInfo${currentStep}`);
+                                fileInfo.innerHTML = `Dimensions: ${dimensions.width}×${dimensions.height} | Size: ${formatFileSize(file.size)}`;
+
+                                // [MODIFICATION 2] Store dimensions on the mask input element
+                                maskInputEl.dataset.width = dimensions.width;
+                                maskInputEl.dataset.height = dimensions.height;
+                                updateCommand();
+                            }).catch(error => {
+                                console.error('Error getting image dimensions:', error);
+                                const fileInfo = document.getElementById(`maskFileInfo${currentStep}`);
+                                fileInfo.innerHTML = `Size: ${formatFileSize(file.size)}`;
+                            });
+
+                            updateCommand();
+                        }
+                    });
+
+                    // Remove step button event
+                    stepDiv.querySelector('.remove-step').addEventListener('click', function () {
+                        if (stepsContainer.children.length > 1) {
+                            stepsContainer.removeChild(stepDiv);
+                            renumberSteps();
+                            updateCommand();
+                        } else {
+                            alert('At least one step must be retained!');
+                        }
+                    });
+                    const outputStepInput = document.getElementById(`outputStep${currentStep}`);
+                    outputStepInput.addEventListener('input', updateCommand);
+                    outputStepInput.addEventListener('change', updateCommand);
+
+                }, 0);
+
+                stepCounter++;
+            }
+
+            // Update color preview (same as inside addStep, kept for robustness)
+            function updateColorPreview(stepNum) {
+                const colorInput = document.getElementById(`color${stepNum}`);
+                if (!colorInput) return;
+                const colorPreview = document.getElementById(`colorPreview${stepNum}`);
+                const color = colorInput.value;
+                let hexColor = color;
+                if (color === 'green') hexColor = '#00FF00';
+                else if (color === 'blue') hexColor = '#0000FF';
+                else if (color === 'red') hexColor = '#FF0000';
+                else if (color === 'white') hexColor = '#FFFFFF';
+                else if (color === 'black') hexColor = '#000000';
+                else if (color.match(/^#[0-9A-F]{6}$/i)) hexColor = color;
+                colorPreview.style.backgroundColor = hexColor;
+            }
+
+            // Renumber steps
+            function renumberSteps() {
+                const steps = document.querySelectorAll('.step');
+                stepCounter = 1;
+
+                steps.forEach(step => {
+                    step.querySelector('.step-number').textContent = stepCounter;
+                    stepCounter++;
+                });
+            }
+
+            // [MODIFICATION 3] Updated updateCommand logic
+            function updateCommand() {
+                const inputFileEl = document.getElementById('inputFile');
+                const inputFile = inputFileEl.value;
+                const outputFile = document.getElementById('outputFile').value;
+                const steps = document.querySelectorAll('.step');
+
+                let command = '';
+                let previousOutput = inputFile;
+
+                steps.forEach((step, index) => {
+                    const stepNum = index + 1;
+                    const stepType = document.getElementById(`stepType${stepNum}`).value;
+                    const color = document.getElementById(`color${stepNum}`).value;
+                    const similarity = document.getElementById(`similarity${stepNum}`).value;
+                    const blend = document.getElementById(`blend${stepNum}`).value;
+                    const outputStep = document.getElementById(`outputStep${stepNum}`).value;
+
+                    if (stepType === 'chromakey') {
+                        command += `# Step ${stepNum}: Green Screen Masking\n`;
+                        command += `ffmpeg -i ${previousOutput} -filter_complex "`;
+                        command += `[0]chromakey=color=${color}:similarity=${similarity}:blend=${blend}`;
+                        command += `" ${outputStep}\n\n`;
+                    }
+                    else if (stepType === 'alphamask') {
+                        const maskInputEl = document.getElementById(`maskFile${stepNum}`);
+                        const maskFile = maskInputEl.value;
+
+                        command += `# Step ${stepNum}: Transparent Background Masking\n`;
+                        command += `ffmpeg -i ${previousOutput} -i ${maskFile} -filter_complex "`;
+
+                        // Logic to check for size mismatch
+                        let scaleFilter = '';
+                        const vidW = inputFileEl.dataset.width;
+                        const vidH = inputFileEl.dataset.height;
+                        const maskW = maskInputEl.dataset.width;
+                        const maskH = maskInputEl.dataset.height;
+
+                        // Check if we have dimensions for both and if they differ
+                        if (vidW && vidH && maskW && maskH) {
+                            if (vidW !== maskW || vidH !== maskH) {
+                                scaleFilter = `scale=${vidW}:${vidH},`;
+                                // command += `# (Auto-scaled mask from ${maskW}x${maskH} to ${vidW}x${vidH})\n`;
+                            }
+                        }
+
+                        command += `[1]${scaleFilter}format=rgba,alphaextract[alpha];`;
+                        command += `[0]chromakey=color=${color}:similarity=${similarity}:blend=${blend}[chroma];`;
+                        command += `[chroma][alpha]alphamerge`;
+                        command += `" ${outputStep}\n\n`;
+                    }
+                    else if (stepType === 'colorkey') {
+                        command += `# Step ${stepNum}: Color Key Masking\n`;
+                        command += `ffmpeg -i ${previousOutput} -filter_complex "`;
+                        command += `[0]colorkey=color=${color}:similarity=${similarity}:blend=${blend}`;
+                        command += `" ${outputStep}\n\n`;
+                    }
+
+                    previousOutput = outputStep;
+                });
+
+                // Rename last step to final output file
+                if (steps.length > 0) {
+                    command += `# Rename to final output file\n`;
+                    command += `mv ${previousOutput} ${outputFile}`;
+                }
+
+                document.getElementById('ffmpegCommandInput').textContent = command;
+            }
+
+            // Get video dimensions
+            function getVideoDimensions(file) {
+                return new Promise((resolve, reject) => {
+                    const video = document.createElement('video');
+                    video.preload = 'metadata';
+
+                    video.onloadedmetadata = function () {
+                        URL.revokeObjectURL(video.src);
+                        resolve({
+                            width: video.videoWidth,
+                            height: video.videoHeight
+                        });
+                    };
+
+                    video.onerror = function () {
+                        URL.revokeObjectURL(video.src);
+                        reject(new Error('Could not load video metadata'));
+                    };
+
+                    video.src = URL.createObjectURL(file);
+                });
+            }
+
+            // Get image dimensions
+            function getImageDimensions(file) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+
+                    img.onload = function () {
+                        URL.revokeObjectURL(img.src);
+                        resolve({
+                            width: img.width,
+                            height: img.height
+                        });
+                    };
+
+                    img.onerror = function () {
+                        URL.revokeObjectURL(img.src);
+                        reject(new Error('Could not load image'));
+                    };
+
+                    img.src = URL.createObjectURL(file);
+                });
+            }
+
+            // Format file size
+            function formatFileSize(bytes) {
+                if (bytes === 0) return '0 Bytes';
+                const k = 1024;
+                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                const i = Math.floor(Math.log(bytes) / Math.log(k));
+                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+            }
+
+            // Add event listeners for basic settings
+            document.getElementById('inputFile').addEventListener('input', updateCommand);
+            document.getElementById('outputFile').addEventListener('input', updateCommand);
+
+            function initFromParams() {
+                const params = new URLSearchParams(window.location.search);
+
+                // 1. 设置输入文件
+                if (params.has('input')) {
+                    const inputVal = params.get('input');
+                    document.getElementById('inputFile').value = inputVal;
+
+                    // 如果 URL 提供了视频尺寸 (因为无法通过路径读取文件元数据)
+                    // 参数: vw=1920&vh=1080
+                    if (params.has('vw')) document.getElementById('inputFile').dataset.width = params.get('vw');
+                    if (params.has('vh')) document.getElementById('inputFile').dataset.height = params.get('vh');
+                }
+
+                // 2. 设置输出文件
+                if (params.has('output')) {
+                    document.getElementById('outputFile').value = params.get('output');
+                }
+
+                // 3. 配置 Step 1 (默认已经有一个 Step 1)
+                // 参数: type=alphamask|chromakey|colorkey
+                if (params.has('type')) {
+                    const type = params.get('type');
+                    const stepTypeSelect = document.getElementById('stepType1');
+                    stepTypeSelect.value = type;
+                    // 触发 change 事件以显示/隐藏相应字段
+                    stepTypeSelect.dispatchEvent(new Event('change'));
+                }
+
+                // 参数: color=green
+                if (params.has('color')) {
+                    const colorInput = document.getElementById('color1');
+                    colorInput.value = params.get('color');
+                    // 触发 input 事件更新预览
+                    document.getElementById('colorPicker1').dispatchEvent(new Event('input'));
+                }
+
+                // 参数: mask=mask.png
+                if (params.has('mask')) {
+                    const maskInput = document.getElementById('maskFile1');
+                    maskInput.value = params.get('mask');
+
+                    // 如果 URL 提供了遮罩尺寸
+                    // 参数: mw=1920&mh=1080
+                    if (params.has('mw')) maskInput.dataset.width = params.get('mw');
+                    if (params.has('mh')) maskInput.dataset.height = params.get('mh');
+                }
+
+                // 参数: similarity=0.2
+                if (params.has('similarity')) {
+                    document.getElementById('similarity1').value = params.get('similarity');
+                    document.getElementById('similarityValue1').textContent = params.get('similarity');
+                }
+
+                // 参数: blend=0.1
+                if (params.has('blend')) {
+                    document.getElementById('blend1').value = params.get('blend');
+                    document.getElementById('blendValue1').textContent = params.get('blend');
+                }
+
+                // 强制更新命令
+                updateCommand();
+            }
+
+            // 在页面加载完成后，稍微延迟执行以确保 Step 1 已创建
+            setTimeout(initFromParams, 100);
+        </script>
+        <script src="/script/vscode-bridge.js"></script>
+        <script>
+            window.navbarConfig = {
+                browserUrl: location.href // 点击 Browsers 按钮时通过 Bridge 发送此 URL
+            };
+        </script>
+        <!-- navbar的命令需要通过桥接发送 -->
+
+</body>
+
+</html>
