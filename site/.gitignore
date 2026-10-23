@@ -1,0 +1,14 @@
+# VitePress 站点产物与本地缓存
+node_modules
+dist
+
+# VitePress 缓存（构建时自动重建）
+.vitepress/cache
+docs/.vitepress/cache
+blog/.vitepress/cache
+
+# 本地时间戳缓存
+*.timestamp-*.mjs
+
+# 系统噪音
+.DS_Store
