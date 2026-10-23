@@ -64,15 +64,22 @@ pnpm run build:blog     # → ../dist/blog
 
 ## 本地预览整站
 
-`python3 -m http.server` 只看文件、不认 `_redirects`，SPA 路由会 404，属于正常。
-验证三层结构：
+`python3 -m http.server` 只看文件，不认 `_redirects`，也不做 pretty URL，
+`/docs/ffmpegtool/` 这种路径会直接 404，测不出真实效果。
+
+用 `scripts/serve-local.py`——它复刻了 Cloudflare Pages 的判定顺序
+（静态文件 → `.html` → `/index.html` → `_redirects` → 就近 404.html）：
 
 ```bash
-cd ../dist && python3 -m http.server 5099 --bind 127.0.0.1
-# /            → 工具箱
-# /docs/       → 文档站
-# /blog/       → 博客
-# /blog/posts/welcome
+cd ..
+python3 scripts/serve-local.py            # http://127.0.0.1:5180
+python3 scripts/serve-local.py --port 8080
+```
+
+然后：
+
+```bash
+./scripts/verify-routes.sh http://127.0.0.1:5180    # 三层路由自检，19 项
 ```
 
 ## 许可证
