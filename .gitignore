@@ -32,6 +32,16 @@ coverage
 /playwright-report/
 /playwright/.cache/
 # Webkit with playwright creates a salt file
-salt.pnpm-store/
+salt
+
+# pnpm store（不要提交；早前与上一行的 salt 粘连成 salt.pnpm-store/ 导致失效）
+.pnpm-store/
+
 node_modules/
 dist/
+
+# wrangler 本地构建状态与缓存
+.wrangler/
+
+# vite 配置时间戳缓存
+vite.config.ts.timestamp-*.mjs
