@@ -30,6 +30,8 @@ export default defineConfig({
     ['meta', { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }],
     ['meta', { name: 'theme-color', content: '#0058A0' }],
     ['link', { rel: 'alternate', type: 'application/rss+xml', title: 'RSS', href: `${SITE_BASE}feed.xml` }],
+    // Google Analytics 4（G-7VB7F5RY4Z）：引导脚本在站点根，三站共用一份
+    ['script', { async: '', src: '/ga.js' }],
   ],
 
   themeConfig: {

@@ -6,7 +6,7 @@ import { SITE_BASE } from './site'
  * 说明（相对上游模板的改动）：
  * 1. 移除了上游模板自带的 Google Analytics(gtag) 与 iubenda GDPR 脚本——
  *    那些是第三方站点的账号 ID，保留会把本站访客数据发到别人的账户里。
- *    需要统计时用 VitePress 的 head 自己加，或用站点根 SP​A 已在用的方案。
+ *    本站自己的 GA4 统计（G-7VB7F5RY4Z）改走站点根的 /ga.js，与 SPA、博客共用一份。
  * 2. 站点以 /docs/ 子路径部署，head 里的根绝对路径不会自动加 base，
  *    因此这里统一走 prefixBase()。
  */
@@ -47,5 +47,10 @@ const headConfig: HeadConfig[] = rawHead.map(([tag, attrs, children]) => {
   )
   return [tag, next, children]
 })
+
+// Google Analytics 4（G-7VB7F5RY4Z）。
+// 引导脚本放在站点根的 /ga.js，和工具箱 SPA、博客共用一份；
+// 它不在 /docs/ 下面，所以**不能**走上面的 prefixBase，否则会变成 /docs/ga.js 而 404。
+headConfig.push(['script', { async: '', src: '/ga.js' }])
 
 export default headConfig
