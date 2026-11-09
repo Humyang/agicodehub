@@ -113,6 +113,12 @@ export default defineConfig({
     Unocss(),
   ],
   base: baseUrl,
+  optimizeDeps: {
+    // public/ 下的静态工具页（如 /static/iphone-duo-gesture）走 HTML importmap
+    // 引用 ./vendor 里的 three，不经过 node_modules。默认扫描会把这些页面
+    // 当成入口去解析裸模块，dev 启动时报一堆解析不了的依赖。入口只留 SPA。
+    entries: ['index.html'],
+  },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
