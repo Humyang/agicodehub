@@ -8,8 +8,6 @@ home:
   toggleMenu: 'Toggle menu'
   home: Home
   uiLib: 'UI Lib'
-  support: 'Support AGI Code Hub development'
-  buyMeACoffee: 'Buy me a coffee'
   follow:
     title: 'You like AGI Code Hub?'
     p1: 'Give us a star on'
@@ -17,11 +15,6 @@ home:
     p2: 'or follow us on'
     twitterXAccount: 'AGI Code Hub X account'
     thankYou: 'Thank you!'
-  serviceBanner:
-    tag: 'Paid service'
-    title: 'Stuck setting up REA? 1:1 remote setup, done in one session'
-    desc: 'Node.js, MCP registration, agent client and decompiler wiring — 20-40 min. Full refund if it does not run.'
-    cta: 'See service details →'
   nav:
     github: 'GitHub repository'
     githubRepository: 'AGI Code Hub GitHub repository'
@@ -38,17 +31,15 @@ about:
 
     This wonderful website, made with ❤ by [Corentin Thomasset](https://corentin.tech?utm_source=it-tools&utm_medium=about) , aggregates useful tools for developer and people working in IT. If you find it useful, please feel free to share it to people you think may find it useful too and don't forget to bookmark it in your shortcut bar!
 
-    AGI Code Hub is open-source (under the GPL-3.0 license) and free, and will always be, but it costs me money to host and renew the domain name. If you want to support my work, and encourage me to add more tools, please consider supporting by [sponsoring me](https://www.buymeacoffee.com/cthmsst).
-
     ## Technologies
 
-    AGI Code Hub is made in Vue.js (Vue 3) with the the Naive UI component library and is hosted and continuously deployed by Vercel. Third-party open-source libraries are used in some tools, you may find the complete list in the [package.json](https://github.com/CorentinTh/it-tools/blob/main/package.json) file of the repository.
+    AGI Code Hub is made in Vue.js (Vue 3) with the the Naive UI component library and is hosted and continuously deployed by Vercel. Third-party open-source libraries are used in some tools, you may find the complete list in the [package.json](https://github.com/Humyang/agicodehub/blob/main/package.json) file of the repository.
 
     ## Found a bug? A tool is missing?
 
-    If you need a tool that is currently not present here, and you think can be useful, you are welcome to submit a feature request in the [issues section](https://github.com/CorentinTh/it-tools/issues/new/choose) in the GitHub repository.
+    If you need a tool that is currently not present here, and you think can be useful, you are welcome to submit a feature request in the [issues section](https://github.com/Humyang/agicodehub/issues/new/choose) in the GitHub repository.
 
-    And if you found a bug, or something doesn't work as expected, please file a bug report in the [issues section](https://github.com/CorentinTh/it-tools/issues/new/choose) in the GitHub repository.
+    And if you found a bug, or something doesn't work as expected, please file a bug report in the [issues section](https://github.com/Humyang/agicodehub/issues/new/choose) in the GitHub repository.
 
 404:
   notFound: '404 Not Found'
