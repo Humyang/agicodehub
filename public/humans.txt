@@ -1,4 +1,9 @@
 /* TEAM */
+Site: AGI Code Hub
+GitHub: https://github.com/Humyang/agicodehub
+X: https://x.com/NicoYangxg
+
+/* BASED ON */
+Project: IT-Tools
 Developer: Corentin Thomasset
-Site: https://github.com/CorentinTh
-Twitter: @cthmsst
+Source: https://github.com/CorentinTh/it-tools

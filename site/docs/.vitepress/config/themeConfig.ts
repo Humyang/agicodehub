@@ -26,11 +26,11 @@ const themeConfig: DefaultTheme.Config = {
   outline: [2, 3],
 
   socialLinks: [
-    // {
-    //   icon: 'github',
-    //   link: 'https://github.com/Humyang/agicodehub',
-    //   ariaLabel: 'Project GitHub',
-    // },
+    {
+      icon: 'github',
+      link: 'https://github.com/Humyang/agicodehub',
+      ariaLabel: 'Project GitHub',
+    },
     {
       icon: 'x',
       link: 'https://x.com/NicoYangxg',

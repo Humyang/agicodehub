@@ -1,133 +1,73 @@
-<picture>
-    <source srcset="./.github/logo-dark.png" media="(prefers-color-scheme: light)">
-    <source srcset="./.github/logo-white.png" media="(prefers-color-scheme: dark)">
-    <img src="./.github/logo-dark.png" alt="logo">
-</picture>
+# AGI Code Hub
 
-<p align="center">
-Useful tools for developer and people working in IT. <a href="https://it-tools.tech">Try it!</a>
-</p>
+免费开源的在线开发者工具箱：88 个常用工具 + FFmpeg 工具集 + 文档站 + 博客，全部计算在浏览器本地完成。
 
-## Functionalities and roadmap
+- 站点：<https://www.agicodehub.com>
+- 仓库：<https://github.com/Humyang/agicodehub>
+- 上游：派生自 [IT-Tools](https://github.com/CorentinTh/it-tools)（GPL-3.0），见 [THIRD_PARTY_NOTICES.md](./THIRD_PARTY_NOTICES.md)
 
-Please check the [issues](https://github.com/CorentinTh/it-tools/issues) to see if some feature listed to be implemented.
+## 目录结构
 
-You have an idea of a tool? Submit a [feature request](https://github.com/CorentinTh/it-tools/issues/new/choose)!
-
-## Self host
-
-Self host solutions for your homelab
-
-**From docker hub:**
-
-```sh
-docker run -d --name it-tools --restart unless-stopped -p 8080:80 corentinth/it-tools:latest
+```
+.
+├── src/                 工具箱 SPA（Vue 3 + Vite + Naive UI）
+├── public/static/       静态工具页（不参与 SPA 构建，按站点根路径直出）
+├── site/docs/           文档站（VitePress 实例 1，base=/docs/）
+├── site/blog/           博客（VitePress 实例 2，base=/blog/）
+├── functions/api/       Cloudflare Pages Function：/api/lead（D1 线索库）
+├── db/schema.sql        D1 表结构
+└── scripts/             构建、部署、本地预览、路由自检
 ```
 
-**From github packages:**
+三层产物统一由同一个 Cloudflare Pages 项目发布：`dist/`（SPA）+ `dist/docs/` + `dist/blog/`。
 
-```sh
-docker run -d --name it-tools --restart unless-stopped -p 8080:80 ghcr.io/corentinth/it-tools:latest
-```
+## 本地开发
 
-**Other solutions:**
-
-- [Cloudron](https://www.cloudron.io/store/tech.ittools.cloudron.html)
-- [Tipi](https://www.runtipi.io/docs/apps-available)
-- [Unraid](https://unraid.net/community/apps?q=it-tools)
-
-## Contribute
-
-### Recommended IDE Setup
-
-[VSCode](https://code.visualstudio.com/) with the following extensions:
-
-- [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur)
-- [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin).
-- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
-- [i18n Ally](https://marketplace.visualstudio.com/items?itemName=lokalise.i18n-ally)
-
-with the following settings:
-
-```json
-{
-  "editor.formatOnSave": false,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
-  },
-  "i18n-ally.localesPaths": ["locales", "src/tools/*/locales"],
-  "i18n-ally.keystyle": "nested"
-}
-```
-
-### Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [TypeScript Vue Plugin (Volar)](https://marketplace.visualstudio.com/items?itemName=Vue.vscode-typescript-vue-plugin) to make the TypeScript language service aware of `.vue` types.
-
-If the standalone TypeScript plugin doesn't feel fast enough to you, Volar has also implemented a [Take Over Mode](https://github.com/johnsoncodehk/volar/discussions/471#discussioncomment-1361669) that is more performant. You can enable it by the following steps:
-
-1. Disable the built-in TypeScript Extension
-   1. Run `Extensions: Show Built-in Extensions` from VSCode's command palette
-   2. Find `TypeScript and JavaScript Language Features`, right click and select `Disable (Workspace)`
-2. Reload the VSCode window by running `Developer: Reload Window` from the command palette.
-
-### Project Setup
-
-```sh
+```bash
 pnpm install
+
+pnpm dev                 # 工具箱 SPA，http://localhost:5173
 ```
 
-### Compile and Hot-Reload for Development
+文档站与博客是独立实例：
 
-```sh
-pnpm dev
+```bash
+cd site
+pnpm install             # 首次
+pnpm run dev:docs        # 文档站
+pnpm run dev:blog        # 博客
 ```
 
-### Type-Check, Compile and Minify for Production
+## 本地预览整站（复刻 Pages 路由）
 
-```sh
-pnpm build
+`python3 -m http.server` 不认 `_redirects`、不做 pretty URL，`/docs/ffmpegtool/` 会 404。
+用 `scripts/serve-local.py`，它按 Pages 的判定顺序（静态文件 → `.html` → `/index.html` → `_redirects` → 就近 404）走：
+
+```bash
+python3 scripts/serve-local.py              # http://127.0.0.1:5180
+./scripts/verify-routes.sh http://127.0.0.1:5180   # 三层路由自检，19 项
 ```
 
-### Run Unit Tests with [Vitest](https://vitest.dev/)
+## 构建与部署
 
-```sh
-pnpm test
+```bash
+./scripts/deploy-cloudflare.sh    # 1/3 SPA → 2/3 docs → 3/3 blog → 部署
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+`vite build` 会清空 `dist/`，所以顺序不能改；单独重跑 `build:docs` 前不要再跑 SPA 构建。
 
-```sh
-pnpm lint
+D1 绑定与线索接口说明见 [docs/leads-setup.md](./docs/leads-setup.md)。
+
+## 其它命令
+
+```bash
+pnpm build               # 类型检查 + 生产构建
+pnpm test                # 单元测试（Vitest）
+pnpm lint                # ESLint
+pnpm run script:create:tool my-tool-name   # 新增一个工具脚手架
 ```
 
-### Create a new tool
+## 许可证
 
-To create a new tool, there is a script that generate the boilerplate of the new tool, simply run:
-
-```sh
-pnpm run script:create:tool my-tool-name
-```
-
-It will create a directory in `src/tools` with the correct files, and a the import in `src/tools/index.ts`. You will just need to add the imported tool in the proper category and develop the tool.
-
-## Contributors
-
-Big thanks to all the people who have already contributed!
-
-[![contributors](https://contrib.rocks/image?repo=corentinth/it-tools&refresh=1)](https://github.com/corentinth/it-tools/graphs/contributors)
-
-## Credits
-
-Coded with ❤️ by [Corentin Thomasset](https://corentin.tech?utm_source=it-tools&utm_medium=readme).
-
-This project is continuously deployed using [vercel.com](https://vercel.com).
-
-Contributor graph is generated using [contrib.rocks](https://contrib.rocks/preview?repo=corentinth/it-tools).
-
-<a href="https://www.producthunt.com/posts/it-tools?utm_source=badge-featured&utm_medium=badge&utm_souce=badge-it&#0045;tools" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=345793&theme=light" alt="IT&#0032;Tools - Collection&#0032;of&#0032;handy&#0032;online&#0032;tools&#0032;for&#0032;devs&#0044;&#0032;with&#0032;great&#0032;UX | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
-<a href="https://www.producthunt.com/posts/it-tools?utm_source=badge-top-post-badge&utm_medium=badge&utm_souce=badge-it&#0045;tools" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/top-post-badge.svg?post_id=345793&theme=light&period=daily" alt="IT&#0032;Tools - Collection&#0032;of&#0032;handy&#0032;online&#0032;tools&#0032;for&#0032;devs&#0044;&#0032;with&#0032;great&#0032;UX | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
-
-## License
-
-This project is under the [GNU GPLv3](LICENSE).
+GNU GPLv3，见 [LICENSE](./LICENSE)。上游 IT-Tools 版权归 Corentin Thomasset 所有；
+`site/` 目录派生自 KeyTik 官网（MPL-2.0）。
