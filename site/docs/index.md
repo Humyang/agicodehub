@@ -15,13 +15,13 @@ hero:
 
 features:
   - title: AI-Powered
-    icon: <img src="/optimized-images/features/1-xs.webp" />
+    icon: <img src="/docs/optimized-images/features/1-xs.webp" />
     details: Expand imagination, explore AI boundaries
   - title: All-Encompassing
-    icon: <img src="/optimized-images/features/2-xs.webp" />
+    icon: <img src="/docs/optimized-images/features/2-xs.webp" />
     details: Comprehensive utility tools to boost productivity
   - title: Cross-Platform
-    icon: <img src="/optimized-images/features/3-xs.webp" />
+    icon: <img src="/docs/optimized-images/features/3-xs.webp" />
     details: Accessible on any device browser, mobile-optimized
 # --- Component configuration section ---
 categories:

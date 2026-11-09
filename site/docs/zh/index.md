@@ -16,13 +16,13 @@ hero:
 
 features:
   - title: AI 赋能
-    icon: <img src="/optimized-images/features/1-xs.webp" />
+    icon: <img src="/docs/optimized-images/features/1-xs.webp" />
     details: 扩展想象力，探索AI边界
   - title: 包罗万象
-    icon: <img src="/optimized-images/features/2-xs.webp" />
+    icon: <img src="/docs/optimized-images/features/2-xs.webp" />
     details: 实用工具大全，提升生产力
   - title: 跨平台
-    icon: <img src="/optimized-images/features/3-xs.webp" />
+    icon: <img src="/docs/optimized-images/features/3-xs.webp" />
     details: 任意设备浏览器访问，移动端优化
 # --- 这里是组件的配置项 ---
 categories:
