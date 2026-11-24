@@ -45,3 +45,7 @@ dist/
 
 # vite 配置时间戳缓存
 vite.config.ts.timestamp-*.mjs
+
+# Python 缓存（import/adapt 脚本用）
+__pycache__/
+*.pyc
