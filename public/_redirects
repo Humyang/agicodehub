@@ -47,6 +47,15 @@
 /tools/nav.html                 /docs/                  301
 /tools/ffmpeg-script-tool/index.html  /ffmpeg-script-tool 301
 
+# ── 1.5 双 base 兜底：/docs/docs/** 这类重复前缀 ───────────────────────
+# 文档站导航里曾把 link 写成 '/docs/'，而 VitePress 的 base 本身就是 /docs/，
+# 结果拼成 /docs/docs/ 并出现在全部 16 个页面的导航栏上（已修源码）。
+# 这里给已经流出去/被索引的地址留一条收敛规则，避免继续吃 404。
+/docs/docs/*                    /docs/:splat            301
+/docs/docs                      /docs/                  301
+/blog/blog/*                    /blog/:splat            301
+/blog/blog                      /blog/                  301
+
 # ── 2. 子站 404 兜底 ─────────────────────────────────────────────────
 # 必须排在全局兜底之前，否则 /docs/ 下不存在的页面会被改写成 SPA 首页
 # （200 + 无关内容），对搜索引擎就是软 404。

@@ -41,9 +41,11 @@ const locales = {
           link: 'https://www.agicodehub.com/blog/',
         },
         {
+          // 不能写 '/docs/'：base 已经是 /docs/，VitePress 会拼成 /docs/docs/
+          // （就是那个 404 的来源）。文档站首页就是 '/'。
           text: 'Docs',
-          link: '/docs/',
-          activeMatch: '/docs/',
+          link: '/',
+          activeMatch: '^/$',
         },
       ],
       sidebar: {
@@ -71,9 +73,11 @@ const locales = {
           link: 'https://www.agicodehub.com/blog/',
         },
         {
+          // 不能写 '/docs/'：base 已经是 /docs/，VitePress 会拼成 /docs/docs/
+          // （就是那个 404 的来源）。文档站首页就是 '/'。
           text: 'Docs',
-          link: '/docs/',
-          activeMatch: '/docs/',
+          link: '/',
+          activeMatch: '^/$',
         },
       ],
     }

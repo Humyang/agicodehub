@@ -60,6 +60,12 @@ class Rule:
         prefix = self.pattern.split('*')[0]
         return path.startswith(prefix)
 
+    def splat(self, path: str) -> str:
+        """* 捕获到的部分，供目标里的 :splat 占位使用。"""
+        if '*' not in self.pattern:
+            return ''
+        return path[len(self.pattern.split('*')[0]):]
+
     def __repr__(self) -> str:  # pragma: no cover
         return f'<{self.pattern} → {self.target} {self.status}>'
 
@@ -155,7 +161,8 @@ class Handler(BaseHTTPRequestHandler):
             if not rule.match(path):
                 continue
             if rule.status in (301, 302, 303, 307, 308):
-                self._redirect(rule.target, rule.status)
+                location = rule.target.replace(':splat', rule.splat(path))
+                self._redirect(location, rule.status)
                 return
             target = resolve_asset(self.dist, rule.target)
             if target is not None:
