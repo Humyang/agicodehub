@@ -1,7 +1,7 @@
 ---
 title: "酷冷至尊机械键盘键位重置win 键失效 ubuntu下 super键无效"
 date: 2025-03-07
-description: "如果你搞乱了设置，也不用慌，最后还有FN+E（按住三秒以上），直接恢复出厂设置即可。"
+description: "酷冷至尊 XT V2 机械键盘键位错乱的恢复方法：Win 键失效、Ubuntu 下 Super 键无效时的快捷键重置与出厂恢复。"
 tags: [硬件]
 legacy_id: 205
 legacy_url: "https://www.dve2.com/zh/archives/205/酷冷至尊机械键盘键位重置win-键失效-ubuntu下-super键无效/"
@@ -43,3 +43,15 @@ FN+左CTRL+D=切换至DVORAK配置；
 FN+左CTRL+W=切换至Workman配置。
 
 如果你搞乱了设置，也不用慌，最后还有FN+E（按住三秒以上），直接恢复出厂设置。
+
+---
+
+::: tip 关于这篇旧文
+本文原发布于 dve2.com（2025 年 3 月），站点迁移时一并搬到 AGI Code Hub，文中的工具链接已更新为新站地址；命令与结论保持原样。
+:::
+
+**相关工具**：[FFmpeg 命令工坊](https://agicodehub.com/ffmpeg-workbench) · [浏览器内 FFmpeg 运行器](https://agicodehub.com/ffmpeg-script-tool)
+
+**相关文章**：[使用FFmpeg高效处理大批量视频](./zh-ffmpeg-batch-video-processing.md)
+
+<!-- adapted: agicodehub -->

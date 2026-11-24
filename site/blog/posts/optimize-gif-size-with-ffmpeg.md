@@ -1,14 +1,12 @@
 ---
 title: "Optimize GIF Size with FFmpeg: Reduce File Sizes in 3 Steps"
 date: 2025-03-17
-description: "Learn how to optimize GIF size using FFmpeg with step-by-step commands. Reduce file sizes by adjusting palettes, fram…"
+description: "Shrink GIFs with FFmpeg in three steps — palette optimization, frame rate and scaling, and removing redundant frames."
 tags: [FFmpeg]
 legacy_id: 311
 legacy_url: "https://www.dve2.com/archives/311/optimize-gif-size-with-ffmpeg-reduce-file-sizes-in-3-steps/"
 restored_from: wayback
 ---
-
-# Optimize GIF Size with FFmpeg: Reduce File Sizes in 3 Steps
 
 ## Optimize GIF Size with FFmpeg: A Step-by-Step Guide
 
@@ -61,4 +59,16 @@ After optimization, check the file size and visual quality. Tools like *GIMP* or
 
 ### Conclusion
 
-Using FFmpeg to **optimize GIF size** is a game-changer for web performance. By adjusting palettes, frame rates, and resolutions, you can achieve smaller files without noticeable quality loss. For quick results, try FFmpeg.dve2.com, an online tool that generates custom FFmpeg scripts for GIF optimization and other video tasks. Streamline your workflow today!
+Using FFmpeg to **optimize GIF size** is a game-changer for web performance. By adjusting palettes, frame rates, and resolutions, you can achieve smaller files without noticeable quality loss. For quick results, try [FFmpeg Command Workbench](https://agicodehub.com/ffmpeg-workbench), an online tool that generates custom FFmpeg scripts for GIF optimization and other video tasks. Streamline your workflow today!
+
+---
+
+::: tip About this article
+Originally published on dve2.com in March 2025. It moved to AGI Code Hub with the site migration; tool links now point at this site and the commands are unchanged.
+:::
+
+**Related tools**: [FFmpeg Command Workbench](https://agicodehub.com/ffmpeg-workbench) · [FFmpeg in-browser Runner](https://agicodehub.com/ffmpeg-script-tool)
+
+**Related reading**: [FFmpeg GIF: Ultimate Guide to Creating and Optimizing GIFs with FFmpeg](./ffmpeg-gif-ultimate-guide.md) · [Create GIFs from Video Clips with FFmpeg: Ultimate Guide](./create-gifs-from-video-clips-with-ffmpeg-ultimate-guide.md)
+
+<!-- adapted: agicodehub -->

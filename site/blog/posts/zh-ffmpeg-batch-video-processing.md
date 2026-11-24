@@ -1,7 +1,7 @@
 ---
 title: "使用FFmpeg高效处理大批量视频"
 date: 2025-03-04
-description: "Discover how to use FFmpeg for efficient large-scale video processing, including conversion, resizing, and automation…"
+description: "用 FFmpeg 批量处理大量视频：循环脚本、并行转码与常用参数，附可直接复用的命令。"
 tags: [FFmpeg]
 legacy_id: 195
 legacy_url: "https://www.dve2.com/zh/archives/195/使用ffmpeg高效处理大批量视频/"
@@ -39,3 +39,15 @@ FFmpeg入门指南
 创建一个脚本来批处理视频可以节省您大量的时间。以下是一个简单的示例（此处示例被截断，未完整给出）：
 
 [注意：示例脚本未完整翻译，因为原文在此处被截断。在实际应用中，您可能需要编写一个循环或利用shell脚本的某些功能来遍历文件夹中的视频文件，并对每个文件应用FFmpeg命令。]
+
+---
+
+::: tip 关于这篇旧文
+本文原发布于 dve2.com（2025 年 3 月），站点迁移时一并搬到 AGI Code Hub，文中的工具链接已更新为新站地址；命令与结论保持原样。
+:::
+
+**相关工具**：[FFmpeg 命令工坊](https://agicodehub.com/ffmpeg-workbench) · [浏览器内 FFmpeg 运行器](https://agicodehub.com/ffmpeg-script-tool)
+
+**相关文章**：[酷冷至尊机械键盘键位重置win 键失效 ubuntu下 super键无效](./zh-coolermaster-key-reset-super-key.md)
+
+<!-- adapted: agicodehub -->

@@ -1,14 +1,12 @@
 ---
 title: "MP4 to GIF FFmpeg: Complete Conversion Guide with Pro Tips"
 date: 2025-03-17
-description: "Learn how to convert MP4 to GIF using FFmpeg with expert techniques. Discover command-line methods, quality optimizat…"
+description: "Complete MP4 to GIF guide: two-pass palette conversion, quality tuning, size control, and the commands that actually work."
 tags: [FFmpeg]
 legacy_id: 309
 legacy_url: "https://www.dve2.com/archives/309/mp4-to-gif-ffmpeg-complete-conversion-guide-with-pro-tips/"
 restored_from: wayback
 ---
-
-# MP4 to GIF FFmpeg: Complete Conversion Guide with Pro Tips
 
 ## How to Convert MP4 to GIF Using FFmpeg: A Step-by-Step Guide
 
@@ -86,4 +84,16 @@ output.gif
 - Limit color palette to 256 colors
 - Use precise time trimming (-ss and -t parameters)
 
-For those who prefer automated solutions, try the FFmpeg Script Generator at ffmpeg.dve2.com. This online tool creates optimized conversion scripts based on your specific requirements, eliminating manual command-line work while ensuring professional results.
+For those who prefer automated solutions, try the FFmpeg Script Generator at [FFmpeg Command Workbench](https://agicodehub.com/ffmpeg-workbench). This online tool creates optimized conversion scripts based on your specific requirements, eliminating manual command-line work while ensuring professional results.
+
+---
+
+::: tip About this article
+Originally published on dve2.com in March 2025. It moved to AGI Code Hub with the site migration; tool links now point at this site and the commands are unchanged.
+:::
+
+**Related tools**: [FFmpeg Command Workbench](https://agicodehub.com/ffmpeg-workbench) · [FFmpeg in-browser Runner](https://agicodehub.com/ffmpeg-script-tool)
+
+**Related reading**: [Optimize GIF Size with FFmpeg: Reduce File Sizes in 3 Steps](./optimize-gif-size-with-ffmpeg.md) · [FFmpeg MP4 to GIF: Convert Videos to Animated Images Easily](./ffmpeg-mp4-to-gif-convert-videos-to-animated-images.md)
+
+<!-- adapted: agicodehub -->
