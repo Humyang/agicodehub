@@ -1,65 +1,92 @@
 ---
 title: "FFmpeg Crop GIF: A Step-by-Step Guide to Perfectly Trim Your Animations"
 date: 2025-03-17
-description: "Crop GIFs precisely with the FFmpeg crop filter: keep the aspect ratio right and avoid the usual pitfalls of editing animations."
+description: "Crop animations without border shimmer: coordinate constraints, chroma alignment, and why crop-before-scale keeps edges sharp."
 tags: [FFmpeg]
 legacy_id: 307
 legacy_url: "https://www.dve2.com/archives/307/ffmpeg-crop-gif-a-step-by-step-guide-to-perfectly-trim-your-animations/"
 restored_from: wayback
 ---
 
-FFmpeg is a powerful command-line tool for video and image processing, and one of its most useful features is the ability to crop GIFs with precision. Whether you’re trimming unwanted edges, focusing on a specific section, or resizing animations for social media, learning how to use **FFmpeg crop GIF** commands can save time and enhance your workflow. In this guide, we’ll walk through the essential steps to crop GIFs using FFmpeg, troubleshoot common issues, and optimize your results.
+# FFmpeg Crop GIF: A Step-by-Step Guide to Perfectly Trim Your Animations
 
-## Why Use FFmpeg to Crop GIFs?
+Cropping an animated GIF looks like a one-line job until the rectangle comes back rejected, or the result crawls one pixel along an edge for the whole loop. The `crop` filter never resamples: every pixel it keeps is a pixel that came out of the decoder untouched. That is excellent for sharpness and unforgiving for fractional offsets, odd dimensions, and graphs where every frame is measured separately. This note covers the constraints the filter enforces, the ones it silently works around, and the ordering decision that actually changes output quality — whether `crop` or `scale` runs first.
 
-FFmpeg offers unparalleled flexibility for editing GIFs. Unlike basic graphic editors, it allows pixel-perfect cropping, batch processing, and seamless integration with automation workflows. The `crop` filter in FFmpeg lets you specify exact dimensions (width and height) and starting coordinates (x and y) to isolate the desired portion of your animation.
+## Reading the crop signature
 
-## Step 1: Install FFmpeg
-
-First, ensure FFmpeg is installed on your system. Download it from the [official website](https://ffmpeg.org/) or use a package manager like `brew` (macOS) or `apt` (Linux). Verify the installation by running `ffmpeg -version` in your terminal.
-
-## Step 2: Basic FFmpeg Crop Command
-
-To crop a GIF, use this syntax:
-```
-ffmpeg -i input.gif -filter:v "crop=W:H:X:Y" output.gif
-```
-– **W**: Width of the cropped area
-– **H**: Height of the cropped area
-– **X**: Horizontal starting position (from the left)
-– **Y**: Vertical starting position (from the top)
-
-For example, to crop a 200×200 section starting at the top-left corner:
-```
-ffmpeg -i original.gif -filter:v "crop=200:200:0:0" cropped.gif
+```bash
+ffmpeg -i input.gif -vf "crop=480:270:120:60" -loop 0 cropped.gif
 ```
 
-## Step 3: Advanced Cropping Techniques
+- `480:270` — output width and height (`out_w`/`out_h`, also written `w`/`h`).
+- `120:60` — the top-left corner of the kept region (`x`/`y`), counted from the frame's left and top edges.
+- Omit `x`/`y` and the filter centres the rectangle: `x=(in_w-out_w)/2`, `y=(in_h-out_h)/2`.
 
-1. **Center-Cropping**: Automatically center the crop area using variables:
+Every argument accepts an expression, and the expression is evaluated **per frame**. The useful variables are `iw`/`in_w`, `ih`/`in_h`, `ow`/`out_w`, `oh`/`out_h`, plus `n` (frame index), `t` (timestamp) and `pos`. The current `x`/`y` are readable inside their own expressions, which is how you clamp a moving rectangle.
+
+## Constraints the filter enforces
+
+A rectangle that extends past the frame is an error, not a clamp. Ask for `crop=480:270:400:60` on a 640-pixel-wide source and the filter graph stops instead of trimming the overflow. Clamp inside the expression and the command becomes safe to reuse on inputs you have not measured:
+
+```bash
+ffmpeg -i input.gif -vf 'crop=w=min(iw\,480):h=min(ih\,270):x=(iw-ow)/2:y=(ih-oh)/2' -loop 0 out.gif
 ```
-ffmpeg -i input.gif -filter:v "crop=min(iw\,ih):min(iw\,ih)" output.gif
+
+The escaped comma matters. In a filter graph, `,` separates filters in a chain and `:` separates options inside a filter, so commas inside an expression must be written `\,`. Single-quoting the whole graph protects it from the shell and is the least surprising habit.
+
+Dimensions are the second constraint. A GIF decodes to packed RGB, where the chroma grid is 1×1 and odd numbers are harmless. The same graph applied to a 4:2:0 video source (MP4 in, GIF out) has `hsub`/`vsub` of 2, and odd `out_w`/`out_h` either fails the encoder or forces an internal adjustment. Two ways out: pass even numbers, or align explicitly with `x='trunc(160/hsub)*hsub'` and the same trick for `y`.
+
+The `exact` option controls that adjustment. With the default `exact=0`, subsampled input may have its rectangle nudged onto the chroma grid so the output stays encodable — which is convenient and also the reason a coordinate you typed is not always the coordinate you got. Set `exact=1` when you need the literal rectangle, and verify the dimensions afterwards rather than trusting the number you wrote.
+
+## When the rectangle moves by itself
+
+Because expressions are per-frame, a GIF whose frames are not all the same size — concatenated clips, hand-edited exports — produces a different `iw`/`ih` each frame, so a centred crop shifts and the border appears to crawl. Confirm the geometry before cropping:
+
+```bash
+ffprobe -v error -select_streams v:0 -show_entries stream=width,height,nb_frames -of csv=p=0 input.gif
 ```
-   This crops the GIF to a square based on the shorter side.
-2. **Batch Processing**: Use shell scripts to crop multiple GIFs:
-   `for f in *.gif; do ffmpeg -i \"$f\" -filter:v \"crop=300:300:50:50\" \"cropped_$f\"; done`
 
-## Optimizing Cropped GIFs
+One width/height pair and a frame count is what you want. If a batch disagrees, normalise the canvas first (scale to a fixed box, `pad` to fill) and crop the normalised stream, rather than letting the rectangle track whatever the decoder reports.
 
-Reduce file size and improve playback with these tips:
-– Limit colors: `-vf \"crop=W:H:X:Y,split[s0][s1];[s0]palettegen[p];[s1][p]paletteuse\"`
-– Adjust frame rate: `-r 10` to lower FPS.
-– Resize output: Add `scale=W:H` after the crop filter.
+## Crop then scale, or scale then crop?
 
-## Common Issues & Fixes
+This is the part that decides quality.
 
-- **Blurry Output**: Ensure input dimensions are divisible by 2 when using certain codecs.
-- **Misaligned Crop**: Check coordinates using tools like GIMP to preview the crop area.
-- **Slow Processing**: Pre-convert large GIFs to video formats (e.g., MP4) before cropping.
+**Crop first, scale second.** The filter works on full-resolution pixels, then a single resample produces the final size. Downscaling averages neighbouring pixels, so the crop boundary acquires sub-pixel coverage and lands smoothly instead of aliasing. Cost: the whole chain runs at source resolution.
 
-## Conclusion
+```bash
+ffmpeg -i input.gif -vf "crop=480:270:120:60,scale=480:270:flags=lanczos" -loop 0 out.gif
+```
 
-Mastering FFmpeg’s crop functionality empowers you to create polished, professional GIFs efficiently. For those who prefer a streamlined approach, try [FFmpeg Command Workbench](https://agicodehub.com/ffmpeg-workbench), an online tool that generates custom FFmpeg scripts instantly—no coding required! Perfect for automating GIF edits or learning command syntax through real-time examples.
+**Scale first, crop second.** Cheaper, and pointless if nothing follows: `crop` cannot antialias, so the boundary is a hard integer cut taken from an already-downsampled image. Offsets get quantised by the scale factor, and any later upscale magnifies the stair-stepping along the cut edge.
+
+The rule that covers both: resample exactly once, last, and only downward. `crop` → `scale` with `flags=lanczos` (or `area` when shrinking hard) is the ordering to reach for; `scale` → `crop` → `scale` is where softness comes from.
+
+For a stubborn jagged border, give the resampler something to average. Crop two pixels wider on each side, then scale to the target — the outer ring is the sampling margin:
+
+```bash
+ffmpeg -i input.gif -vf "crop=484:274:118:58,scale=480:270:flags=lanczos" -loop 0 out.gif
+```
+
+## Transparency and palette side effects
+
+Scaling an image with an alpha channel blends colour into transparent pixels (the filter does not premultiply), which shows up as a dark or coloured halo hugging the new edge. `crop` does not resample, so a crop-only pass preserves transparency cleanly; if you must resize a transparent GIF, keep the margin trick above small, or letterbox onto a known background instead.
+
+Palette generation sees whatever geometry precedes it, so build the palette from the final framing, not the source:
+
+```bash
+ffmpeg -i input.gif -filter_complex "[0:v]crop=484:274:118:58,scale=480:270:flags=lanczos,split[a][b];[a]palettegen[p];[b][p]paletteuse" -loop 0 out.gif
+```
+
+Batching the same geometry across a directory:
+
+```bash
+for f in *.gif; do ffmpeg -y -i "$f" -vf "crop=480:270:120:60" "crop_$f"; done
+```
+
+## Before you ship it
+
+Check four things: the rectangle fits every frame (`iw`/`ih` from `ffprobe`, not from memory); width and height are even if a 4:2:0 source is upstream; exactly one `scale` runs after the `crop`, with an explicit `flags`; and the result is viewed on both a light and a dark background, since a one-pixel offset or halo is invisible on the page you tested and obvious on the next one.
 
 ---
 
