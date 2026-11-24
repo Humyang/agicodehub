@@ -44,7 +44,7 @@ BRAND_PATTERNS = [
 DESCRIPTIONS = {
     'create-gifs-from-video-clips-with-ffmpeg-ultimate-guide':
         'Turn video clips into clean GIFs with FFmpeg: trim the duration, resize, tune frame rate and palette, with commands you can copy.',
-    'online-ffmpeg-transform-your-media-processing-workflow-in-2024':
+    'online-ffmpeg-vs-local-ffmpeg':
         'What browser-based FFmpeg tools and script generators actually change in a media workflow — and where the command line still wins.',
     'ffmpeg-online-web-based-tools-and-script-generators':
         'A tour of web-based FFmpeg tools and script generators: what they do well, where they fall short, and how to choose one.',
@@ -83,9 +83,9 @@ RELATED = {
     'optimize-gif-size-with-ffmpeg': ['ffmpeg-gif-ultimate-guide', 'create-gifs-from-video-clips-with-ffmpeg-ultimate-guide'],
     'ffmpeg-crop-gif-step-by-step-guide': ['how-to-crop-and-convert-gifs-using-ffmpeg', 'ffmpeg-gif-ultimate-guide'],
     'how-to-crop-and-convert-gifs-using-ffmpeg': ['ffmpeg-crop-gif-step-by-step-guide', 'create-gifs-from-video-clips-with-ffmpeg-ultimate-guide'],
-    'ffmpeg-online-web-based-tools-and-script-generators': ['ffmpeg-online-service-best-tools-for-video-audio-processing', 'online-ffmpeg-transform-your-media-processing-workflow-in-2024'],
-    'ffmpeg-online-service-best-tools-for-video-audio-processing': ['ffmpeg-online-web-based-tools-and-script-generators', 'online-ffmpeg-transform-your-media-processing-workflow-in-2024'],
-    'online-ffmpeg-transform-your-media-processing-workflow-in-2024': ['ffmpeg-online-web-based-tools-and-script-generators', 'ffmpeg-online-service-best-tools-for-video-audio-processing'],
+    'ffmpeg-online-web-based-tools-and-script-generators': ['ffmpeg-online-service-best-tools-for-video-audio-processing', 'online-ffmpeg-vs-local-ffmpeg'],
+    'ffmpeg-online-service-best-tools-for-video-audio-processing': ['ffmpeg-online-web-based-tools-and-script-generators', 'online-ffmpeg-vs-local-ffmpeg'],
+    'online-ffmpeg-vs-local-ffmpeg': ['ffmpeg-online-web-based-tools-and-script-generators', 'ffmpeg-online-service-best-tools-for-video-audio-processing'],
     'zh-ffmpeg-batch-video-processing': ['zh-coolermaster-key-reset-super-key'],
     'zh-coolermaster-key-reset-super-key': ['zh-ffmpeg-batch-video-processing'],
 }

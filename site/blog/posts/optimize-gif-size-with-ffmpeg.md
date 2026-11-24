@@ -53,7 +53,10 @@ Both passes need an identical chain, or the palette is measured on frames the se
 Screen recordings and slide animations spend most frames showing nothing new. `mpdecimate` measures inter-frame difference and lets identical frames fall out:
 
 ```bash
+# FFmpeg 5.1 及以上
 ffmpeg -i input.gif -vf "mpdecimate=hi=64*12:lo=64*5:frac=0.33,setpts=N/FRAME_RATE/TB" -fps_mode vfr output.gif
+# 5.1 之前（4.x 系列）没有 -fps_mode，同一个开关叫 -vsync
+ffmpeg -i input.gif -vf "mpdecimate=hi=64*12:lo=64*5:frac=0.33,setpts=N/FRAME_RATE/TB" -vsync vfr output.gif
 ```
 
 `hi` and `lo` are per-block difference thresholds on an 8×8 block scale, and `frac` is the share of blocks that must exceed `lo` before a frame is kept. `setpts=N/FRAME_RATE/TB` rewrites timestamps so survivors play contiguously; without it the GIF keeps the original gaps and stutters through long holds.

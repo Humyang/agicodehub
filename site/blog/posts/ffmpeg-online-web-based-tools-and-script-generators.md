@@ -102,6 +102,6 @@ Originally published on dve2.com in March 2025. It moved to AGI Code Hub with th
 
 **Related tools**: [FFmpeg Command Workbench](https://agicodehub.com/ffmpeg-workbench) · [FFmpeg in-browser Runner](https://agicodehub.com/ffmpeg-script-tool)
 
-**Related reading**: [FFmpeg Online Service: Best Tools for Video & Audio Processing in 2024](./ffmpeg-online-service-best-tools-for-video-audio-processing.md) · [Online FFmpeg: Transform Your Media Processing Workflow in 2024](./online-ffmpeg-transform-your-media-processing-workflow-in-2024.md)
+**Related reading**: [FFmpeg Online Service: Best Tools for Video & Audio Processing in 2024](./ffmpeg-online-service-best-tools-for-video-audio-processing.md) · [Online FFmpeg vs Local FFmpeg: How to Choose in 2025](./online-ffmpeg-vs-local-ffmpeg.md)
 
 <!-- adapted: agicodehub -->

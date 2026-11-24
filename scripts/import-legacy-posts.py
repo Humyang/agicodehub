@@ -36,7 +36,7 @@ ARTICLES = [
     (299, '/archives/299/create-gifs-from-video-clips-with-ffmpeg-ultimate-guide/', 'en',
      'create-gifs-from-video-clips-with-ffmpeg-ultimate-guide', ['FFmpeg']),
     (303, '/archives/303/online-ffmpeg-transform-your-media-processing-workflow-in-2024/', 'en',
-     'online-ffmpeg-transform-your-media-processing-workflow-in-2024', ['FFmpeg']),
+     'online-ffmpeg-vs-local-ffmpeg', ['FFmpeg']),
     (305, '/archives/305/ffmpeg-online-web-based-tools-and-script-generators-for-media-processing/', 'en',
      'ffmpeg-online-web-based-tools-and-script-generators', ['FFmpeg']),
     (307, '/archives/307/ffmpeg-crop-gif-a-step-by-step-guide-to-perfectly-trim-your-animations/', 'en',

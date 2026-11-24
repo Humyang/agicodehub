@@ -24,8 +24,8 @@
 #     恢复脚本：scripts/import-legacy-posts.py
 /archives/299/create-gifs-from-video-clips-with-ffmpeg-ultimate-guide/                                   /blog/posts/create-gifs-from-video-clips-with-ffmpeg-ultimate-guide 301
 /dve2/archives/299/create-gifs-from-video-clips-with-ffmpeg-ultimate-guide/                              /blog/posts/create-gifs-from-video-clips-with-ffmpeg-ultimate-guide 301
-/archives/303/online-ffmpeg-transform-your-media-processing-workflow-in-2024/                            /blog/posts/online-ffmpeg-transform-your-media-processing-workflow-in-2024 301
-/dve2/archives/303/online-ffmpeg-transform-your-media-processing-workflow-in-2024/                       /blog/posts/online-ffmpeg-transform-your-media-processing-workflow-in-2024 301
+/archives/303/online-ffmpeg-transform-your-media-processing-workflow-in-2024/                            /blog/posts/online-ffmpeg-vs-local-ffmpeg 301
+/dve2/archives/303/online-ffmpeg-transform-your-media-processing-workflow-in-2024/                       /blog/posts/online-ffmpeg-vs-local-ffmpeg 301
 /archives/305/ffmpeg-online-web-based-tools-and-script-generators-for-media-processing/                  /blog/posts/ffmpeg-online-web-based-tools-and-script-generators 301
 /dve2/archives/305/ffmpeg-online-web-based-tools-and-script-generators-for-media-processing/             /blog/posts/ffmpeg-online-web-based-tools-and-script-generators 301
 /archives/307/ffmpeg-crop-gif-a-step-by-step-guide-to-perfectly-trim-your-animations/                    /blog/posts/ffmpeg-crop-gif-step-by-step-guide             301
@@ -87,6 +87,11 @@
 /docs/docs                      /docs/                  301
 /blog/blog/*                    /blog/:splat            301
 /blog/blog                      /blog/                  301
+
+# ── 1.7 改过名的文章 → 新地址 ────────────────────────────────────────
+# 原标题带「in 2024」，改写时按年份更新为 2025 并重命名为在线/本地对比，
+# 旧的文章 URL 给一条 301，别让已经分享出去的链接断掉。
+/blog/posts/online-ffmpeg-transform-your-media-processing-workflow-in-2024  /blog/posts/online-ffmpeg-vs-local-ffmpeg  301
 
 # ── 1.8 漏了 base 的文章路径：/posts/x → /blog/posts/x ─────────────────
 # 博客首页的列表一度用 createContentLoader 返回的裸 url（/posts/x）渲染链接，
