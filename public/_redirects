@@ -88,6 +88,12 @@
 /blog/blog/*                    /blog/:splat            301
 /blog/blog                      /blog/                  301
 
+# ── 1.8 漏了 base 的文章路径：/posts/x → /blog/posts/x ─────────────────
+# 博客首页的列表一度用 createContentLoader 返回的裸 url（/posts/x）渲染链接，
+# 少了 /blog 前缀，点进去 404（已修源码，这里兜住已经流出去的地址）。
+/posts/*                        /blog/posts/:splat      301
+/posts                          /blog/                  301
+
 # ── 1.9 目录缺尾斜杠 → 301 到带斜杠 ──────────────────────────────────
 # /docs、/blog 是真实目录（各自有 index.html）。Pages 原本会自己 308 到
 # /docs/，但第 3 节的 `/:seg → / 200` 兜底会先接住这种单段路径，

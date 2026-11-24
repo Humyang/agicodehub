@@ -14,12 +14,15 @@ hero:
 ---
 
 <script setup>
+// createContentLoader 给的 url 是相对 base 的（/posts/x），这里必须过 withBase，
+// 否则渲染成 /posts/x，而站点 base 是 /blog/，点进去就是 404。
+import { withBase } from 'vitepress'
 import { data as posts } from './posts.data'
 </script>
 
 <div class="post-list">
   <article v-for="post in posts" :key="post.url" class="post-item">
-    <h2><a :href="post.url">{{ post.title }}</a></h2>
+    <h2><a :href="withBase(post.url)">{{ post.title }}</a></h2>
     <p class="post-meta">
       <time :datetime="post.date">{{ new Date(post.date).toLocaleDateString('zh-CN') }}</time>
       <span v-if="post.tags.length"> · {{ post.tags.join(' / ') }}</span>
