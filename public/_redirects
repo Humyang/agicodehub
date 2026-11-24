@@ -18,6 +18,38 @@
 # ─────────────────────────────────────────────────────────────────────
 
 # ── 1. 旧 dve2 WordPress 站迁移（精确族优先，顺序不能调）──────────────────
+
+# 1a. 已从 Wayback 恢复的 14 篇文章：逐篇精确 301 到新文章地址。
+#     必须排在下面的 /dve2/archives/* 与 /archives/* 通配之前（命中即止）。
+#     恢复脚本：scripts/import-legacy-posts.py
+/archives/299/create-gifs-from-video-clips-with-ffmpeg-ultimate-guide/                                   /blog/posts/create-gifs-from-video-clips-with-ffmpeg-ultimate-guide 301
+/dve2/archives/299/create-gifs-from-video-clips-with-ffmpeg-ultimate-guide/                              /blog/posts/create-gifs-from-video-clips-with-ffmpeg-ultimate-guide 301
+/archives/303/online-ffmpeg-transform-your-media-processing-workflow-in-2024/                            /blog/posts/online-ffmpeg-transform-your-media-processing-workflow-in-2024 301
+/dve2/archives/303/online-ffmpeg-transform-your-media-processing-workflow-in-2024/                       /blog/posts/online-ffmpeg-transform-your-media-processing-workflow-in-2024 301
+/archives/305/ffmpeg-online-web-based-tools-and-script-generators-for-media-processing/                  /blog/posts/ffmpeg-online-web-based-tools-and-script-generators 301
+/dve2/archives/305/ffmpeg-online-web-based-tools-and-script-generators-for-media-processing/             /blog/posts/ffmpeg-online-web-based-tools-and-script-generators 301
+/archives/307/ffmpeg-crop-gif-a-step-by-step-guide-to-perfectly-trim-your-animations/                    /blog/posts/ffmpeg-crop-gif-step-by-step-guide             301
+/dve2/archives/307/ffmpeg-crop-gif-a-step-by-step-guide-to-perfectly-trim-your-animations/               /blog/posts/ffmpeg-crop-gif-step-by-step-guide             301
+/archives/309/mp4-to-gif-ffmpeg-complete-conversion-guide-with-pro-tips/                                 /blog/posts/mp4-to-gif-ffmpeg-complete-conversion-guide    301
+/dve2/archives/309/mp4-to-gif-ffmpeg-complete-conversion-guide-with-pro-tips/                            /blog/posts/mp4-to-gif-ffmpeg-complete-conversion-guide    301
+/archives/311/optimize-gif-size-with-ffmpeg-reduce-file-sizes-in-3-steps/                                /blog/posts/optimize-gif-size-with-ffmpeg                  301
+/dve2/archives/311/optimize-gif-size-with-ffmpeg-reduce-file-sizes-in-3-steps/                           /blog/posts/optimize-gif-size-with-ffmpeg                  301
+/archives/313/ffmpeg-online-service-best-tools-for-video-audio-processing-in-2024/                       /blog/posts/ffmpeg-online-service-best-tools-for-video-audio-processing 301
+/dve2/archives/313/ffmpeg-online-service-best-tools-for-video-audio-processing-in-2024/                  /blog/posts/ffmpeg-online-service-best-tools-for-video-audio-processing 301
+/archives/315/ffmpeg-mp4-to-gif-convert-videos-to-animated-images-easily/                                /blog/posts/ffmpeg-mp4-to-gif-convert-videos-to-animated-images 301
+/dve2/archives/315/ffmpeg-mp4-to-gif-convert-videos-to-animated-images-easily/                           /blog/posts/ffmpeg-mp4-to-gif-convert-videos-to-animated-images 301
+/archives/317/convert-video-to-gif-command-line-master-ffmpeg-for-efficient-conversions/                 /blog/posts/convert-video-to-gif-command-line              301
+/dve2/archives/317/convert-video-to-gif-command-line-master-ffmpeg-for-efficient-conversions/            /blog/posts/convert-video-to-gif-command-line              301
+/archives/319/create-gifs-from-video-clips-with-ffmpeg-ultimate-conversion-guide-2/                      /blog/posts/create-gifs-from-video-clips-with-ffmpeg-ultimate-conversion-guide-2 301
+/dve2/archives/319/create-gifs-from-video-clips-with-ffmpeg-ultimate-conversion-guide-2/                 /blog/posts/create-gifs-from-video-clips-with-ffmpeg-ultimate-conversion-guide-2 301
+/archives/321/ffmpeg-gif-ultimate-guide-to-creating-and-optimizing-gifs-with-ffmpeg/                     /blog/posts/ffmpeg-gif-ultimate-guide                      301
+/dve2/archives/321/ffmpeg-gif-ultimate-guide-to-creating-and-optimizing-gifs-with-ffmpeg/                /blog/posts/ffmpeg-gif-ultimate-guide                      301
+/archives/33/how-to-crop-and-convert-gifs-using-ffmpeg-a-step-by-step-guide-for-content-creators/        /blog/posts/how-to-crop-and-convert-gifs-using-ffmpeg      301
+/dve2/archives/33/how-to-crop-and-convert-gifs-using-ffmpeg-a-step-by-step-guide-for-content-creators/   /blog/posts/how-to-crop-and-convert-gifs-using-ffmpeg      301
+/dve2/zh/archives/195/%E4%BD%BF%E7%94%A8ffmpeg%E9%AB%98%E6%95%88%E5%A4%84%E7%90%86%E5%A4%A7%E6%89%B9%E9%87%8F%E8%A7%86%E9%A2%91/ /blog/posts/zh-ffmpeg-batch-video-processing               301
+/dve2/zh/archives/195/使用ffmpeg高效处理大批量视频/                                                                                       /blog/posts/zh-ffmpeg-batch-video-processing               301
+/dve2/zh/archives/205/%E9%85%B7%E5%86%B7%E8%87%B3%E5%B0%8A%E6%9C%BA%E6%A2%B0%E9%94%AE%E7%9B%98%E9%94%AE%E4%BD%8D%E9%87%8D%E7%BD%AEwin-%E9%94%AE%E5%A4%B1%E6%95%88-ubuntu%E4%B8%8B-super%E9%94%AE%E6%97%A0%E6%95%88/ /blog/posts/zh-coolermaster-key-reset-super-key            301
+/dve2/zh/archives/205/酷冷至尊机械键盘键位重置win-键失效-ubuntu下-super键无效/                                                                    /blog/posts/zh-coolermaster-key-reset-super-key            301
 #
 # 文章页：旧站文章没有对应新文（新博客只迁了一篇），统一 301 到博客列表，
 # 比 404 更利于把权重和访问量接住，也不会再被判软 404（301 是明确信号）。
