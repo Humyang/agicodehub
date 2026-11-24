@@ -37,15 +37,24 @@ mimetypes.add_type('application/rss+xml', '.xml')
 
 
 class Rule:
-    __slots__ = ('pattern', 'target', 'status', 'exact')
+    __slots__ = ('pattern', 'target', 'status', 'exact', 'segments')
 
     def __init__(self, pattern: str, target: str, status: int) -> None:
         self.pattern = pattern
         self.target = target
         self.status = status
-        self.exact = '*' not in pattern
+        # Pages 的三种匹配写法：精确、* 通配、:param 单段占位
+        self.segments = pattern.split('/') if ':' in pattern else None
+        self.exact = '*' not in pattern and self.segments is None
 
     def match(self, path: str) -> bool:
+        if self.segments is not None:
+            # :param 只吃掉一个路径段，/a/b 不会被 /:seg 命中
+            parts = path.split('/')
+            if len(parts) != len(self.segments):
+                return False
+            return all(seg.startswith(':') or seg == part
+                       for seg, part in zip(self.segments, parts))
         if self.exact:
             return path == self.pattern
         prefix = self.pattern.split('*')[0]

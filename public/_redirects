@@ -7,21 +7,65 @@
 #   /blog/       博客（VitePress，base=/blog/）
 #
 # Pages 的判定顺序是：先找静态资源（含目录 index）→ 再套本文件 → 最后 404。
-# 所以下面第 3 条兜底只对"哪个文件都不存在"的请求生效。
 # 规则自上而下，第一条命中即止，顺序不能调。
+#
+# 关于软 404：
+#   早先这里最后一条是 `/* → /index.html 200`，等于任何不存在的地址都返回
+#   200 + 工具箱首页。旧 WordPress 站迁移过来的 /dve2/archives/**、/download/
+#   这类地址因此全部命中它，Google 抓到「说好的文章页却返回首页」判为软 404。
+#   现在改成：旧路径按族 301 或 404，SPA 只在白名单路由上返回壳，
+#   其余一律 /404.html + 真 404 状态码（见文件末尾第 3 节）。
 # ─────────────────────────────────────────────────────────────────────
 
-# ── 1. 旧 dve2 站点路径迁移（对齐 site/develop-log.md 的 301 规划）─────────
-/archives                                /blog/                   301
-/zh/                                     /docs/zh/                301
-/tools/nav.html                          /docs/                   301
-/tools/ffmpeg-script-tool/index.html     /ffmpeg-script-tool      301
+# ── 1. 旧 dve2 WordPress 站迁移（精确族优先，顺序不能调）──────────────────
+#
+# 文章页：旧站文章没有对应新文（新博客只迁了一篇），统一 301 到博客列表，
+# 比 404 更利于把权重和访问量接住，也不会再被判软 404（301 是明确信号）。
+/dve2/archives/category/*       /blog/                  301
+/dve2/archives/author/*         /blog/                  301
+/dve2/archives/tag/*            /blog/                  301
+/dve2/archives/*                /blog/                  301
+# 中文站路径
+/dve2/zh/archives/*             /blog/                  301
+/dve2/zh/*                      /docs/zh/               301
+# 分页与订阅
+/dve2/page/*                    /blog/                  301
+/dve2/feed/*                    /blog/feed.xml          301
+
+# 根级 WordPress 遗留路径
+/archives                       /blog/                  301
+/archives/*                     /blog/                  301
+/page/*                         /blog/                  301
+/feed                           /blog/feed.xml          301
+/feed/*                         /blog/feed.xml          301
+# 旧下载页：已无对应内容，回首页
+/download                       /                       301
+/download/*                     /                       301
+
+# 旧站工具页
+/zh/                            /docs/zh/               301
+/tools/nav.html                 /docs/                  301
+/tools/ffmpeg-script-tool/index.html  /ffmpeg-script-tool 301
 
 # ── 2. 子站 404 兜底 ─────────────────────────────────────────────────
-# 必须排在全局兜底之前，否则 /docs/ 下不存在的页面会被第 3 条改写成
-# SPA 首页（200 + 无关内容），对搜索引擎就是软 404。
-/docs/*                                  /docs/404.html           404
-/blog/*                                  /blog/404.html           404
+# 必须排在全局兜底之前，否则 /docs/ 下不存在的页面会被改写成 SPA 首页
+# （200 + 无关内容），对搜索引擎就是软 404。
+/docs/*                         /docs/404.html          404
+/blog/*                         /blog/404.html          404
 
-# ── 3. SPA 兜底：只接剩下的一切（工具箱自己的路由）─────────────────────
-/*                                       /index.html             200
+# ── 3. SPA 兜底：只放行单段路径，其余真 404 ──────────────────────────
+#
+# 工具箱的工具路由全部是单段路径（/token-generator、/uuid-generator…，
+# 98 个工具 + 10 个别名都是），所以用参数匹配一条就够：
+#   /:seg  单段 → 返回 SPA 壳（200），由前端路由渲染工具
+#   /*     其余（多段、带尾斜杠的伪目录等）→ /404.html + 404
+#
+# 两个坑（都实测过，别改回去）：
+#   1. 不能写 `/:seg → /index.html 200`：Pages 会把指向 /index.html 的
+#      重写当成规范化处理，返回 308 跳到 `/`，工具页直接被踢回首页。
+#      目标必须写 `/`，才会真的返回 200 的 SPA 壳。
+#   2. 不能把 121 条工具路由逐条列出来：`_redirects` 到一定条数后会被
+#      截断，排在后面的规则不生效（/token-generator、/text-diff 都因此
+#      变 404）。用参数匹配就 1 条，没有这个问题。
+/:seg                           /                       200
+/*                              /404.html               404
